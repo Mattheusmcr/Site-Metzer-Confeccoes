@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+/* Fonte global do site */
+body {
+  font-family: "Gill Sans MT", "Gill Sans", Calibri, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Melhor renderização da tipografia */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
