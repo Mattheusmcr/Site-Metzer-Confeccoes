@@ -7,4 +7,9 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+
+  // Para funcionar no GitHub Pages
+  base: "/Site-Metzer-Confeccoes/"
 })
+
+
