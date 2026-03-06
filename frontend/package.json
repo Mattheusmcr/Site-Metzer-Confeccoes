@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+  "node": "18.x"
+},
   "homepage": "https://mattheusmcr.github.io/Site-Metzer-Confeccoes/",
   "scripts": {
     "dev": "vite",
