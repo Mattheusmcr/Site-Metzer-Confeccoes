@@ -246,12 +246,14 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
 
 // ─── PEDIDOS ───────────────────────────────────────────────────────────────
 function VerPedidos({ mostrarToast, dark, estilos }) {
-  const { text, subtext, cardBg, border } = estilos;
+  const { text, subtext, cardBg, border, inputBg, inputBorder } = estilos;
   const [pedidos, setPedidos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [aberto, setAberto] = useState(null); // id do pedido expandido
 
   useEffect(() => {
-    api.get("pedidos/").then(res => setPedidos(res.data))
+    api.get("pedidos/")
+      .then(res => setPedidos(res.data))
       .catch(() => mostrarToast("Erro ao carregar pedidos.", "erro"))
       .finally(() => setLoading(false));
   }, []);
@@ -260,21 +262,164 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-6" style={{ color: text }}>Pedidos ({pedidos.length})</h2>
-      {pedidos.length === 0 && <p style={{ color: subtext }}>Nenhum pedido ainda.</p>}
+      <h2 className="text-xl font-semibold mb-2" style={{ color: text }}>
+        Pedidos ({pedidos.length})
+      </h2>
+      <p className="text-sm mb-6" style={{ color: subtext }}>
+        Clique em um pedido para ver os detalhes completos.
+      </p>
+
+      {pedidos.length === 0 && (
+        <p style={{ color: subtext }}>Nenhum pedido ainda.</p>
+      )}
+
       <div className="space-y-3">
-        {pedidos.map(p => (
-          <div key={p.id} className="rounded-xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="font-semibold" style={{ color: text }}>{p.nome_cliente}</p>
-                <p className="text-sm" style={{ color: subtext }}>📱 {p.telefone}</p>
-                <p className="text-xs mt-1" style={{ color: subtext }}>{new Date(p.data_pedido).toLocaleString("pt-BR")}</p>
-              </div>
-              <span className="text-xs px-2 py-1 rounded-lg" style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: subtext }}>#{p.id}</span>
+        {pedidos.map(p => {
+          const expandido = aberto === p.id;
+          const totalPedido = p.total || p.itens?.reduce(
+            (acc, i) => acc + (parseFloat(i.produto_preco) * i.quantidade), 0
+          ) || 0;
+
+          return (
+            <div key={p.id} className="rounded-xl overflow-hidden"
+              style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
+
+              {/* CABEÇALHO CLICÁVEL */}
+              <button
+                onClick={() => setAberto(expandido ? null : p.id)}
+                className="w-full p-5 flex items-center justify-between text-left"
+              >
+                <div className="flex items-center gap-4">
+                  <span className="text-xs px-2 py-1 rounded-lg font-mono"
+                    style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: subtext }}>
+                    #{p.id}
+                  </span>
+                  <div>
+                    <p className="font-semibold" style={{ color: text }}>{p.nome_cliente}</p>
+                    <p className="text-xs" style={{ color: subtext }}>
+                      {new Date(p.data_pedido).toLocaleString("pt-BR")}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="font-bold text-sm" style={{ color: text }}>
+                    R$ {Number(totalPedido).toFixed(2)}
+                  </span>
+                  <span style={{ color: subtext }}>{expandido ? "▲" : "▼"}</span>
+                </div>
+              </button>
+
+              {/* DETALHES EXPANDIDOS */}
+              {expandido && (
+                <div className="px-5 pb-5 space-y-5"
+                  style={{ borderTop: "1px solid " + border }}>
+
+                  {/* GRID DE INFORMAÇÕES */}
+                  <div className="grid md:grid-cols-3 gap-4 pt-4">
+
+                    {/* CLIENTE */}
+                    <div className="rounded-lg p-4"
+                      style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
+                      <p className="text-xs font-bold uppercase mb-3" style={{ color: subtext }}>
+                        👤 Cliente
+                      </p>
+                      <p className="font-semibold text-sm" style={{ color: text }}>{p.nome_cliente}</p>
+                      <p className="text-sm mt-1" style={{ color: subtext }}>📱 {p.telefone}</p>
+                    </div>
+
+                    {/* ENDEREÇO */}
+                    <div className="rounded-lg p-4"
+                      style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
+                      <p className="text-xs font-bold uppercase mb-3" style={{ color: subtext }}>
+                        📍 Endereço
+                      </p>
+                      {p.rua ? (
+                        <div className="text-sm space-y-0.5" style={{ color: text }}>
+                          <p>{p.rua}, {p.numero}{p.complemento ? ` — ${p.complemento}` : ""}</p>
+                          <p>{p.bairro}</p>
+                          <p>{p.cidade}/{p.estado}</p>
+                          <p style={{ color: subtext }}>CEP: {p.cep}</p>
+                        </div>
+                      ) : (
+                        <p className="text-sm" style={{ color: subtext }}>Retirada no local</p>
+                      )}
+                    </div>
+
+                    {/* PAGAMENTO */}
+                    <div className="rounded-lg p-4"
+                      style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
+                      <p className="text-xs font-bold uppercase mb-3" style={{ color: subtext }}>
+                        💳 Pagamento
+                      </p>
+                      <p className="font-semibold text-sm" style={{ color: text }}>
+                        {p.forma_pagamento || "Não informado"}
+                      </p>
+                      {p.observacao && (
+                        <p className="text-xs mt-2" style={{ color: subtext }}>
+                          📝 {p.observacao}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* ITENS DO PEDIDO */}
+                  <div>
+                    <p className="text-xs font-bold uppercase mb-3" style={{ color: subtext }}>
+                      🛍️ Itens
+                    </p>
+                    <div className="rounded-lg overflow-hidden"
+                      style={{ border: "1px solid " + border }}>
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr style={{ backgroundColor: dark ? "#374151" : "#f3f4f6" }}>
+                            <th className="text-left p-3 font-semibold" style={{ color: text }}>Produto</th>
+                            <th className="text-center p-3 font-semibold" style={{ color: text }}>Tam.</th>
+                            <th className="text-center p-3 font-semibold" style={{ color: text }}>Qtd.</th>
+                            <th className="text-right p-3 font-semibold" style={{ color: text }}>Subtotal</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(p.itens || []).map((item, i) => (
+                            <tr key={i}
+                              style={{ backgroundColor: i % 2 === 0
+                                ? (dark ? "#1f2937" : "#ffffff")
+                                : (dark ? "#111827" : "#f9fafb") }}>
+                              <td className="p-3" style={{ color: text }}>{item.produto_nome}</td>
+                              <td className="p-3 text-center" style={{ color: subtext }}>{item.tamanho}</td>
+                              <td className="p-3 text-center" style={{ color: subtext }}>{item.quantidade}</td>
+                              <td className="p-3 text-right font-medium" style={{ color: text }}>
+                                R$ {(parseFloat(item.produto_preco) * item.quantidade).toFixed(2)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot>
+                          <tr style={{ borderTop: "2px solid " + border }}>
+                            <td colSpan={3} className="p-3 text-right font-bold" style={{ color: text }}>
+                              Total:
+                            </td>
+                            <td className="p-3 text-right font-bold text-base" style={{ color: text }}>
+                              R$ {Number(totalPedido).toFixed(2)}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* AÇÃO WHATSAPP */}
+                  <a
+                    href={`https://wa.me/55${p.telefone.replace(/\D/g, "")}`}
+                    target="_blank" rel="noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white"
+                    style={{ backgroundColor: "#16a34a" }}>
+                    💬 Entrar em contato via WhatsApp
+                  </a>
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
