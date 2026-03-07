@@ -1,16 +1,17 @@
 from pathlib import Path
 import os
 from datetime import timedelta
+from dotenv import load_dotenv
+
+# Carrega o .env antes de tudo
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ─────────────────────────────────────────────────────────────────
-# SEGURANÇA — lê do ambiente, nunca hardcoded
-# Em produção: defina as variáveis de ambiente no servidor
-# ─────────────────────────────────────────────────────────────────
+#Se não encontrar, usa o texto como fallback, é só um aviso visual
 SECRET_KEY = os.environ.get(
     'DJANGO_SECRET_KEY',
-    'dev-secret-key-troque-em-producao'   # só usado localmente
+    'dev-secret-key-troque-em-producao'
 )
 
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
@@ -19,9 +20,6 @@ ALLOWED_HOSTS = os.environ.get(
     'DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1'
 ).split(',')
 
-# ─────────────────────────────────────────────────────────────────
-# APPS
-# ─────────────────────────────────────────────────────────────────
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -34,9 +32,6 @@ INSTALLED_APPS = [
     'core',
 ]
 
-# ─────────────────────────────────────────────────────────────────
-# CORS — em produção lista apenas o domínio do frontend
-# ─────────────────────────────────────────────────────────────────
 if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
 else:
@@ -76,15 +71,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'metzker.wsgi.application'
 
-# ─────────────────────────────────────────────────────────────────
-# BANCO DE DADOS — SQL Server
-# ─────────────────────────────────────────────────────────────────
 DATABASES = {
     'default': {
         'ENGINE': 'mssql',
         'NAME': os.environ.get('DB_NAME', 'metzker_db'),
         'USER': os.environ.get('DB_USER', 'metzker-confeccoes'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'f0@26ym'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
         'HOST': os.environ.get('DB_HOST', r'DESKTOP-7MP41GP\SQLEXPRESS'),
         'OPTIONS': {
             'driver': 'ODBC Driver 17 for SQL Server',
@@ -93,9 +85,6 @@ DATABASES = {
     },
 }
 
-# ─────────────────────────────────────────────────────────────────
-# SENHAS
-# ─────────────────────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -103,17 +92,11 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# ─────────────────────────────────────────────────────────────────
-# INTERNACIONALIZAÇÃO
-# ─────────────────────────────────────────────────────────────────
 LANGUAGE_CODE = 'pt-br'
 TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
 USE_TZ = True
 
-# ─────────────────────────────────────────────────────────────────
-# ARQUIVOS ESTÁTICOS E MÍDIA
-# ─────────────────────────────────────────────────────────────────
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
@@ -122,9 +105,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# ─────────────────────────────────────────────────────────────────
-# DRF + JWT
-# ─────────────────────────────────────────────────────────────────
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -148,11 +128,8 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-# ─────────────────────────────────────────────────────────────────
-# SEGURANÇA EXTRA — só ativa em produção
-# ─────────────────────────────────────────────────────────────────
 if not DEBUG:
-    SECURE_HSTS_SECONDS = 31536000          # 1 ano
+    SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SECURE_SSL_REDIRECT = True
