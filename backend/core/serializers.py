@@ -22,13 +22,15 @@ class ProdutoSerializer(serializers.ModelSerializer):
         model = Produto
         fields = '__all__'
         extra_kwargs = {
-            'descricao': {'required': False, 'allow_blank': True},
-            'imagem':    {'required': False, 'allow_null': True},
+            'descricao':    {'required': False, 'allow_blank': True},
+            'imagem':       {'required': False, 'allow_null': True},
+            'categoria':    {'required': False, 'allow_blank': True},
+            'subcategoria': {'required': False, 'allow_blank': True},
         }
 
 
 class ItemPedidoSerializer(serializers.ModelSerializer):
-    produto_nome = serializers.CharField(source='produto.nome', read_only=True)
+    produto_nome  = serializers.CharField(source='produto.nome', read_only=True)
     produto_preco = serializers.DecimalField(
         source='produto.preco', max_digits=10, decimal_places=2, read_only=True
     )
@@ -47,15 +49,11 @@ class PedidoSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'nome_cliente', 'telefone',
             'cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'estado',
-            'forma_pagamento', 'observacao',
-            'data_pedido', 'itens', 'total',
+            'forma_pagamento', 'observacao', 'data_pedido', 'itens', 'total',
         ]
 
     def get_total(self, obj):
-        return sum(
-            item.quantidade * item.produto.preco
-            for item in obj.itens.all()
-        )
+        return sum(i.quantidade * i.produto.preco for i in obj.itens.all())
 
 
 class InstitucionalSerializer(serializers.ModelSerializer):

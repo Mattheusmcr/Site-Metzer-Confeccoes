@@ -1,25 +1,25 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext } from "react";
 
 export const ThemeContext = createContext();
 
+export const tema = {
+  bg: "#FAF8F5",
+  bgSecundario: "#F2EDE6",
+  bgCard: "#FFFFFF",
+  text: "#1a1a1a",
+  textSecundario: "#7a7065",
+  border: "#E8E0D5",
+  btnPrimarioBg: "#1a1a1a",
+  btnPrimarioText: "#FAF8F5",
+  navBg: "#FAF8F5",
+  navBorder: "#E8E0D5",
+};
+
+// dark = false fixo para compatibilidade com código antigo
 export function ThemeProvider({ children }) {
-  const [dark, setDark] = useState(
-    () => localStorage.getItem("tema") === "dark"
-  );
-
-  function toggleTheme() {
-    const novo = !dark;
-    setDark(novo);
-    localStorage.setItem("tema", novo ? "dark" : "light");
-  }
-
   return (
-    <ThemeContext.Provider value={{ dark, setDark: toggleTheme }}>
-      <div style={{
-        backgroundColor: dark ? "#111827" : "#ffffff",
-        color: dark ? "#ffffff" : "#000000",
-        minHeight: "100vh",
-      }}>
+    <ThemeContext.Provider value={{ tema, dark: false }}>
+      <div style={{ backgroundColor: tema.bg, color: tema.text, minHeight: "100vh" }}>
         {children}
       </div>
     </ThemeContext.Provider>

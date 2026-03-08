@@ -11,11 +11,35 @@ class Institucional(models.Model):
 
 
 class Produto(models.Model):
+
+    CATEGORIA_CHOICES = [
+        ('roupas', 'Item de Roupa'),
+        ('comunicacao', 'Comunicação Visual'),
+    ]
+
+    SUBCATEGORIA_CHOICES = [
+        ('gola-polo', 'Gola Polo'),
+        ('camisa-comum', 'Camisa Comum'),
+        ('calca', 'Calça'),
+    ]
+
     nome = models.CharField(max_length=200)
     descricao = models.TextField(blank=True, default="")
     preco = models.DecimalField(max_digits=10, decimal_places=2)
     imagem = models.ImageField(upload_to='produtos/', blank=True, null=True)
     ativo = models.BooleanField(default=True)
+    categoria = models.CharField(
+        max_length=50,
+        choices=CATEGORIA_CHOICES,
+        blank=True,
+        default=""
+    )
+    subcategoria = models.CharField(
+        max_length=50,
+        choices=SUBCATEGORIA_CHOICES,
+        blank=True,
+        default=""
+    )
 
     def __str__(self):
         return self.nome
@@ -30,9 +54,7 @@ class Tamanho(models.Model):
 
 class Estoque(models.Model):
     produto = models.ForeignKey(
-        'Produto',
-        on_delete=models.CASCADE,
-        related_name='estoques'
+        'Produto', on_delete=models.CASCADE, related_name='estoques'
     )
     tamanho = models.CharField(max_length=10)
     quantidade = models.IntegerField(default=0)
@@ -45,11 +67,8 @@ class Estoque(models.Model):
 
 
 class Pedido(models.Model):
-    # Dados do cliente
     nome_cliente = models.CharField(max_length=200)
     telefone = models.CharField(max_length=20)
-
-    # Endereço de entrega
     cep = models.CharField(max_length=10, blank=True, default="")
     rua = models.CharField(max_length=200, blank=True, default="")
     numero = models.CharField(max_length=20, blank=True, default="")
@@ -57,11 +76,8 @@ class Pedido(models.Model):
     bairro = models.CharField(max_length=100, blank=True, default="")
     cidade = models.CharField(max_length=100, blank=True, default="")
     estado = models.CharField(max_length=2, blank=True, default="")
-
-    # Pagamento e obs
     forma_pagamento = models.CharField(max_length=50, blank=True, default="")
     observacao = models.TextField(blank=True, default="")
-
     data_pedido = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -71,7 +87,7 @@ class Pedido(models.Model):
 class ItemPedido(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='itens')
     produto = models.ForeignKey(Produto, on_delete=models.CASCADE)
-    tamanho = models.CharField(max_length=10)   # string, não FK
+    tamanho = models.CharField(max_length=10)
     quantidade = models.IntegerField()
 
     def __str__(self):
@@ -80,9 +96,7 @@ class ItemPedido(models.Model):
 
 class ProdutoImagem(models.Model):
     produto = models.ForeignKey(
-        Produto,
-        on_delete=models.CASCADE,
-        related_name='imagens'
+        Produto, on_delete=models.CASCADE, related_name='imagens'
     )
     imagem = models.ImageField(upload_to='produtos/')
 

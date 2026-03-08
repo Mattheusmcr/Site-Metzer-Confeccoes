@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useTheme } from "../context/ThemeContext";
 
 const heroImages = [
   "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=1600",
@@ -14,42 +13,42 @@ const diferenciais = [
   { titulo: "Produção Local", texto: "Empresa localizada em Vila Velha, fortalecendo o comércio local." },
 ];
 
-function Home() {
-  const { dark } = useTheme();
-  const [heroAtual, setHeroAtual] = useState(0);
+const t = {
+  bg: "#FAF8F5", bgSecundario: "#F2EDE6", bgCard: "#FFFFFF",
+  text: "#1a1a1a", textSecundario: "#7a7065",
+  border: "#D5C9BC", borderForte: "#C4B5A5",
+};
 
-  // Carrossel automático a cada 4 segundos
+function Divisor() {
+  return (
+    <div style={{
+      borderTop: "2px solid " + t.borderForte,
+      margin: "0",
+    }} />
+  );
+}
+
+function Home() {
+  const [heroAtual, setHeroAtual] = useState(0);
   useEffect(() => {
-    const timer = setInterval(() => {
-      setHeroAtual(c => c < heroImages.length - 1 ? c + 1 : 0);
-    }, 4000);
+    const timer = setInterval(() => setHeroAtual(c => (c + 1) % heroImages.length), 4000);
     return () => clearInterval(timer);
   }, []);
 
-  const bg = dark ? "#111827" : "#ffffff";
-  const text = dark ? "#ffffff" : "#000000";
-  const subtext = dark ? "#9ca3af" : "#6b7280";
-  const cardBg = dark ? "#1f2937" : "#f9fafb";
-  const sectionAlt = dark ? "#1f2937" : "#f3f4f6";
-  const borderColor = dark ? "#374151" : "#e5e7eb";
-
   return (
-    <div style={{ backgroundColor: bg, color: text }}>
+    <div style={{ backgroundColor: t.bg, color: t.text }}>
 
-      {/* HERO com carrossel automático */}
-      <section
-        className="h-screen flex flex-col justify-center items-center text-center relative overflow-hidden"
+      {/* HERO */}
+      <section className="h-screen flex flex-col justify-center items-center text-center relative overflow-hidden"
         style={{
-          backgroundImage: "url(" + heroImages[heroAtual] + ")",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          transition: "background-image 0.8s ease-in-out",
-        }}
-      >
-        <div className="absolute inset-0" style={{ backgroundColor: "rgba(0,0,0,0.55)" }} />
+          backgroundImage: `url(${heroImages[heroAtual]})`,
+          backgroundSize: "cover", backgroundPosition: "center",
+          transition: "background-image 0.8s ease",
+        }}>
+        <div className="absolute inset-0" style={{ backgroundColor: "rgba(0,0,0,0.52)" }} />
         <div className="relative z-10 px-6">
-          <p className="text-sm uppercase tracking-widest mb-4" style={{ color: "rgba(255,255,255,0.7)" }}>
-            METZKER TEXTIL E COMUNICAÇÃO
+          <p className="text-xs uppercase tracking-widest mb-4" style={{ color: "rgba(255,255,255,0.55)" }}>
+            Metzker Textil e Comunicações Visuais
           </p>
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
             Veste quem tem estilo.
@@ -59,112 +58,98 @@ function Home() {
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Link to="/catalogo"
-              className="px-8 py-3 font-semibold transition"
-              style={{ backgroundColor: "#ffffff", color: "#000000" }}>
+              className="px-8 py-3 font-semibold transition hover:opacity-80"
+              style={{ backgroundColor: "#ffffff", color: "#1a1a1a" }}>
               Ver Catálogo
             </Link>
             <a href="https://wa.me/5527997878391" target="_blank" rel="noreferrer"
-              className="px-8 py-3 font-semibold transition"
-              style={{ border: "1px solid white", color: "white" }}
-              onMouseEnter={e => { e.target.style.backgroundColor = "white"; e.target.style.color = "black"; }}
-              onMouseLeave={e => { e.target.style.backgroundColor = "transparent"; e.target.style.color = "white"; }}>
+              className="px-8 py-3 font-semibold transition hover:bg-white hover:text-black"
+              style={{ border: "1px solid white", color: "white" }}>
               WhatsApp
             </a>
           </div>
         </div>
-
-        {/* DOTS */}
         <div className="absolute bottom-8 flex gap-3 z-10">
           {heroImages.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setHeroAtual(i)}
-              style={{
-                width: "10px", height: "10px", borderRadius: "50%",
-                backgroundColor: i === heroAtual ? "white" : "rgba(255,255,255,0.4)",
-                transform: i === heroAtual ? "scale(1.3)" : "scale(1)",
-                transition: "all 0.3s",
-                border: "none", cursor: "pointer",
-              }}
-            />
+            <button key={i} onClick={() => setHeroAtual(i)} style={{
+              width: "8px", height: "8px", borderRadius: "50%", border: "none", cursor: "pointer",
+              backgroundColor: i === heroAtual ? "white" : "rgba(255,255,255,0.35)",
+              transform: i === heroAtual ? "scale(1.4)" : "scale(1)", transition: "all 0.3s",
+            }} />
           ))}
         </div>
       </section>
 
+      <Divisor />
+
       {/* SOBRE */}
-      <section className="py-20 px-10 text-center" style={{ backgroundColor: sectionAlt }}>
-        <h2 className="text-4xl font-bold mb-6">Sobre Nós</h2>
-        <p className="max-w-3xl mx-auto text-lg leading-relaxed" style={{ color: subtext }}>
+      <section className="py-20 px-10 text-center" style={{ backgroundColor: t.bgSecundario }}>
+        <p className="text-xs uppercase tracking-widest mb-3" style={{ color: t.textSecundario }}>Quem Somos</p>
+        <h2 className="text-4xl font-bold mb-6" style={{ color: t.text }}>Sobre Nós</h2>
+        <p className="max-w-3xl mx-auto text-lg leading-relaxed" style={{ color: t.textSecundario }}>
           Somos uma empresa familiar localizada em Vila Velha, especializada em confecções de alta qualidade.
           Trabalhamos com dedicação, atenção aos detalhes e compromisso com a satisfação dos nossos clientes.
         </p>
       </section>
 
+      <Divisor />
+
       {/* DIFERENCIAIS */}
-      <section className="py-20 px-10" style={{ backgroundColor: bg }}>
-        <h2 className="text-4xl font-bold text-center mb-12">Nossos Diferenciais</h2>
-        <div className="grid md:grid-cols-3 gap-10 text-center max-w-5xl mx-auto">
+      <section className="py-20 px-10" style={{ backgroundColor: t.bg }}>
+        <p className="text-xs uppercase tracking-widest text-center mb-3" style={{ color: t.textSecundario }}>Por que nos escolher</p>
+        <h2 className="text-4xl font-bold text-center mb-12" style={{ color: t.text }}>Nossos Diferenciais</h2>
+        <div className="grid md:grid-cols-3 gap-0 text-center max-w-5xl mx-auto"
+          style={{ border: "2px solid " + t.borderForte, borderRadius: "12px", overflow: "hidden" }}>
           {diferenciais.map((d, i) => (
-            <div key={i} className="p-8 rounded-2xl shadow-lg" style={{ backgroundColor: cardBg }}>
-              <h3 className="text-xl font-semibold mb-4">{d.titulo}</h3>
-              <p style={{ color: subtext }}>{d.texto}</p>
+            <div key={i} className="p-8"
+              style={{
+                backgroundColor: t.bgCard,
+                borderRight: i < diferenciais.length - 1 ? "2px solid " + t.borderForte : "none",
+              }}>
+              <h3 className="text-xl font-semibold mb-4" style={{ color: t.text }}>{d.titulo}</h3>
+              <p style={{ color: t.textSecundario }}>{d.texto}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* LOCALIZAÇÃO COM MAPS*/}
-    {/*}  <section className="py-20 bg-gray-100 text-center px-6">
-        <h2 className="text-4xl font-bold mb-8">Nossa Localização</h2>
-
-        <p className="mb-6 text-lg text-gray-700">
-          Rua Tobias Barreto, nº 37 – Vila Velha
-        </p>
-
-        <div className="flex justify-center">
-          <iframe
-            title="Localização Metzker"
-            src="https://www.google.com/maps?q=Rua+Tobias+Barreto,+37,+Vila+Velha&output=embed"
-            width="100%"
-            height="400"
-            className="rounded-2xl shadow-lg max-w-4xl"
-            allowFullScreen=""
-            loading="lazy"
-          ></iframe>
-        </div>
-      </section>
-    */}
+      <Divisor />
 
       {/* RODAPÉ */}
-      <footer className="py-16 px-10" style={{ borderTop: "1px solid " + borderColor, backgroundColor: bg }}>
+      <footer className="py-16 px-10" style={{ backgroundColor: t.bgSecundario }}>
         <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-10 text-sm">
-          <div>
-            <h3 className="font-semibold mb-4">METZKER TEXTIL E COMUNICAÇÃO</h3>
-            <p className="leading-relaxed" style={{ color: subtext }}>
-              Peças de alta qualidade focadas em conforto, estilo e durabilidade.
-            </p>
+
+          <div style={{ borderRight: "1px solid " + t.border, paddingRight: "40px" }}>
+            <h3 className="font-semibold mb-4 text-xs uppercase tracking-widest" style={{ color: t.text }}>
+              Metzker Textil e Comunicações Visuais
+            </h3>
+            <p style={{ color: t.textSecundario }}>Peças de alta qualidade focadas em conforto, estilo e durabilidade.</p>
           </div>
-          <div>
-            <h3 className="font-semibold mb-4">CONTATO</h3>
-            <p style={{ color: subtext }}>WhatsApp</p>
-            <p className="mb-2">(27) 99885-3043</p>
-            <p style={{ color: subtext }}>Email</p>
-            <p>contato@metzker.com</p>
+
+          <div style={{ borderRight: "1px solid " + t.border, paddingRight: "40px" }}>
+            <h3 className="font-semibold mb-4 text-xs uppercase tracking-widest" style={{ color: t.text }}>Contato</h3>
+            <p style={{ color: t.textSecundario }}>WhatsApp</p>
+            <p style={{ color: t.text }}>(27) 99885-3043</p>
+            <p className="mt-2" style={{ color: t.textSecundario }}>Email</p>
+            <p style={{ color: t.text }}>contato@metzker.com</p>
           </div>
+
           <div>
-            <h3 className="font-semibold mb-4">LOCALIZAÇÃO</h3>
-            <p>Rua Tobias Barreto, 37</p>
-            <p>Vila Velha - ES</p>
-            <p>Brasil</p>
+            <h3 className="font-semibold mb-4 text-xs uppercase tracking-widest" style={{ color: t.text }}>Localização</h3>
+            <p style={{ color: t.text }}>Rua Tobias Barreto, 37</p>
+            <p style={{ color: t.text }}>Vila Velha - ES</p>
           </div>
         </div>
-        <div className="text-center text-xs mt-12" style={{ color: subtext }}>
-          &copy; {new Date().getFullYear()} METZKER TEXTIL E COMUNICAÇÃO
+
+        <div style={{ borderTop: "1px solid " + t.borderForte, marginTop: "48px", paddingTop: "24px" }}>
+          <p className="text-center text-xs" style={{ color: t.textSecundario }}>
+            &copy; {new Date().getFullYear()} Metzker Textil e Comunicações Visuais
+          </p>
         </div>
       </footer>
 
       <a href="https://wa.me/5527997878391" target="_blank" rel="noreferrer"
-        className="fixed bottom-6 right-6 text-white px-5 py-3 rounded-full shadow-xl font-medium z-40"
+        className="fixed bottom-6 right-6 text-white px-5 py-3 rounded-full shadow-xl font-medium z-40 hover:opacity-90 transition"
         style={{ backgroundColor: "#22c55e" }}>
         WhatsApp
       </a>
