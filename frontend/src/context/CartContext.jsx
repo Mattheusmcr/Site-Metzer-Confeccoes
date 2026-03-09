@@ -5,67 +5,57 @@ export const CartContext = createContext();
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
 
-  const addToCart = (produto, tamanho) => {
-    setCart(prevCart => {
-      const existing = prevCart.find(
-        item =>
-          item.produto.id === produto.id &&
-          item.tamanho === tamanho
+  // Adiciona ao carrinho com quantidade EXATA (não soma se já existir)
+  // Se o item já existir com mesmo produto+tamanho, SUBSTITUI a quantidade
+  function addToCart(produto, tamanho, quantidade) {
+    setCart(prev => {
+      const existe = prev.find(
+        item => item.produto.id === produto.id && item.tamanho === tamanho
       );
-
-      if (existing) {
-        return prevCart.map(item =>
-          item.produto.id === produto.id &&
-          item.tamanho === tamanho
-            ? { ...item, quantidade: item.quantidade + 1 }
+      if (existe) {
+        // Substitui a quantidade (não soma) — comportamento correto para "Comprar agora"
+        return prev.map(item =>
+          item.produto.id === produto.id && item.tamanho === tamanho
+            ? { ...item, quantidade: quantidade }
             : item
         );
       }
-
-      return [...prevCart, { produto, tamanho, quantidade: 1 }];
+      return [...prev, { produto, tamanho, quantidade }];
     });
-  };
+  }
 
-  const increase = (produtoId, tamanho) => {
-    setCart(prevCart =>
-      prevCart.map(item =>
-        item.produto.id === produtoId &&
-        item.tamanho === tamanho
+  function increase(produtoId, tamanho) {
+    setCart(prev =>
+      prev.map(item =>
+        item.produto.id === produtoId && item.tamanho === tamanho
           ? { ...item, quantidade: item.quantidade + 1 }
           : item
       )
     );
-  };
+  }
 
-  const decrease = (produtoId, tamanho) => {
-    setCart(prevCart =>
-      prevCart
+  function decrease(produtoId, tamanho) {
+    setCart(prev =>
+      prev
         .map(item =>
-          item.produto.id === produtoId &&
-          item.tamanho === tamanho
+          item.produto.id === produtoId && item.tamanho === tamanho
             ? { ...item, quantidade: item.quantidade - 1 }
             : item
         )
         .filter(item => item.quantidade > 0)
     );
-  };
+  }
 
-  const removeFromCart = (produtoId, tamanho) => {
-    setCart(prevCart =>
-      prevCart.filter(
-        item =>
-          !(
-            item.produto.id === produtoId &&
-            item.tamanho === tamanho
-          )
+  function removeFromCart(produtoId, tamanho) {
+    setCart(prev =>
+      prev.filter(
+        item => !(item.produto.id === produtoId && item.tamanho === tamanho)
       )
     );
-  };
+  }
 
   return (
-    <CartContext.Provider
-      value={{ cart, setCart, addToCart, increase, decrease, removeFromCart }}
-    >
+    <CartContext.Provider value={{ cart, setCart, addToCart, increase, decrease, removeFromCart }}>
       {children}
     </CartContext.Provider>
   );

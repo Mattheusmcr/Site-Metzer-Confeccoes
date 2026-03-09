@@ -1,7 +1,7 @@
 from rest_framework import viewsets, serializers
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, AllowAny
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import action
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -14,7 +14,7 @@ from .serializers import ProdutoSerializer, PedidoSerializer, InstitucionalSeria
 class ProdutoViewSet(viewsets.ModelViewSet):
     queryset = Produto.objects.filter(ativo=True)
     serializer_class = ProdutoSerializer
-    parser_classes = (MultiPartParser, FormParser)
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -41,15 +41,19 @@ class ProdutoViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
+
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         if not serializer.is_valid():
             return Response(serializer.errors, status=400)
+
         produto = serializer.save()
+
         novas_imagens = request.FILES.getlist('imagens')
         if novas_imagens:
             ProdutoImagem.objects.filter(produto=produto).delete()
             for imagem in novas_imagens:
                 ProdutoImagem.objects.create(produto=produto, imagem=imagem)
+
         return Response(serializer.data)
 
 

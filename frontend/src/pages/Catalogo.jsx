@@ -5,7 +5,8 @@ import { Link } from "react-router-dom";
 
 const t = {
   bg: "#FAF8F5", bgSecundario: "#F2EDE6", bgCard: "#FFFFFF",
-  text: "#1a1a1a", textSecundario: "#7a7065", border: "#E8E0D5",
+  text: "#1a1a1a", textSecundario: "#7a7065",
+  border: "#D5C9BC", borderForte: "#C4B5A5",
   btnPrimarioBg: "#1a1a1a", btnPrimarioText: "#FAF8F5",
 };
 
@@ -13,28 +14,33 @@ const CATEGORIAS = [
   {
     id: "roupas", label: "ITEM DE ROUPA",
     subcategorias: [
-      { id: "gola-polo", label: "Polos" },
+      { id: "gola-polo",    label: "Polos"   },
       { id: "camisa-comum", label: "Camisas" },
-      { id: "calca", label: "Calças" },
+      { id: "calca",        label: "Calças"  },
     ],
   },
-  { id: "comunicacao", label: "COMUNICAÇÃO VISUAL", subcategorias: [] },
+  {
+    id: "comunicacao", label: "COMUNICAÇÃO VISUAL",
+    subcategorias: [
+      { id: "logos",     label: "Logos"      },
+      { id: "impressoes", label: "Impressões" },
+    ],
+  },
 ];
 
 function Sidebar({ filtro, setFiltro }) {
-  const [abertos, setAbertos] = useState({ roupas: true, comunicacao: false });
+  const [abertos, setAbertos] = useState({ roupas: true, comunicacao: true });
 
   return (
-    <aside className="w-44 shrink-0">
-      <p className="text-xs font-bold tracking-widest mb-4 uppercase" style={{ color: t.textSecundario }}>
-        Categorias
-      </p>
+    <aside className="w-44 shrink-0" style={{ borderRight: "2px solid " + t.borderForte, paddingRight: "24px" }}>
+      <p className="text-xs font-bold tracking-widest mb-4 uppercase" style={{ color: t.textSecundario }}>Categorias</p>
 
       <button onClick={() => setFiltro({ categoria: null, subcategoria: null })}
-        className="block w-full text-left text-xs py-1 mb-2 uppercase tracking-wider transition hover:opacity-50"
+        className="block w-full text-left text-xs py-2 mb-2 uppercase tracking-wider transition hover:opacity-50"
         style={{
           color: !filtro.categoria ? t.text : t.textSecundario,
           fontWeight: !filtro.categoria ? "700" : "400",
+          borderBottom: "1px solid " + t.border, paddingBottom: "8px"
         }}>
         TODOS
       </button>
@@ -44,18 +50,12 @@ function Sidebar({ filtro, setFiltro }) {
           <button
             onClick={() => {
               setAbertos(prev => ({ ...prev, [grupo.id]: !prev[grupo.id] }));
-              if (grupo.subcategorias.length === 0) {
-                setFiltro({ categoria: grupo.id, subcategoria: null });
-              }
+              if (grupo.subcategorias.length === 0) setFiltro({ categoria: grupo.id, subcategoria: null });
             }}
             className="flex items-center justify-between w-full text-left text-xs font-bold tracking-wider py-2 uppercase transition hover:opacity-50"
-            style={{ color: filtro.categoria === grupo.id && !filtro.subcategoria ? t.text : t.text }}>
+            style={{ color: t.text }}>
             {grupo.label}
-            {grupo.subcategorias.length > 0 && (
-              <span style={{ fontSize: "9px", color: t.textSecundario }}>
-                {abertos[grupo.id] ? "▲" : "▼"}
-              </span>
-            )}
+            <span style={{ fontSize: "9px", color: t.textSecundario }}>{abertos[grupo.id] ? "▲" : "▼"}</span>
           </button>
 
           {abertos[grupo.id] && grupo.subcategorias.length > 0 && (
@@ -67,7 +67,7 @@ function Sidebar({ filtro, setFiltro }) {
                   style={{
                     color: filtro.subcategoria === sub.id ? t.text : t.textSecundario,
                     fontWeight: filtro.subcategoria === sub.id ? "600" : "400",
-                    borderLeft: "2px solid " + (filtro.subcategoria === sub.id ? t.text : "transparent"),
+                    borderLeft: "2px solid " + (filtro.subcategoria === sub.id ? t.borderForte : "transparent"),
                     paddingLeft: "8px",
                   }}>
                   {sub.label}
@@ -75,15 +75,15 @@ function Sidebar({ filtro, setFiltro }) {
               ))}
             </div>
           )}
-
-          <div style={{ borderBottom: "1px solid " + t.border }} />
+          <div style={{ borderBottom: "2px solid " + t.borderForte, margin: "4px 0 8px 0" }} />
         </div>
       ))}
 
       {(filtro.categoria || filtro.subcategoria) && (
         <button onClick={() => setFiltro({ categoria: null, subcategoria: null })}
-          className="mt-4 text-xs underline transition hover:opacity-50" style={{ color: t.textSecundario }}>
-          LIMPAR
+          className="mt-2 text-xs uppercase tracking-wider transition hover:opacity-50"
+          style={{ color: t.textSecundario }}>
+          Limpar
         </button>
       )}
     </aside>
@@ -93,6 +93,8 @@ function Sidebar({ filtro, setFiltro }) {
 function Catalogo() {
   const [produtos, setProdutos] = useState([]);
   const [tamanhosSelecionados, setTamanhosSelecionados] = useState({});
+  // quantidade por produto: { [produtoId]: number }
+  const [quantidades, setQuantidades] = useState({});
   const [indexImagem, setIndexImagem] = useState({});
   const [hoverProduto, setHoverProduto] = useState(null);
   const [alertas, setAlertas] = useState({});
@@ -104,14 +106,17 @@ function Catalogo() {
     api.get("produtos/").then(res => setProdutos(res.data)).catch(console.error);
   }, []);
 
+  // carrossel ao hover
   useEffect(() => {
     if (!hoverProduto) return;
     const produto = produtos.find(p => p.id === hoverProduto);
     if (!produto) return;
-    const imagens = produto.imagens?.length > 0 ? produto.imagens.map(i => i.imagem) : [produto.imagem];
-    if (imagens.length <= 1) return;
+    const imgs = produto.imagens?.length > 0
+      ? produto.imagens.map(i => i.imagem)
+      : [produto.imagem];
+    if (imgs.length <= 1) return;
     const iv = setInterval(() => {
-      setIndexImagem(prev => ({ ...prev, [hoverProduto]: ((prev[hoverProduto] || 0) + 1) % imagens.length }));
+      setIndexImagem(prev => ({ ...prev, [hoverProduto]: ((prev[hoverProduto] || 0) + 1) % imgs.length }));
     }, 900);
     return () => clearInterval(iv);
   }, [hoverProduto, produtos]);
@@ -121,14 +126,17 @@ function Catalogo() {
     setTimeout(() => setToastMsg(null), 2500);
   }
 
-  // Filtragem real usando os campos categoria/subcategoria do banco
+  function getQtd(id) { return quantidades[id] || 1; }
+  function setQtd(id, val) {
+    setQuantidades(prev => ({ ...prev, [id]: Math.max(1, val) }));
+  }
+
   const produtosFiltrados = produtos.filter(p => {
     if (filtro.subcategoria) return p.subcategoria === filtro.subcategoria;
     if (filtro.categoria) return p.categoria === filtro.categoria;
     return true;
   });
 
-  // Label do filtro ativo para o título
   const tituloAtivo = filtro.subcategoria
     ? CATEGORIAS.flatMap(g => g.subcategorias).find(s => s.id === filtro.subcategoria)?.label
     : filtro.categoria
@@ -139,56 +147,74 @@ function Catalogo() {
     <div style={{ backgroundColor: t.bg, color: t.text, minHeight: "100vh" }}>
 
       {toastMsg && (
-        <div className="fixed top-6 right-6 z-50 px-5 py-4 rounded-xl shadow-xl text-white text-sm font-medium flex items-center gap-3"
+        <div className="fixed top-6 right-6 z-50 px-5 py-4 shadow-xl text-white text-sm font-medium flex items-center gap-3"
           style={{ backgroundColor: toastMsg.sucesso ? "#16a34a" : "#dc2626" }}>
           {toastMsg.sucesso ? "✅" : "❌"} {toastMsg.msg}
         </div>
       )}
 
-      <div className="flex gap-10 px-8 md:px-14 py-10">
-        <Sidebar filtro={filtro} setFiltro={setFiltro} />
+      <div style={{ borderBottom: "2px solid " + t.borderForte, backgroundColor: t.bg, padding: "20px 56px" }}>
+        <p className="text-xs uppercase tracking-widest" style={{ color: t.textSecundario }}>
+          {tituloAtivo} — {produtosFiltrados.length} produto{produtosFiltrados.length !== 1 ? "s" : ""}
+        </p>
+      </div>
 
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="text-2xl font-light tracking-widest uppercase" style={{ color: t.text }}>
-              {tituloAtivo}
-            </h1>
-            <p className="text-sm" style={{ color: t.textSecundario }}>
-              {produtosFiltrados.length} produto{produtosFiltrados.length !== 1 ? "s" : ""}
-            </p>
-          </div>
+      <div className="flex" style={{ minHeight: "calc(100vh - 100px)" }}>
+        {/* SIDEBAR */}
+        <div style={{ padding: "32px 0 32px 56px" }}>
+          <Sidebar filtro={filtro} setFiltro={setFiltro} />
+        </div>
 
+        {/* GRID */}
+        <div className="flex-1" style={{ padding: "32px 56px 32px 40px" }}>
           {produtosFiltrados.length === 0 && (
             <p className="text-center py-20" style={{ color: t.textSecundario }}>
               Nenhum produto nesta categoria ainda.
             </p>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {produtosFiltrados.map(produto => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0">
+            {produtosFiltrados.map((produto, idx) => {
               const imagens = produto.imagens?.length > 0
-                ? produto.imagens.map(i => i.imagem) : [produto.imagem];
+                ? produto.imagens.map(i => i.imagem)
+                : [produto.imagem];
               const imagemAtual = imagens[indexImagem[produto.id] || 0];
               const tamanhosComEstoque = produto.estoques?.filter(e => e.quantidade > 0).map(e => e.tamanho) || [];
+              const isComunicacao = produto.categoria === "comunicacao";
+              const col = idx % 4;
+              const qtd = getQtd(produto.id);
 
               return (
                 <div key={produto.id}
+                  style={{
+                    borderRight: col < 3 ? "2px solid " + t.borderForte : "none",
+                    borderBottom: "2px solid " + t.borderForte,
+                    padding: "0 16px 24px 0",
+                    marginRight: col < 3 ? "16px" : "0"
+                  }}
                   onMouseEnter={() => setHoverProduto(produto.id)}
-                  onMouseLeave={() => { setHoverProduto(null); setIndexImagem(prev => ({ ...prev, [produto.id]: 0 })); }}>
+                  onMouseLeave={() => {
+                    setHoverProduto(null);
+                    setIndexImagem(prev => ({ ...prev, [produto.id]: 0 }));
+                  }}>
 
+                  {/* IMAGEM */}
                   <Link to={`/produto/${produto.id}`}>
                     <div className="relative overflow-hidden" style={{ backgroundColor: t.bgSecundario }}>
                       {imagemAtual
-                        ? <img src={imagemAtual} alt={produto.nome}
-                            className="w-full object-cover transition duration-500" style={{ height: "460px" }} />
-                        : <div className="w-full flex items-center justify-center text-5xl" style={{ height: "460px" }}>👕</div>
+                        ? <img src={imagemAtual} alt={produto.nome} className="w-full object-contain transition duration-500"
+                            style={{ height: "360px" }} />
+                        : <div className="w-full flex items-center justify-center text-5xl"
+                            style={{ height: "360px" }}>
+                            {isComunicacao ? "🖼️" : "👕"}
+                          </div>
                       }
                       {imagens.length > 1 && (
                         <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1">
                           {imagens.map((_, i) => (
                             <span key={i} style={{
                               width: "5px", height: "5px", borderRadius: "50%", display: "inline-block",
-                              backgroundColor: (indexImagem[produto.id] || 0) === i ? "white" : "rgba(255,255,255,0.4)",
+                              backgroundColor: (indexImagem[produto.id] || 0) === i ? "white" : "rgba(255,255,255,0.4)"
                             }} />
                           ))}
                         </div>
@@ -196,6 +222,7 @@ function Catalogo() {
                     </div>
                   </Link>
 
+                  {/* INFO */}
                   <div className="mt-3 space-y-2">
                     <Link to={`/produto/${produto.id}`}>
                       <h2 className="text-xs font-semibold uppercase tracking-wide hover:opacity-50 transition"
@@ -206,41 +233,74 @@ function Catalogo() {
                     </p>
 
                     {alertas[produto.id] && (
-                      <div className="rounded px-3 py-1.5 text-xs font-medium flex items-center gap-2"
+                      <div className="px-3 py-1.5 text-xs font-medium flex items-center gap-2"
                         style={{ backgroundColor: "#fff5f5", color: "#dc2626", border: "1px solid #fecaca" }}>
                         ⚠️ Selecione um tamanho
                       </div>
                     )}
 
-                    <div className="flex gap-1.5 flex-wrap">
-                      {tamanhosComEstoque.length > 0
-                        ? tamanhosComEstoque.map(tam => (
-                          <button key={tam}
-                            onClick={() => {
-                              setTamanhosSelecionados(prev => ({ ...prev, [produto.id]: tam }));
-                              setAlertas(prev => ({ ...prev, [produto.id]: false }));
-                            }}
-                            className="px-2.5 py-1 text-xs transition hover:opacity-70"
-                            style={{
-                              border: "1px solid " + (tamanhosSelecionados[produto.id] === tam ? t.text : t.border),
-                              backgroundColor: tamanhosSelecionados[produto.id] === tam ? t.btnPrimarioBg : "transparent",
-                              color: tamanhosSelecionados[produto.id] === tam ? t.btnPrimarioText : t.text,
-                            }}>{tam}</button>
-                        ))
-                        : <p className="text-xs" style={{ color: t.textSecundario }}>Sem estoque</p>
-                      }
+                    {/* Comunicação visual — mostra descrição */}
+                    {isComunicacao ? (
+                      produto.descricao && (
+                        <p className="text-xs uppercase tracking-wide" style={{ color: t.textSecundario }}>
+                          {produto.descricao}
+                        </p>
+                      )
+                    ) : (
+                      // Roupas — botões de tamanho
+                      <div className="flex gap-1.5 flex-wrap">
+                        {tamanhosComEstoque.length > 0
+                          ? tamanhosComEstoque.map(tam => (
+                            <button key={tam}
+                              onClick={() => {
+                                setTamanhosSelecionados(prev => ({ ...prev, [produto.id]: tam }));
+                                setAlertas(prev => ({ ...prev, [produto.id]: false }));
+                              }}
+                              className="px-2.5 py-1 text-xs transition hover:opacity-70"
+                              style={{
+                                border: "1px solid " + (tamanhosSelecionados[produto.id] === tam ? t.text : t.border),
+                                backgroundColor: tamanhosSelecionados[produto.id] === tam ? t.btnPrimarioBg : "transparent",
+                                color: tamanhosSelecionados[produto.id] === tam ? t.btnPrimarioText : t.text,
+                              }}>
+                              {tam}
+                            </button>
+                          ))
+                          : <p className="text-xs" style={{ color: t.textSecundario }}>Sem estoque</p>
+                        }
+                      </div>
+                    )}
+
+                    {/* CONTROLE DE QUANTIDADE */}
+                    <div className="flex items-center gap-0" style={{ border: "1px solid " + t.border, width: "fit-content" }}>
+                      <button
+                        onClick={() => setQtd(produto.id, qtd - 1)}
+                        className="px-2.5 py-1 text-sm font-bold transition hover:opacity-70"
+                        style={{ backgroundColor: t.bgSecundario, color: t.text }}>−</button>
+                      <span className="px-3 py-1 text-sm font-semibold text-center"
+                        style={{ minWidth: "32px", color: t.text, borderLeft: "1px solid " + t.border, borderRight: "1px solid " + t.border }}>
+                        {qtd}
+                      </span>
+                      <button
+                        onClick={() => setQtd(produto.id, qtd + 1)}
+                        className="px-2.5 py-1 text-sm font-bold transition hover:opacity-70"
+                        style={{ backgroundColor: t.bgSecundario, color: t.text }}>+</button>
                     </div>
 
+                    {/* BOTÃO ADICIONAR */}
                     <button
                       onClick={() => {
-                        const tamanho = tamanhosSelecionados[produto.id];
-                        if (!tamanho) {
-                          setAlertas(prev => ({ ...prev, [produto.id]: true }));
-                          setTimeout(() => setAlertas(prev => ({ ...prev, [produto.id]: false })), 3000);
-                          return;
+                        if (!isComunicacao) {
+                          const tamanho = tamanhosSelecionados[produto.id];
+                          if (!tamanho) {
+                            setAlertas(prev => ({ ...prev, [produto.id]: true }));
+                            setTimeout(() => setAlertas(prev => ({ ...prev, [produto.id]: false })), 3000);
+                            return;
+                          }
+                          addToCart(produto, tamanho, qtd);
+                        } else {
+                          addToCart(produto, produto.descricao || "Único", qtd);
                         }
-                        addToCart(produto, tamanho, 1);
-                        mostrarToast(`"${produto.nome}" adicionado!`, true);
+                        mostrarToast(`"${produto.nome}" (x${qtd}) adicionado!`, true);
                       }}
                       className="w-full py-2 text-xs font-semibold uppercase tracking-wide transition hover:opacity-70 mt-1"
                       style={{ backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText }}>

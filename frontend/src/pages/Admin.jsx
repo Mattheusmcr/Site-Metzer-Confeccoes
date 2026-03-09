@@ -2,11 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import api from "../services/api";
 import { useTheme } from "../context/ThemeContext";
 
+const GALERIA_KEY = "metzker_galeria_trabalhos";
+
 function Toast({ mensagem, tipo, onClose }) {
-  useEffect(() => {
-    const t = setTimeout(onClose, 3500);
-    return () => clearTimeout(t);
-  }, [onClose]);
+  useEffect(() => { const t = setTimeout(onClose, 3500); return () => clearTimeout(t); }, [onClose]);
   return (
     <div className="fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white text-sm font-medium flex items-center gap-3"
       style={{ backgroundColor: tipo === "sucesso" ? "#16a34a" : "#dc2626" }}>
@@ -17,18 +16,19 @@ function Toast({ mensagem, tipo, onClose }) {
 
 const CATEGORIAS_ADMIN = [
   {
-    id: "roupas",
-    label: "Item de Roupa",
+    id: "roupas", label: "Item de Roupa",
     subcategorias: [
-      { id: "gola-polo", label: "Gola Polo" },
-      { id: "camisa-comum", label: "Camisa Comum" },
-      { id: "calca", label: "Calça" },
+      { id: "gola-polo", label: "Polos" },
+      { id: "camisa-comum", label: "Camisas" },
+      { id: "calca", label: "Calças" },
     ],
   },
   {
-    id: "comunicacao",
-    label: "Comunicação Visual",
-    subcategorias: [],
+    id: "comunicacao", label: "Comunicação Visual",
+    subcategorias: [
+      { id: "logos", label: "Logos" },
+      { id: "impressoes", label: "Impressões" },
+    ],
   },
 ];
 
@@ -42,7 +42,6 @@ function CadastrarProduto({ mostrarToast, dark, estilos }) {
 
   const inputStyle = { width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid " + inputBorder, backgroundColor: inputBg, color: text, fontSize: "14px", outline: "none", boxSizing: "border-box" };
   const labelStyle = { display: "block", fontSize: "12px", fontWeight: "600", color: subtext, marginBottom: "4px", textTransform: "uppercase" };
-
   const subcatsDisponiveis = CATEGORIAS_ADMIN.find(c => c.id === form.categoria)?.subcategorias || [];
 
   function handleChange(e) {
@@ -51,54 +50,35 @@ function CadastrarProduto({ mostrarToast, dark, estilos }) {
     else setForm(prev => ({ ...prev, [name]: value }));
   }
 
-  function handleImagens(e) {
-    const files = Array.from(e.target.files);
-    setImagens(files);
-    setPreviews(files.map(f => URL.createObjectURL(f)));
-  }
-
   async function handleSubmit() {
     if (!form.nome || !form.preco) { mostrarToast("Preencha nome e preço.", "erro"); return; }
     setLoading(true);
     const fd = new FormData();
-    fd.append("nome", form.nome);
-    fd.append("descricao", form.descricao || "");
-    fd.append("preco", form.preco);
-    fd.append("ativo", "true");
-    fd.append("categoria", form.categoria);
-    fd.append("subcategoria", form.subcategoria);
+    fd.append("nome", form.nome); fd.append("descricao", form.descricao || "");
+    fd.append("preco", form.preco); fd.append("ativo", "true");
+    fd.append("categoria", form.categoria); fd.append("subcategoria", form.subcategoria);
     imagens.forEach(img => fd.append("imagens", img));
     try {
       await api.post("produtos/", fd, { headers: { "Content-Type": "multipart/form-data" } });
       mostrarToast(`"${form.nome}" cadastrado com sucesso!`, "sucesso");
       setForm({ nome: "", descricao: "", preco: "", categoria: "", subcategoria: "" });
       setImagens([]); setPreviews([]);
-    } catch (e) {
-      console.error(e.response?.data);
-      mostrarToast("Erro ao cadastrar. Verifique os dados.", "erro");
-    } finally { setLoading(false); }
+    } catch (e) { console.error(e.response?.data); mostrarToast("Erro ao cadastrar.", "erro"); }
+    finally { setLoading(false); }
   }
 
   return (
     <div style={{ maxWidth: "560px" }}>
       <h2 className="text-xl font-semibold mb-6" style={{ color: text }}>Cadastrar Produto</h2>
       <div className="flex flex-col gap-4">
-        <div>
-          <label style={labelStyle}>Nome *</label>
-          <input name="nome" value={form.nome} onChange={handleChange} placeholder="Ex: Camiseta Polo" style={inputStyle} />
-        </div>
-        <div>
-          <label style={labelStyle}>Descrição</label>
-          <textarea name="descricao" value={form.descricao} onChange={handleChange} rows={3} placeholder="Descreva o produto..." style={{ ...inputStyle, resize: "none" }} />
-        </div>
-        <div>
-          <label style={labelStyle}>Preço *</label>
-          <input type="number" name="preco" value={form.preco} onChange={handleChange} placeholder="129.90" style={inputStyle} />
-        </div>
+        <div><label style={labelStyle}>Nome *</label><input name="nome" value={form.nome} onChange={handleChange} placeholder="Ex: Camiseta Polo" style={inputStyle} /></div>
+        <div><label style={labelStyle}>Descrição {form.categoria === "comunicacao" ? "(ex: Banner 1,5m x 80cm)" : ""}</label>
+          <textarea name="descricao" value={form.descricao} onChange={handleChange} rows={2} placeholder={form.categoria === "comunicacao" ? "Banner 1,5m x 80cm" : "Descreva o produto..."} style={{ ...inputStyle, resize: "none" }} /></div>
+        <div><label style={labelStyle}>Preço *</label><input type="number" name="preco" value={form.preco} onChange={handleChange} placeholder="129.90" style={inputStyle} /></div>
         <div>
           <label style={labelStyle}>Categoria</label>
           <select name="categoria" value={form.categoria} onChange={handleChange} style={{ ...inputStyle, cursor: "pointer" }}>
-            <option value="">— Selecione uma categoria —</option>
+            <option value="">— Selecione —</option>
             {CATEGORIAS_ADMIN.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
           </select>
         </div>
@@ -106,7 +86,7 @@ function CadastrarProduto({ mostrarToast, dark, estilos }) {
           <div>
             <label style={labelStyle}>Subcategoria</label>
             <select name="subcategoria" value={form.subcategoria} onChange={handleChange} style={{ ...inputStyle, cursor: "pointer" }}>
-              <option value="">— Selecione uma subcategoria —</option>
+              <option value="">— Selecione —</option>
               {subcatsDisponiveis.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
             </select>
             {form.subcategoria && (
@@ -123,8 +103,7 @@ function CadastrarProduto({ mostrarToast, dark, estilos }) {
             style={{ border: "2px dashed " + inputBorder, backgroundColor: dark ? "#374151" : "#F9F7F4" }}>
             <span className="text-3xl mb-2">📸</span>
             <span style={{ color: subtext, fontSize: "14px" }}>Clique para selecionar imagens</span>
-            <span style={{ color: subtext, fontSize: "12px", marginTop: "4px" }}>Pode selecionar várias de uma vez</span>
-            <input type="file" multiple accept="image/*" onChange={handleImagens} className="hidden" />
+            <input type="file" multiple accept="image/*" onChange={e => { const f = Array.from(e.target.files); setImagens(f); setPreviews(f.map(x => URL.createObjectURL(x))); }} className="hidden" />
           </label>
           {previews.length > 0 && (
             <div className="flex gap-2 mt-3 flex-wrap">
@@ -157,12 +136,9 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
   const [novasImagens, setNovasImagens] = useState([]);
   const [previews, setPreviews] = useState([]);
 
-  const inputStyle = {
-    padding: "7px 10px", borderRadius: "6px", border: "1px solid " + inputBorder,
-    backgroundColor: inputBg, color: text, fontSize: "13px", outline: "none",
-    width: "100%", boxSizing: "border-box",
-  };
+  const inputStyle = { padding: "7px 10px", borderRadius: "6px", border: "1px solid " + inputBorder, backgroundColor: inputBg, color: text, fontSize: "13px", outline: "none", width: "100%", boxSizing: "border-box" };
   const labelStyle = { fontSize: "11px", color: subtext, display: "block", marginBottom: "3px", textTransform: "uppercase" };
+  const subcatsEdicao = CATEGORIAS_ADMIN.find(c => c.id === editando?.categoria)?.subcategorias || [];
 
   const carregar = useCallback(async () => {
     try { const res = await api.get("produtos/"); setProdutos(res.data); }
@@ -172,17 +148,21 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
 
   useEffect(() => { carregar(); }, [carregar]);
 
-  // Subcategorias disponíveis para a categoria em edição
-  const subcatsEdicao = CATEGORIAS_ADMIN.find(c => c.id === editando?.categoria)?.subcategorias || [];
-
   async function toggleAtivo(p) {
     try {
-      const fd = new FormData();
-      fd.append("ativo", !p.ativo); fd.append("nome", p.nome); fd.append("preco", p.preco);
-      await api.patch(`produtos/${p.id}/`, fd, { headers: { "Content-Type": "multipart/form-data" } });
+      await api.patch(`produtos/${p.id}/`, {
+        nome: p.nome,
+        preco: p.preco,
+        ativo: !p.ativo,
+        categoria: p.categoria || "",
+        subcategoria: p.subcategoria || "",
+      });
       mostrarToast(`"${p.nome}" ${!p.ativo ? "ativado" : "desativado"}!`, "sucesso");
       carregar();
-    } catch { mostrarToast("Erro ao alterar status.", "erro"); }
+    } catch (e) {
+      console.error("toggleAtivo erro:", e.response?.data);
+      mostrarToast("Erro ao alterar status.", "erro");
+    }
   }
 
   async function excluir(p) {
@@ -193,22 +173,36 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
 
   async function salvarEdicao() {
     try {
-      const fd = new FormData();
-      fd.append("nome", editando.nome);
-      fd.append("preco", editando.preco);
-      fd.append("descricao", editando.descricao || "");
-      fd.append("ativo", editando.ativo ? "true" : "false");
-      fd.append("categoria", editando.categoria || "");
-      fd.append("subcategoria", editando.subcategoria || "");
-      novasImagens.forEach(img => fd.append("imagens", img));
-      await api.patch(`produtos/${editando.id}/`, fd, { headers: { "Content-Type": "multipart/form-data" } });
+      if (novasImagens.length > 0) {
+        // Com imagens: usa FormData (multipart)
+        const fd = new FormData();
+        fd.append("nome", editando.nome);
+        fd.append("preco", editando.preco);
+        fd.append("descricao", editando.descricao || "");
+        fd.append("ativo", editando.ativo ? "true" : "false");
+        fd.append("categoria", editando.categoria || "");
+        fd.append("subcategoria", editando.subcategoria || "");
+        novasImagens.forEach(img => fd.append("imagens", img));
+        await api.patch(`produtos/${editando.id}/`, fd, { headers: { "Content-Type": "multipart/form-data" } });
+      } else {
+        // Sem imagens novas: usa JSON puro (garante que campos vazios/string sejam aceitos)
+        await api.patch(`produtos/${editando.id}/`, {
+          nome: editando.nome,
+          preco: editando.preco,
+          descricao: editando.descricao || "",
+          ativo: editando.ativo,
+          categoria: editando.categoria || "",
+          subcategoria: editando.subcategoria || "",
+        });
+      }
       mostrarToast("Produto atualizado!", "sucesso");
-      setEditando(null); setNovasImagens([]); setPreviews([]);
-      carregar();
-    } catch { mostrarToast("Erro ao atualizar.", "erro"); }
+      setEditando(null); setNovasImagens([]); setPreviews([]); carregar();
+    } catch (e) {
+      console.error("Erro ao atualizar:", e.response?.data);
+      mostrarToast("Erro ao atualizar produto.", "erro");
+    }
   }
 
-  // Label legível da categoria/subcategoria atual
   function labelCategoria(p) {
     const cat = CATEGORIAS_ADMIN.find(c => c.id === p.categoria);
     if (!cat) return null;
@@ -225,64 +219,39 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
         {produtos.map(p => (
           <div key={p.id} className="rounded-xl p-4" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
             <div className="flex items-start gap-4">
-
-              {/* MINIATURA */}
               <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0" style={{ backgroundColor: border }}>
-                {p.imagens?.[0]?.imagem
-                  ? <img src={p.imagens[0].imagem} className="w-full h-full object-cover" alt="" />
-                  : <div className="w-full h-full flex items-center justify-center text-2xl">👕</div>}
+                {p.imagens?.[0]?.imagem ? <img src={p.imagens[0].imagem} className="w-full h-full object-cover" alt="" />
+                  : <div className="w-full h-full flex items-center justify-center text-2xl">{p.categoria === "comunicacao" ? "🖼️" : "👕"}</div>}
               </div>
 
-              {/* MODO EDIÇÃO */}
               {editando?.id === p.id ? (
                 <div className="flex-1 space-y-3">
-
-                  {/* LINHA 1 — Nome + Preço */}
                   <div className="grid md:grid-cols-2 gap-3">
-                    <div>
-                      <label style={labelStyle}>Nome</label>
-                      <input value={editando.nome} onChange={e => setEditando({ ...editando, nome: e.target.value })} style={inputStyle} />
-                    </div>
-                    <div>
-                      <label style={labelStyle}>Preço</label>
-                      <input type="number" value={editando.preco} onChange={e => setEditando({ ...editando, preco: e.target.value })} style={inputStyle} />
-                    </div>
+                    <div><label style={labelStyle}>Nome</label><input value={editando.nome} onChange={e => setEditando({ ...editando, nome: e.target.value })} style={inputStyle} /></div>
+                    <div><label style={labelStyle}>Preço</label><input type="number" value={editando.preco} onChange={e => setEditando({ ...editando, preco: e.target.value })} style={inputStyle} /></div>
                   </div>
-
-                  {/* DESCRIÇÃO */}
                   <div>
-                    <label style={labelStyle}>Descrição</label>
+                    <label style={labelStyle}>Descrição {editando.categoria === "comunicacao" ? "(dimensões, ex: 1,5m x 80cm)" : ""}</label>
                     <textarea value={editando.descricao || ""} onChange={e => setEditando({ ...editando, descricao: e.target.value })} rows={2} style={{ ...inputStyle, resize: "none" }} />
                   </div>
-
-                  {/* LINHA 2 — Categoria + Subcategoria */}
                   <div className="grid md:grid-cols-2 gap-3">
                     <div>
                       <label style={labelStyle}>Categoria</label>
-                      <select
-                        value={editando.categoria || ""}
-                        onChange={e => setEditando({ ...editando, categoria: e.target.value, subcategoria: "" })}
-                        style={{ ...inputStyle, cursor: "pointer" }}>
+                      <select value={editando.categoria || ""} onChange={e => setEditando({ ...editando, categoria: e.target.value, subcategoria: "" })} style={{ ...inputStyle, cursor: "pointer" }}>
                         <option value="">— Sem categoria —</option>
                         {CATEGORIAS_ADMIN.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                       </select>
                     </div>
-
                     {subcatsEdicao.length > 0 && (
                       <div>
                         <label style={labelStyle}>Subcategoria</label>
-                        <select
-                          value={editando.subcategoria || ""}
-                          onChange={e => setEditando({ ...editando, subcategoria: e.target.value })}
-                          style={{ ...inputStyle, cursor: "pointer" }}>
+                        <select value={editando.subcategoria || ""} onChange={e => setEditando({ ...editando, subcategoria: e.target.value })} style={{ ...inputStyle, cursor: "pointer" }}>
                           <option value="">— Sem subcategoria —</option>
                           {subcatsEdicao.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                         </select>
                       </div>
                     )}
                   </div>
-
-                  {/* Badge da seleção atual */}
                   {editando.categoria && (
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium"
                       style={{ backgroundColor: dark ? "#374151" : "#F2EDE6", color: text, border: "1px solid " + border }}>
@@ -290,8 +259,6 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
                       {editando.subcategoria && ` › ${subcatsEdicao.find(s => s.id === editando.subcategoria)?.label}`}
                     </div>
                   )}
-
-                  {/* STATUS */}
                   <div className="flex items-center gap-3">
                     <label style={{ ...labelStyle, marginBottom: 0 }}>Visível no catálogo</label>
                     <button onClick={() => setEditando({ ...editando, ativo: !editando.ativo })}
@@ -300,8 +267,6 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
                       {editando.ativo ? "✅ Ativo" : "❌ Inativo"}
                     </button>
                   </div>
-
-                  {/* IMAGENS */}
                   <div>
                     <label style={labelStyle}>Trocar Imagens (substitui todas)</label>
                     <label className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-sm"
@@ -316,23 +281,18 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
                       </div>
                     )}
                   </div>
-
-                  {/* AÇÕES */}
                   <div className="flex gap-2">
                     <button onClick={salvarEdicao} className="px-4 py-2 rounded-lg text-sm font-semibold text-white" style={{ backgroundColor: "#16a34a" }}>Salvar</button>
                     <button onClick={() => { setEditando(null); setNovasImagens([]); setPreviews([]); }}
                       className="px-4 py-2 rounded-lg text-sm font-semibold"
                       style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: text }}>Cancelar</button>
                   </div>
-
                 </div>
               ) : (
-                /* MODO VISUALIZAÇÃO */
                 <>
                   <div className="flex-1">
                     <p className="font-semibold" style={{ color: text }}>{p.nome}</p>
                     <p className="text-sm" style={{ color: subtext }}>R$ {Number(p.preco).toFixed(2)}</p>
-                    {/* Badge de categoria */}
                     {labelCategoria(p) && (
                       <span className="text-xs px-2 py-0.5 rounded-full mt-1 mr-2 inline-block"
                         style={{ backgroundColor: dark ? "#374151" : "#F2EDE6", color: subtext }}>
@@ -373,8 +333,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
   const [aberto, setAberto] = useState(null);
 
   useEffect(() => {
-    api.get("pedidos/")
-      .then(res => setPedidos(res.data))
+    api.get("pedidos/").then(res => setPedidos(res.data))
       .catch(() => mostrarToast("Erro ao carregar pedidos.", "erro"))
       .finally(() => setLoading(false));
   }, []);
@@ -384,7 +343,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
   return (
     <div>
       <h2 className="text-xl font-semibold mb-2" style={{ color: text }}>Pedidos ({pedidos.length})</h2>
-      <p className="text-sm mb-6" style={{ color: subtext }}>Clique em um pedido para ver os detalhes completos.</p>
+      <p className="text-sm mb-6" style={{ color: subtext }}>Clique em um pedido para ver os detalhes.</p>
       {pedidos.length === 0 && <p style={{ color: subtext }}>Nenhum pedido ainda.</p>}
       <div className="space-y-3">
         {pedidos.map(p => {
@@ -392,11 +351,9 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
           const totalPedido = p.total || p.itens?.reduce((acc, i) => acc + parseFloat(i.produto_preco) * i.quantidade, 0) || 0;
           return (
             <div key={p.id} className="rounded-xl overflow-hidden" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
-              <button onClick={() => setAberto(expandido ? null : p.id)}
-                className="w-full p-5 flex items-center justify-between text-left">
+              <button onClick={() => setAberto(expandido ? null : p.id)} className="w-full p-5 flex items-center justify-between text-left">
                 <div className="flex items-center gap-4">
-                  <span className="text-xs px-2 py-1 rounded-lg font-mono"
-                    style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: subtext }}>#{p.id}</span>
+                  <span className="text-xs px-2 py-1 rounded-lg font-mono" style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: subtext }}>#{p.id}</span>
                   <div>
                     <p className="font-semibold" style={{ color: text }}>{p.nome_cliente}</p>
                     <p className="text-xs" style={{ color: subtext }}>{new Date(p.data_pedido).toLocaleString("pt-BR")}</p>
@@ -410,68 +367,47 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
               {expandido && (
                 <div className="px-5 pb-5 space-y-5" style={{ borderTop: "1px solid " + border }}>
                   <div className="grid md:grid-cols-3 gap-4 pt-4">
-                    <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
-                      <p className="text-xs font-bold uppercase mb-3" style={{ color: subtext }}>👤 Cliente</p>
-                      <p className="font-semibold text-sm" style={{ color: text }}>{p.nome_cliente}</p>
-                      <p className="text-sm mt-1" style={{ color: subtext }}>📱 {p.telefone}</p>
-                    </div>
-                    <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
-                      <p className="text-xs font-bold uppercase mb-3" style={{ color: subtext }}>📍 Endereço</p>
-                      {p.rua ? (
-                        <div className="text-sm space-y-0.5" style={{ color: text }}>
-                          <p>{p.rua}, {p.numero}{p.complemento ? ` — ${p.complemento}` : ""}</p>
-                          <p>{p.bairro}</p>
-                          <p>{p.cidade}/{p.estado}</p>
-                          <p style={{ color: subtext }}>CEP: {p.cep}</p>
-                        </div>
-                      ) : <p className="text-sm" style={{ color: subtext }}>Retirada no local</p>}
-                    </div>
-                    <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
-                      <p className="text-xs font-bold uppercase mb-3" style={{ color: subtext }}>💳 Pagamento</p>
-                      <p className="font-semibold text-sm" style={{ color: text }}>{p.forma_pagamento || "Não informado"}</p>
-                      {p.observacao && <p className="text-xs mt-2" style={{ color: subtext }}>📝 {p.observacao}</p>}
-                    </div>
+                    {[
+                      { titulo: "👤 Cliente", conteudo: <><p className="font-semibold text-sm" style={{ color: text }}>{p.nome_cliente}</p><p className="text-sm mt-1" style={{ color: subtext }}>📱 {p.telefone}</p></> },
+                      { titulo: "📍 Endereço", conteudo: p.rua ? <div className="text-sm space-y-0.5" style={{ color: text }}><p>{p.rua}, {p.numero}{p.complemento ? ` — ${p.complemento}` : ""}</p><p>{p.bairro}</p><p>{p.cidade}/{p.estado}</p><p style={{ color: subtext }}>CEP: {p.cep}</p></div> : <p className="text-sm" style={{ color: subtext }}>Retirada no local</p> },
+                      { titulo: "💳 Pagamento", conteudo: <><p className="font-semibold text-sm" style={{ color: text }}>{p.forma_pagamento || "Não informado"}</p>{p.observacao && <p className="text-xs mt-2" style={{ color: subtext }}>📝 {p.observacao}</p>}</> },
+                    ].map(({ titulo, conteudo }) => (
+                      <div key={titulo} className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
+                        <p className="text-xs font-bold uppercase mb-3" style={{ color: subtext }}>{titulo}</p>
+                        {conteudo}
+                      </div>
+                    ))}
                   </div>
                   <div>
                     <p className="text-xs font-bold uppercase mb-3" style={{ color: subtext }}>🛍️ Itens</p>
                     <div className="rounded-lg overflow-hidden" style={{ border: "1px solid " + border }}>
                       <table className="w-full text-sm">
-                        <thead>
-                          <tr style={{ backgroundColor: dark ? "#374151" : "#f3f4f6" }}>
-                            <th className="text-left p-3 font-semibold" style={{ color: text }}>Produto</th>
-                            <th className="text-center p-3 font-semibold" style={{ color: text }}>Tam.</th>
-                            <th className="text-center p-3 font-semibold" style={{ color: text }}>Qtd.</th>
-                            <th className="text-right p-3 font-semibold" style={{ color: text }}>Subtotal</th>
-                          </tr>
-                        </thead>
+                        <thead><tr style={{ backgroundColor: dark ? "#374151" : "#f3f4f6" }}>
+                          <th className="text-left p-3 font-semibold" style={{ color: text }}>Produto</th>
+                          <th className="text-center p-3 font-semibold" style={{ color: text }}>Tam.</th>
+                          <th className="text-center p-3 font-semibold" style={{ color: text }}>Qtd.</th>
+                          <th className="text-right p-3 font-semibold" style={{ color: text }}>Subtotal</th>
+                        </tr></thead>
                         <tbody>
                           {(p.itens || []).map((item, i) => (
                             <tr key={i} style={{ backgroundColor: i % 2 === 0 ? (dark ? "#1f2937" : "#fff") : (dark ? "#111827" : "#f9fafb") }}>
                               <td className="p-3" style={{ color: text }}>{item.produto_nome}</td>
                               <td className="p-3 text-center" style={{ color: subtext }}>{item.tamanho}</td>
                               <td className="p-3 text-center" style={{ color: subtext }}>{item.quantidade}</td>
-                              <td className="p-3 text-right font-medium" style={{ color: text }}>
-                                R$ {(parseFloat(item.produto_preco) * item.quantidade).toFixed(2)}
-                              </td>
+                              <td className="p-3 text-right font-medium" style={{ color: text }}>R$ {(parseFloat(item.produto_preco) * item.quantidade).toFixed(2)}</td>
                             </tr>
                           ))}
                         </tbody>
-                        <tfoot>
-                          <tr style={{ borderTop: "2px solid " + border }}>
-                            <td colSpan={3} className="p-3 text-right font-bold" style={{ color: text }}>Total:</td>
-                            <td className="p-3 text-right font-bold text-base" style={{ color: text }}>
-                              R$ {Number(totalPedido).toFixed(2)}
-                            </td>
-                          </tr>
-                        </tfoot>
+                        <tfoot><tr style={{ borderTop: "2px solid " + border }}>
+                          <td colSpan={3} className="p-3 text-right font-bold" style={{ color: text }}>Total:</td>
+                          <td className="p-3 text-right font-bold text-base" style={{ color: text }}>R$ {Number(totalPedido).toFixed(2)}</td>
+                        </tr></tfoot>
                       </table>
                     </div>
                   </div>
                   <a href={`https://wa.me/55${p.telefone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white"
-                    style={{ backgroundColor: "#16a34a" }}>
-                    💬 Entrar em contato via WhatsApp
-                  </a>
+                    style={{ backgroundColor: "#16a34a" }}>💬 Entrar em contato via WhatsApp</a>
                 </div>
               )}
             </div>
@@ -508,24 +444,10 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
 
   useEffect(() => { carregar(); }, [carregar]);
 
-  function setQtd(prodId, tamanho, qtd) {
-    setValores(prev => ({ ...prev, [prodId]: { ...prev[prodId], [tamanho]: qtd } }));
-  }
-
-  function adicionarTamanho(prodId) {
-    const tam = (novoTamanho[prodId] || "").trim().toUpperCase();
-    if (!tam) { mostrarToast("Digite um tamanho válido.", "erro"); return; }
-    if (valores[prodId]?.[tam] !== undefined) { mostrarToast("Tamanho já existe.", "erro"); return; }
-    setValores(prev => ({ ...prev, [prodId]: { ...prev[prodId], [tam]: 0 } }));
-    setNovoTamanho(prev => ({ ...prev, [prodId]: "" }));
-  }
-
   async function removerTamanho(prodId, tamanho) {
     if (tamanhosOriginais[prodId]?.includes(tamanho)) {
-      try {
-        await api.delete("estoques/remover/", { data: { produto: prodId, tamanho } });
-        setTamanhosOriginais(prev => ({ ...prev, [prodId]: prev[prodId].filter(t => t !== tamanho) }));
-      } catch { mostrarToast("Erro ao remover tamanho.", "erro"); return; }
+      try { await api.delete("estoques/remover/", { data: { produto: prodId, tamanho } }); setTamanhosOriginais(prev => ({ ...prev, [prodId]: prev[prodId].filter(t => t !== tamanho) })); }
+      catch { mostrarToast("Erro ao remover tamanho.", "erro"); return; }
     }
     setValores(prev => { const novo = { ...prev[prodId] }; delete novo[tamanho]; return { ...prev, [prodId]: novo }; });
     mostrarToast(`Tamanho ${tamanho} removido.`, "sucesso");
@@ -534,14 +456,11 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
   async function salvarEstoque(prodId) {
     setSalvando(prev => ({ ...prev, [prodId]: true }));
     try {
-      await Promise.all(
-        Object.entries(valores[prodId] || {}).map(([tamanho, quantidade]) =>
-          api.post("estoques/atualizar/", { produto: prodId, tamanho, quantidade: parseInt(quantidade) || 0 })
-        )
-      );
-      mostrarToast("Estoque salvo com sucesso!", "sucesso");
-      await carregar();
-    } catch (e) { console.error(e.response?.data); mostrarToast("Erro ao salvar estoque.", "erro"); }
+      await Promise.all(Object.entries(valores[prodId] || {}).map(([tamanho, quantidade]) =>
+        api.post("estoques/atualizar/", { produto: prodId, tamanho, quantidade: parseInt(quantidade) || 0 })
+      ));
+      mostrarToast("Estoque salvo!", "sucesso"); await carregar();
+    } catch { mostrarToast("Erro ao salvar estoque.", "erro"); }
     finally { setSalvando(prev => ({ ...prev, [prodId]: false })); }
   }
 
@@ -550,14 +469,26 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
   return (
     <div>
       <h2 className="text-xl font-semibold mb-2" style={{ color: text }}>Gerenciar Estoque</h2>
-      <p className="text-sm mb-6" style={{ color: subtext }}>Adicione os tamanhos e quantidades. Clique em "Salvar Estoque" para confirmar.</p>
+      <p className="text-sm mb-6" style={{ color: subtext }}>
+        Para produtos de <strong>Comunicação Visual</strong>, use os "tamanhos" para informar dimensões (ex: 1,5m x 80cm, A4, A3).
+      </p>
       <div className="space-y-4">
         {produtos.map(p => {
           const tams = Object.keys(valores[p.id] || {});
+          const isComunicacao = p.categoria === "comunicacao";
           return (
             <div key={p.id} className="rounded-xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
-              <p className="font-semibold mb-4" style={{ color: text }}>{p.nome}</p>
-              {tams.length === 0 && <p className="text-sm mb-4" style={{ color: subtext }}>Nenhum tamanho cadastrado ainda.</p>}
+              <div className="flex items-center gap-2 mb-4">
+                <p className="font-semibold" style={{ color: text }}>{p.nome}</p>
+                {isComunicacao && (
+                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "#eff6ff", color: "#2563eb" }}>
+                    🖼️ Comunicação Visual
+                  </span>
+                )}
+              </div>
+              {tams.length === 0 && <p className="text-sm mb-4" style={{ color: subtext }}>
+                {isComunicacao ? "Adicione os formatos disponíveis (ex: A4, Banner 1m, etc)" : "Nenhum tamanho cadastrado ainda."}
+              </p>}
               <div className="flex gap-3 flex-wrap mb-4">
                 {tams.map(tam => (
                   <div key={tam} className="flex flex-col items-center gap-1">
@@ -566,7 +497,7 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
                       <button onClick={() => removerTamanho(p.id, tam)} className="text-xs leading-none" style={{ color: "#ef4444" }}>✕</button>
                     </div>
                     <input type="number" min="0" value={valores[p.id]?.[tam] ?? 0}
-                      onChange={e => setQtd(p.id, tam, e.target.value)}
+                      onChange={e => setValores(prev => ({ ...prev, [p.id]: { ...prev[p.id], [tam]: e.target.value } }))}
                       className="text-center text-sm rounded-lg"
                       style={{ width: "64px", padding: "6px", border: "1px solid " + inputBorder, backgroundColor: inputBg, color: text, outline: "none" }} />
                   </div>
@@ -575,17 +506,18 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
               <div className="flex items-center gap-2 mb-4">
                 <input value={novoTamanho[p.id] || ""}
                   onChange={e => setNovoTamanho(prev => ({ ...prev, [p.id]: e.target.value }))}
-                  onKeyDown={e => e.key === "Enter" && adicionarTamanho(p.id)}
-                  placeholder="P, M, G, XGG, 38..."
-                  style={{ padding: "6px 10px", border: "1px solid " + inputBorder, backgroundColor: inputBg, color: text, outline: "none", width: "150px", borderRadius: "6px", fontSize: "13px" }} />
-                <button onClick={() => adicionarTamanho(p.id)}
-                  className="px-3 py-1.5 text-sm rounded-lg font-medium text-white"
-                  style={{ backgroundColor: "#374151" }}>+ Tamanho</button>
+                  onKeyDown={e => { if (e.key === "Enter") { const tam = (novoTamanho[p.id] || "").trim().toUpperCase(); if (!tam || valores[p.id]?.[tam] !== undefined) return; setValores(prev => ({ ...prev, [p.id]: { ...prev[p.id], [tam]: 0 } })); setNovoTamanho(prev => ({ ...prev, [p.id]: "" })); }}}
+                  placeholder={isComunicacao ? "A4, Banner 1m, 80x60cm..." : "P, M, G, XGG, 38..."}
+                  style={{ padding: "6px 10px", border: "1px solid " + inputBorder, backgroundColor: inputBg, color: text, outline: "none", width: "160px", borderRadius: "6px", fontSize: "13px" }} />
+                <button onClick={() => { const tam = (novoTamanho[p.id] || "").trim().toUpperCase(); if (!tam || valores[p.id]?.[tam] !== undefined) return; setValores(prev => ({ ...prev, [p.id]: { ...prev[p.id], [tam]: 0 } })); setNovoTamanho(prev => ({ ...prev, [p.id]: "" })); }}
+                  className="px-3 py-1.5 text-sm rounded-lg font-medium text-white" style={{ backgroundColor: "#374151" }}>
+                  + {isComunicacao ? "Formato" : "Tamanho"}
+                </button>
               </div>
               <button onClick={() => salvarEstoque(p.id)} disabled={salvando[p.id]}
                 className="px-6 py-2 rounded-lg text-sm font-semibold text-white"
                 style={{ backgroundColor: salvando[p.id] ? "#9ca3af" : "#16a34a", cursor: salvando[p.id] ? "not-allowed" : "pointer" }}>
-                {salvando[p.id] ? "Salvando..." : "💾 Salvar Estoque"}
+                {salvando[p.id] ? "Salvando..." : "💾 Salvar"}
               </button>
             </div>
           );
@@ -597,13 +529,64 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
 
 // ─── INFORMAÇÕES ───────────────────────────────────────────────────────────
 function EditarInfos({ mostrarToast, dark, estilos }) {
-  const { text, subtext, inputBg, inputBorder } = estilos;
+  const { text, subtext, inputBg, inputBorder, cardBg, border } = estilos;
   const [form, setForm] = useState({ whatsapp: "", email: "", endereco: "", cidade: "", atendimento: "" });
+  const [galeria, setGaleria] = useState(() => {
+    try { const s = localStorage.getItem(GALERIA_KEY); return s ? JSON.parse(s) : []; } catch { return []; }
+  });
+  const [novaUrl, setNovaUrl] = useState("");
+  const [novoArquivo, setNovoArquivo] = useState(null);
+  const [novoPreview, setNovoPreview] = useState("");
+
   const inputStyle = { width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid " + inputBorder, backgroundColor: inputBg, color: text, fontSize: "14px", outline: "none", boxSizing: "border-box" };
+  const labelStyle = { display: "block", fontSize: "12px", fontWeight: "600", color: subtext, marginBottom: "4px", textTransform: "uppercase" };
+
+  function salvarGaleria(novaLista) {
+    setGaleria(novaLista);
+    localStorage.setItem(GALERIA_KEY, JSON.stringify(novaLista));
+    // Dispara evento para o Home.jsx atualizar (se estiver aberto em outra aba)
+    window.dispatchEvent(new StorageEvent("storage", { key: GALERIA_KEY, newValue: JSON.stringify(novaLista) }));
+  }
+
+  function adicionarUrl() {
+    if (!novaUrl.trim()) return;
+    salvarGaleria([...galeria, novaUrl.trim()]);
+    setNovaUrl("");
+    mostrarToast("Foto adicionada à galeria!", "sucesso");
+  }
+
+  function adicionarArquivo() {
+    if (!novoArquivo) return;
+    // Converte para base64 e salva (funciona para arquivos locais)
+    const reader = new FileReader();
+    reader.onload = e => {
+      salvarGaleria([...galeria, e.target.result]);
+      setNovoArquivo(null); setNovoPreview("");
+      mostrarToast("Foto adicionada à galeria!", "sucesso");
+    };
+    reader.readAsDataURL(novoArquivo);
+  }
+
+  function removerFoto(idx) {
+    const nova = galeria.filter((_, i) => i !== idx);
+    salvarGaleria(nova);
+    mostrarToast("Foto removida.", "sucesso");
+  }
+
+  function moverFoto(idx, direcao) {
+    const nova = [...galeria];
+    const destino = idx + direcao;
+    if (destino < 0 || destino >= nova.length) return;
+    [nova[idx], nova[destino]] = [nova[destino], nova[idx]];
+    salvarGaleria(nova);
+  }
+
   return (
-    <div style={{ maxWidth: "560px" }}>
+    <div style={{ maxWidth: "640px" }}>
       <h2 className="text-xl font-semibold mb-6" style={{ color: text }}>Editar Informações</h2>
-      <div className="flex flex-col gap-4">
+
+      {/* DADOS DE CONTATO */}
+      <div className="flex flex-col gap-4 mb-8">
         {[
           { key: "whatsapp", label: "WhatsApp", placeholder: "(27) 99885-3043" },
           { key: "email", label: "E-mail", placeholder: "contato@metzker.com" },
@@ -612,7 +595,7 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
           { key: "atendimento", label: "Horário de Atendimento", placeholder: "Segunda a Sexta, 9h às 18h" },
         ].map(({ key, label, placeholder }) => (
           <div key={key}>
-            <label style={{ display: "block", fontSize: "12px", fontWeight: "600", color: subtext, marginBottom: "4px", textTransform: "uppercase" }}>{label}</label>
+            <label style={labelStyle}>{label}</label>
             <input value={form[key]} onChange={e => setForm({ ...form, [key]: e.target.value })} placeholder={placeholder} style={inputStyle} />
           </div>
         ))}
@@ -620,6 +603,81 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
           className="py-3 rounded-lg font-semibold text-white" style={{ backgroundColor: "#000000" }}>
           Salvar Informações
         </button>
+      </div>
+
+      {/* GALERIA DE TRABALHOS */}
+      <div style={{ borderTop: "2px solid " + (dark ? "#374151" : "#E8E0D5"), paddingTop: "32px" }}>
+        <h3 className="text-lg font-semibold mb-1" style={{ color: text }}>🖼️ Galeria de Trabalhos</h3>
+        <p className="text-sm mb-6" style={{ color: subtext }}>
+          Essas fotos aparecem na seção <strong>"Nossos Trabalhos"</strong> da página inicial.
+          São exibidas em grupos de 3, com navegação.
+        </p>
+
+        {/* ADICIONAR POR URL */}
+        <div className="mb-4">
+          <label style={labelStyle}>Adicionar por URL</label>
+          <div className="flex gap-2">
+            <input value={novaUrl} onChange={e => setNovaUrl(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && adicionarUrl()}
+              placeholder="https://exemplo.com/foto.jpg"
+              style={{ ...inputStyle, flex: 1 }} />
+            <button onClick={adicionarUrl}
+              className="px-4 py-2 rounded-lg text-sm font-semibold text-white shrink-0"
+              style={{ backgroundColor: "#374151" }}>Adicionar</button>
+          </div>
+        </div>
+
+        {/* ADICIONAR POR ARQUIVO */}
+        <div className="mb-6">
+          <label style={labelStyle}>Adicionar por Arquivo</label>
+          <div className="flex gap-2 items-center">
+            <label className="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg text-sm"
+              style={{ border: "1px dashed " + inputBorder, color: subtext, backgroundColor: dark ? "#374151" : "#F9F7F4" }}>
+              📁 Escolher arquivo
+              <input type="file" accept="image/*" className="hidden"
+                onChange={e => { const f = e.target.files[0]; if (!f) return; setNovoArquivo(f); setNovoPreview(URL.createObjectURL(f)); }} />
+            </label>
+            {novoPreview && (
+              <img src={novoPreview} className="w-12 h-12 object-cover rounded-lg"
+                style={{ border: "1px solid " + inputBorder }} alt="preview" />
+            )}
+            {novoArquivo && (
+              <button onClick={adicionarArquivo}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-white"
+                style={{ backgroundColor: "#16a34a" }}>Adicionar</button>
+            )}
+          </div>
+        </div>
+
+        {/* LISTA DE FOTOS */}
+        {galeria.length === 0 && (
+          <p className="text-sm py-6 text-center" style={{ color: subtext }}>
+            Nenhuma foto na galeria ainda. Adicione acima.
+          </p>
+        )}
+        <div className="space-y-2">
+          {galeria.map((url, i) => (
+            <div key={i} className="flex items-center gap-3 p-3 rounded-xl"
+              style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
+              <img src={url} className="w-14 h-14 object-cover rounded-lg shrink-0"
+                style={{ border: "1px solid " + border }} alt={`Trabalho ${i + 1}`} />
+              <span className="flex-1 text-xs truncate" style={{ color: subtext }}>
+                Foto {i + 1}
+              </span>
+              <div className="flex gap-1 shrink-0">
+                <button onClick={() => moverFoto(i, -1)} disabled={i === 0}
+                  className="w-7 h-7 rounded flex items-center justify-center text-sm transition hover:opacity-70"
+                  style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: text, opacity: i === 0 ? 0.3 : 1 }}>↑</button>
+                <button onClick={() => moverFoto(i, 1)} disabled={i === galeria.length - 1}
+                  className="w-7 h-7 rounded flex items-center justify-center text-sm transition hover:opacity-70"
+                  style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: text, opacity: i === galeria.length - 1 ? 0.3 : 1 }}>↓</button>
+                <button onClick={() => removerFoto(i)}
+                  className="w-7 h-7 rounded flex items-center justify-center text-xs transition hover:opacity-70"
+                  style={{ backgroundColor: "#fef2f2", color: "#dc2626" }}>✕</button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -639,18 +697,10 @@ export default function Admin() {
   const [abaAtiva, setAbaAtiva] = useState("cadastrar");
   const [toast, setToast] = useState(null);
 
-  const bg     = dark ? "#111827" : "#ffffff";
-  const text   = dark ? "#ffffff" : "#000000";
+  const bg = dark ? "#111827" : "#ffffff";
+  const text = dark ? "#ffffff" : "#000000";
   const border = dark ? "#374151" : "#e5e7eb";
-
-  const estilos = {
-    text,
-    subtext:     dark ? "#9ca3af" : "#6b7280",
-    cardBg:      dark ? "#1f2937" : "#f9fafb",
-    border,
-    inputBg:     dark ? "#374151" : "#ffffff",
-    inputBorder: dark ? "#4b5563" : "#d1d5db",
-  };
+  const estilos = { text, subtext: dark ? "#9ca3af" : "#6b7280", cardBg: dark ? "#1f2937" : "#f9fafb", border, inputBg: dark ? "#374151" : "#ffffff", inputBorder: dark ? "#4b5563" : "#d1d5db" };
 
   function mostrarToast(mensagem, tipo) { setToast({ mensagem, tipo }); }
   const props = { mostrarToast, dark, estilos };
@@ -664,11 +714,9 @@ export default function Admin() {
           {abas.map(aba => (
             <button key={aba.id} onClick={() => setAbaAtiva(aba.id)}
               className="px-4 py-2 rounded-lg text-sm font-medium transition"
-              style={{
-                backgroundColor: abaAtiva === aba.id ? (dark ? "#ffffff" : "#000000") : (dark ? "#1f2937" : "#f3f4f6"),
+              style={{ backgroundColor: abaAtiva === aba.id ? (dark ? "#ffffff" : "#000000") : (dark ? "#1f2937" : "#f3f4f6"),
                 color: abaAtiva === aba.id ? (dark ? "#000000" : "#ffffff") : text,
-                border: "1px solid " + (abaAtiva === aba.id ? "transparent" : border),
-              }}>
+                border: "1px solid " + (abaAtiva === aba.id ? "transparent" : border) }}>
               {aba.label}
             </button>
           ))}
