@@ -1,79 +1,20 @@
-# ─────────────────────────────────────────
-# BACKEND — Django
-# ─────────────────────────────────────────
-
-# Variáveis de ambiente (NUNCA suba isso)
-backend/.env
-backend/.env.*
-!backend/.env.example
-
-# Segredos e configurações locais
-backend/metzker/settings_local.py
-
-# Banco de dados local
-backend/db.sqlite3
-*.sqlite3
-
-# Arquivos de mídia (imagens enviadas pelos usuários)
-backend/media/
-
-# Cache Python
-backend/__pycache__/
-backend/**/__pycache__/
-*.py[cod]
+# Python
+__pycache__/
+*.pyc
 *.pyo
-*.pyd
-.Python
+.env
+venv/
+env/
 
-# Ambiente virtual Python
-backend/venv/
-backend/env/
-backend/.venv/
-
-# Arquivos estáticos coletados (gerados pelo collectstatic)
+# Django
+backend/media/
 backend/staticfiles/
+db.sqlite3
 
-# Logs
-*.log
-backend/logs/
-
-# Arquivos do sistema
-.DS_Store
-Thumbs.db
-
-# ─────────────────────────────────────────
-# FRONTEND — React / Vite
-# ─────────────────────────────────────────
-
-# Variáveis de ambiente (NUNCA suba isso)
-frontend/.env
-frontend/.env.local
-frontend/.env.production
-!frontend/.env.example
-
-# Dependências (pesadas demais para o Git)
+# Node
 frontend/node_modules/
-
-# Build de produção (gerado pelo npm run build)
 frontend/dist/
 
-# Cache do Vite
-frontend/.vite/
-
-# ─────────────────────────────────────────
-# EDITORES E IDEs
-# ─────────────────────────────────────────
+# IDEs
 .vscode/
 .idea/
-*.swp
-*.swo
-
-# ─────────────────────────────────────────
-# SISTEMA OPERACIONAL
-# ─────────────────────────────────────────
-.DS_Store
-.DS_Store?
-._*
-Thumbs.db
-ehthumbs.db
-Desktop.ini

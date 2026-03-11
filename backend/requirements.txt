@@ -1,0 +1,14 @@
+django>=4.2,<5.0
+djangorestframework
+djangorestframework-simplejwt
+django-cors-headers
+django-mssql-backend
+pyodbc
+python-dotenv
+Pillow
+gunicorn
+whitenoise
+dj-database-url
+psycopg2-binary
+cloudinary
+django-cloudinary-storage

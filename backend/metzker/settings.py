@@ -3,16 +3,11 @@ import os
 from datetime import timedelta
 from dotenv import load_dotenv
 
-# Carrega o .env antes de tudo
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-#Se não encontrar, usa o texto como fallback, é só um aviso visual
-SECRET_KEY = os.environ.get(
-    'DJANGO_SECRET_KEY',
-    'dev-secret-key-troque-em-producao'
-)
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dev-secret-key-troque-em-producao')
 
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
@@ -29,6 +24,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'cloudinary_storage',
+    'cloudinary',
     'core',
 ]
 
@@ -36,12 +33,12 @@ if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
 else:
     CORS_ALLOWED_ORIGINS = os.environ.get(
-        'CORS_ALLOWED_ORIGINS',
-        'https://seudominio.com.br'
+        'CORS_ALLOWED_ORIGINS', 'http://localhost:5173'
     ).split(',')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -71,19 +68,30 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'metzker.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'mssql',
-        'NAME': os.environ.get('DB_NAME', 'metzker_db'),
-        'USER': os.environ.get('DB_USER', 'metzker-confeccoes'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', r'DESKTOP-7MP41GP\SQLEXPRESS'),
-        'OPTIONS': {
-            'driver': 'ODBC Driver 17 for SQL Server',
-            'trusted_connection': 'yes',
+# ── BANCO DE DADOS ──────────────────────────────────────────────────────────
+# Em produção usa PostgreSQL (Railway), em dev usa SQL Server local
+if os.environ.get('DATABASE_URL'):
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.environ.get('DATABASE_URL'),
+            conn_max_age=600,
+        )
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'mssql',
+            'NAME': os.environ.get('DB_NAME', 'metzker_db'),
+            'USER': os.environ.get('DB_USER', 'metzker-confeccoes'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', r'DESKTOP-7MP41GP\SQLEXPRESS'),
+            'OPTIONS': {
+                'driver': 'ODBC Driver 17 for SQL Server',
+                'trusted_connection': 'yes',
+            },
         },
-    },
-}
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -97,11 +105,23 @@ TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
 USE_TZ = True
 
+# ── ARQUIVOS ESTÁTICOS ──────────────────────────────────────────────────────
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# ── MÍDIA / IMAGENS DOS PRODUTOS ────────────────────────────────────────────
+# Em produção usa Cloudinary, em dev usa pasta local
+if os.environ.get('CLOUDINARY_URL'):
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+        'API_KEY':    os.environ.get('CLOUDINARY_API_KEY'),
+        'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+    }
+else:
+    MEDIA_URL  = '/media/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -120,9 +140,9 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=2),
+    'ACCESS_TOKEN_LIFETIME':  timedelta(hours=2),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': True,
+    'ROTATE_REFRESH_TOKENS':  True,
     'BLACKLIST_AFTER_ROTATION': False,
     'ALGORITHM': 'HS256',
     'AUTH_HEADER_TYPES': ('Bearer',),
