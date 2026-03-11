@@ -12,10 +12,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# CACHE_BUST=2 — força rebuild desta camada
-ARG CACHE_BUST=2
+# Coleta arquivos estáticos
+ARG CACHE_BUST=3
 RUN DATABASE_URL=sqlite:///tmp/build.db python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
-CMD python manage.py migrate && gunicorn metzker.wsgi --bind 0.0.0.0:$PORT --log-file -
+# Roda migrations + cria admin + sobe servidor
+CMD python manage.py migrate && python create_admin.py && gunicorn metzker.wsgi --bind 0.0.0.0:$PORT --log-file -
