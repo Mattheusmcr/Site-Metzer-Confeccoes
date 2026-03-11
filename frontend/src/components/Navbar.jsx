@@ -28,7 +28,7 @@ function Navbar() {
 
           <div className="flex items-center gap-10">
             <Link to="/">
-              <img src="/Site-Metzer-Confeccoes/LogoEmpresaMetzker.jpg" alt="Logo Metzker"
+              <img src="/LogoEmpresaMetzker.jpg" alt="Logo Metzker"
                 className="h-12 object-contain"
                 onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "block"; }} />
               <span style={{ display: "none", color: t.text, fontWeight: "700", fontSize: "20px", letterSpacing: "4px" }}>
