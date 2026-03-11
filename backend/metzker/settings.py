@@ -112,7 +112,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # ── MÍDIA / IMAGENS DOS PRODUTOS ────────────────────────────────────────────
 # Em produção usa Cloudinary, em dev usa pasta local
-if os.environ.get('CLOUDINARY_URL'):
+if os.environ.get('CLOUDINARY_CLOUD_NAME'):
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
     CLOUDINARY_STORAGE = {
         'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),

@@ -2,5 +2,8 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "installCommand": "npm install --include=optional",
-  "buildCommand": "npm run build"
+  "buildCommand": "npm run build",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }

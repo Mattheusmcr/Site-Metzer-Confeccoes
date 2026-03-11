@@ -17,7 +17,7 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <CartProvider>
-          <BrowserRouter basename="/Site-Metzer-Confeccoes">
+          <BrowserRouter basename="/">
             <Navbar />
             <Routes>
               <Route path="/" element={<Home />} />
