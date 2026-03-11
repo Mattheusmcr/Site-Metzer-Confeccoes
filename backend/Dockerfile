@@ -15,11 +15,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copia o projeto
 COPY . .
 
-# Coleta arquivos estáticos
-RUN python manage.py collectstatic --noinput
+# Coleta arquivos estáticos — usa sqlite temporário só para não precisar do banco real
+RUN DATABASE_URL=sqlite:///tmp/build.db python manage.py collectstatic --noinput
 
 # Expõe a porta
 EXPOSE 8000
 
-# Inicia o servidor
-CMD gunicorn metzker.wsgi --bind 0.0.0.0:$PORT --log-file -
+# Script de inicialização: roda migrate e depois sobe o servidor
+CMD python manage.py migrate && gunicorn metzker.wsgi --bind 0.0.0.0:$PORT --log-file -
