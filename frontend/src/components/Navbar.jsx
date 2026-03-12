@@ -37,9 +37,9 @@ function Navbar() {
             </Link>
 
             <nav className="hidden md:flex gap-8 text-xs font-semibold tracking-widest">
-              <Link to="/" style={{ color: t.text }} className="hover:opacity-50 transition">INÍCIO</Link>
-              <Link to="/catalogo" style={{ color: t.text }} className="hover:opacity-50 transition">CATÁLOGO</Link>
-              <Link to="/infos" style={{ color: t.text }} className="hover:opacity-50 transition">INFORMAÇÕES</Link>
+              <Link to="/" style={{ color: t.text }} className="hover:opacity-50 transition">HOME</Link>
+              <Link to="/catalogo" style={{ color: t.text }} className="hover:opacity-50 transition">PORTFÓLIO</Link>
+              <Link to="/infos" style={{ color: t.text }} className="hover:opacity-50 transition">CONTATO</Link>
               <Link to="/pedidos" style={{ color: t.text }} className="hover:opacity-50 transition">PEDIDOS</Link>
               {isAdmin && <Link to="/admin" style={{ color: "#dc2626" }} className="hover:opacity-70 transition">ADMIN</Link>}
             </nav>
