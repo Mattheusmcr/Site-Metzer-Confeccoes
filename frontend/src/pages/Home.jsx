@@ -69,7 +69,7 @@ function Home() {
         <div className="absolute inset-0" style={{ backgroundColor: "rgba(0,0,0,0.52)" }} />
         <div className="relative z-10 px-6">
           <p className="text-xs uppercase tracking-widest mb-4" style={{ color: "rgba(255,255,255,0.55)" }}>
-            Metzker Confecções
+            Metzker Têxtil e Comunicações Visuais
           </p>
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
             Veste quem tem estilo.
