@@ -195,7 +195,7 @@ function Home() {
         </div>
         <div style={{ borderTop: "1px solid " + t.borderForte, marginTop: "48px", paddingTop: "24px" }}>
           <p className="text-center text-xs" style={{ color: t.textSecundario }}>
-            &copy; {new Date().getFullYear()} Metzker Têxtil e Comunicações Visuais
+            &copy; {new Date().getFullYear()} - Direitos Reservados pelo desenvolvedor Matheus Costa Rodrigues
           </p>
         </div>
       </footer>
