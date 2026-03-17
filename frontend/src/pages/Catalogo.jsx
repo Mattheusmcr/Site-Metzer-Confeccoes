@@ -22,7 +22,8 @@ const CATEGORIAS = [
   {
     id: "comunicacao", label: "COMUNICAÇÃO VISUAL",
     subcategorias: [
-      { id: "logos",     label: "Logos"      },
+      { id: "logos",      label: "Logos"      },
+      { id: "logos-acm",  label: "Logos ACM"  },
       { id: "impressoes", label: "Impressões" },
     ],
   },

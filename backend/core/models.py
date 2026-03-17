@@ -23,6 +23,7 @@ class Produto(models.Model):
         ('calca', 'Calça'),
         ('logos', 'Logos'),
         ('impressoes', 'Impressões'),
+        ('logos-acm', 'Logos ACM'),
     ]
 
     nome = models.CharField(max_length=200)

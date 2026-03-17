@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Personalizado from "./pages/Personalizado";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Catalogo from "./pages/Catalogo";
@@ -24,6 +25,7 @@ function App() {
               <Route path="/catalogo" element={<Catalogo />} />
               <Route path="/infos" element={<Infos />} />
               <Route path="/pedidos" element={<Pedidos />} />
+          <Route path="/personalizado" element={<Personalizado />} />
               <Route path="/produto/:id" element={<ProdutoDetalhe />} />
               <Route path="/admin-login" element={<AdminLogin />} />
               <Route

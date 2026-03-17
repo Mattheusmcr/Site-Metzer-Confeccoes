@@ -27,6 +27,7 @@ const CATEGORIAS_ADMIN = [
     id: "comunicacao", label: "Comunicação Visual",
     subcategorias: [
       { id: "logos", label: "Logos" },
+      { id: "logos-acm", label: "Logos ACM" },
       { id: "impressoes", label: "Impressões" },
     ],
   },

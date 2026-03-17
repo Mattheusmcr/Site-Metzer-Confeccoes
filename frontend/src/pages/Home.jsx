@@ -59,12 +59,7 @@ function Home() {
   return (
     <div style={{ backgroundColor: t.bg, color: t.text }}>
 
-      {/*
-      ══════════════════════════════════════════════════════════════
-      SEÇÃO HERO (carrossel de imagens com título) — COMENTADA
-      Para reativar: remova este bloco de comentário
-      ══════════════════════════════════════════════════════════════
-
+      {/* ── HERO ── */}
       <section className="h-screen flex flex-col justify-center items-center text-center relative overflow-hidden"
         style={{ backgroundImage: `url(${heroImages[heroAtual]})`, backgroundSize: "cover", backgroundPosition: "center", transition: "background-image 0.8s ease" }}>
         <div className="absolute inset-0" style={{ backgroundColor: "rgba(0,0,0,0.52)" }} />
@@ -94,7 +89,6 @@ function Home() {
       </section>
 
       <Divisor />
-      */}
 
       {/* ── SOBRE ── */}
       <section className="py-20 px-10 text-center" style={{ backgroundColor: t.bgSecundario }}>
