@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 const heroImages = [
@@ -28,23 +28,6 @@ function Divisor() {
   return <div style={{ borderTop: "2px solid " + t.borderForte }} />;
 }
 
-// Hook para animação de entrada ao fazer scroll
-function useScrollReveal() {
-  const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
-      { threshold: 0.15 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
-
-  return [ref, visible];
-}
-
 function Home() {
   const [heroAtual, setHeroAtual] = useState(0);
   const [galeriaIndex, setGaleriaIndex] = useState(0);
@@ -54,11 +37,6 @@ function Home() {
       return salvo ? JSON.parse(salvo) : GALERIA_PADRAO;
     } catch { return GALERIA_PADRAO; }
   });
-
-  const [sobreRef, sobreVisible] = useScrollReveal();
-  const [historiaRef, historiaVisible] = useScrollReveal();
-  const [timelineRef, timelineVisible] = useScrollReveal();
-  const [galeriaRef, galeriaVisible] = useScrollReveal();
 
   useEffect(() => {
     const timer = setInterval(() => setHeroAtual(c => (c + 1) % heroImages.length), 4000);
@@ -77,13 +55,6 @@ function Home() {
 
   const FOTOS_POR_SLIDE = 3;
   const totalSlides = Math.ceil(galeria.length / FOTOS_POR_SLIDE);
-
-  const timeline = [
-    { ano: "2015", titulo: "O Início", texto: "A Metzker nasceu do sonho de oferecer confecções de qualidade para Vila Velha e região, com atendimento próximo e personalizado." },
-    { ano: "2018", titulo: "Crescimento", texto: "Expandimos nosso catálogo com novas peças e passamos a atender clientes de todo o Espírito Santo." },
-    { ano: "2021", titulo: "Comunicação Visual", texto: "Ampliamos para serviços de comunicação visual, atendendo empresas com banners, logos e impressões personalizadas." },
-    { ano: "2024", titulo: "Presença Digital", texto: "Lançamos nossa loja online para atender clientes em todo o Brasil com a mesma qualidade de sempre." },
-  ];
 
   return (
     <div style={{ backgroundColor: t.bg, color: t.text }}>
@@ -119,121 +90,40 @@ function Home() {
 
       <Divisor />
 
-      {/* ── SOBRE NÓS ── */}
-      <section ref={sobreRef} className="py-24 px-10" style={{ backgroundColor: t.bgSecundario }}>
-        <div className="max-w-6xl mx-auto">
-          {/* Título centralizado grande */}
-          <div className="text-center mb-20"
-            style={{ opacity: sobreVisible ? 1 : 0, transform: sobreVisible ? "translateY(0)" : "translateY(40px)", transition: "all 0.8s ease" }}>
-            <p className="text-xs uppercase tracking-widest mb-4" style={{ color: t.textSecundario }}>Quem Somos</p>
-            <h2 className="font-bold" style={{ fontSize: "clamp(2.5rem, 6vw, 5rem)", letterSpacing: "-0.02em", color: t.text, lineHeight: 1 }}>
-              NOSSA HISTÓRIA
-            </h2>
-            <div style={{ width: "60px", height: "2px", backgroundColor: t.borderForte, margin: "24px auto 0" }} />
-          </div>
-
-          {/* Duas colunas — texto + imagem */}
-          <div ref={historiaRef} className="grid md:grid-cols-2 gap-16 items-center mb-24"
-            style={{ opacity: historiaVisible ? 1 : 0, transform: historiaVisible ? "translateX(0)" : "translateX(-40px)", transition: "all 0.9s ease 0.2s" }}>
-            <div>
-              <p className="text-xs uppercase tracking-widest mb-6" style={{ color: t.textSecundario }}>Nossa Missão</p>
-              <h3 className="text-3xl font-bold mb-6 leading-tight" style={{ color: t.text }}>
-                Vestir com qualidade,<br />atender com carinho.
-              </h3>
-              <p className="text-lg leading-relaxed mb-6" style={{ color: t.textSecundario }}>
-                Somos uma empresa familiar localizada em Vila Velha, especializada em confecções de alta qualidade.
-                Trabalhamos com dedicação, atenção aos detalhes e compromisso com a satisfação dos nossos clientes.
-              </p>
-              <p className="text-lg leading-relaxed" style={{ color: t.textSecundario }}>
-                Cada peça é pensada para combinar conforto, estilo e durabilidade — porque acreditamos que moda
-                de qualidade deve estar ao alcance de todos.
-              </p>
-              <div className="flex gap-10 mt-10">
-                {[{ num: "9+", label: "Anos de experiência" }, { num: "500+", label: "Clientes satisfeitos" }, { num: "1000+", label: "Peças produzidas" }].map(({ num, label }) => (
-                  <div key={label}>
-                    <p className="text-3xl font-bold" style={{ color: t.text }}>{num}</p>
-                    <p className="text-xs uppercase tracking-wider mt-1" style={{ color: t.textSecundario }}>{label}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="relative">
-              <div style={{ height: "480px", backgroundColor: t.border, overflow: "hidden", border: "2px solid " + t.borderForte }}>
-                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=800"
-                  alt="Metzker Confecções" className="w-full h-full object-cover" />
-              </div>
-              {/* Caixa decorativa sobreposta */}
-              <div className="absolute -bottom-6 -left-6 w-32 h-32 flex items-center justify-center"
-                style={{ backgroundColor: t.text, color: "#FAF8F5" }}>
-                <div className="text-center">
-                  <p className="text-2xl font-bold">Vila</p>
-                  <p className="text-2xl font-bold">Velha</p>
-                  <p className="text-xs tracking-widest mt-1" style={{ color: t.border }}>ES</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* LINHA DO TEMPO */}
-          <div ref={timelineRef}>
-            <p className="text-xs uppercase tracking-widest mb-12 text-center" style={{ color: t.textSecundario }}>Nossa trajetória</p>
-            <div className="relative">
-              {/* Linha central */}
-              <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px"
-                style={{ backgroundColor: t.borderForte, transform: "translateX(-50%)" }} />
-
-              <div className="space-y-12">
-                {timeline.map((item, i) => (
-                  <div key={item.ano}
-                    style={{
-                      opacity: timelineVisible ? 1 : 0,
-                      transform: timelineVisible ? "translateY(0)" : "translateY(30px)",
-                      transition: `all 0.7s ease ${i * 0.15}s`
-                    }}
-                    className={`flex items-start gap-8 md:gap-0 ${i % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"}`}>
-
-                    {/* Conteúdo */}
-                    <div className={`flex-1 ${i % 2 === 0 ? "md:pr-16 md:text-right" : "md:pl-16"}`}>
-                      <div className="inline-block px-6 py-5"
-                        style={{ backgroundColor: t.bgCard, border: "1px solid " + t.border, maxWidth: "420px" }}>
-                        <p className="text-2xl font-bold mb-1" style={{ color: t.text }}>{item.ano}</p>
-                        <p className="text-xs uppercase tracking-widest mb-3" style={{ color: t.textSecundario }}>{item.titulo}</p>
-                        <p className="text-sm leading-relaxed" style={{ color: t.textSecundario }}>{item.texto}</p>
-                      </div>
-                    </div>
-
-                    {/* Ponto central */}
-                    <div className="hidden md:flex items-center justify-center w-4 h-4 rounded-full shrink-0 mt-5"
-                      style={{ backgroundColor: t.text, border: "3px solid " + t.bgSecundario, zIndex: 1 }} />
-
-                    {/* Espaço do outro lado */}
-                    <div className="flex-1 hidden md:block" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* ── SOBRE ── */}
+      <section className="py-20 px-10 text-center" style={{ backgroundColor: t.bgSecundario }}>
+        <p className="text-xs uppercase tracking-widest mb-3" style={{ color: t.textSecundario }}>Quem Somos</p>
+        <h2 className="text-4xl font-bold mb-6" style={{ color: t.text }}>Sobre Nós</h2>
+        <p className="max-w-3xl mx-auto text-lg leading-relaxed" style={{ color: t.textSecundario }}>
+          Somos uma empresa familiar localizada em Vila Velha, especializada em confecções de alta qualidade.
+          Trabalhamos com dedicação, atenção aos detalhes e compromisso com a satisfação dos nossos clientes.
+        </p>
       </section>
+
+      {/*
+      ══════════════════════════════════════════════════════════════
+      SEÇÃO "NOSSA HISTÓRIA" COM LINHA DO TEMPO — COMENTADA
+      Para reativar: remova o bloco de comentário JSX abaixo
+      ══════════════════════════════════════════════════════════════
+
+      <Divisor />
+      <section className="py-24 px-10" style={{ backgroundColor: t.bgSecundario }}>
+        ... (seção completa com timeline, números e foto) ...
+      </section>
+      */}
 
       <Divisor />
 
       {/* ── PORTFÓLIO ── */}
-      <section ref={galeriaRef} className="py-24 px-10" style={{ backgroundColor: t.bg }}>
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16"
-            style={{ opacity: galeriaVisible ? 1 : 0, transform: galeriaVisible ? "translateY(0)" : "translateY(30px)", transition: "all 0.8s ease" }}>
-            <p className="text-xs uppercase tracking-widest mb-3" style={{ color: t.textSecundario }}>Portfólio</p>
-            <h2 className="text-4xl font-bold" style={{ color: t.text }}>Nossos Trabalhos</h2>
-          </div>
+      <section className="py-24 px-10" style={{ backgroundColor: t.bg }}>
+        <p className="text-xs uppercase tracking-widest text-center mb-3" style={{ color: t.textSecundario }}>Portfólio</p>
+        <h2 className="text-4xl font-bold text-center mb-16" style={{ color: t.text }}>Nossos Trabalhos</h2>
 
+        <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-3" style={{ gap: "20px" }}>
             {galeria.slice(galeriaIndex * FOTOS_POR_SLIDE, galeriaIndex * FOTOS_POR_SLIDE + FOTOS_POR_SLIDE).map((url, i) => (
               <div key={i} className="overflow-hidden"
-                style={{ border: "2px solid " + t.borderForte, height: "300px",
-                  opacity: galeriaVisible ? 1 : 0,
-                  transform: galeriaVisible ? "translateY(0)" : "translateY(20px)",
-                  transition: `all 0.6s ease ${i * 0.1}s` }}>
+                style={{ border: "2px solid " + t.borderForte, height: "300px" }}>
                 <img src={url} alt={`Trabalho ${i + 1}`}
                   className="w-full h-full object-cover transition duration-500 hover:scale-105" />
               </div>

@@ -10,13 +10,12 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# CACHE_BUST — incrementar este número força rebuild completo a partir daqui
+ARG CACHE_BUST=20
 COPY . .
 
-# Coleta arquivos estáticos
-ARG CACHE_BUST=10
 RUN DATABASE_URL=sqlite:///tmp/build.db python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
-# Roda migrations + cria admin + sobe servidor
 CMD python manage.py migrate && python create_admin.py && gunicorn metzker.wsgi --bind 0.0.0.0:$PORT --log-file -
