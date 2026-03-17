@@ -50,6 +50,7 @@ export default function Personalizado() {
     referencia: "",
     observacoes: "",
     quantidade: 1,
+    fotos: [],
   });
   const [enviado, setEnviado] = useState(false);
 
@@ -87,6 +88,7 @@ export default function Personalizado() {
     `.trim();
 
     const encoded = encodeURIComponent(msg);
+    // Fotos são enviadas separadamente pelo WhatsApp após o texto
     window.open(`https://wa.me/5527997878391?text=${encoded}`, "_blank");
     setEnviado(true);
   }
@@ -293,6 +295,39 @@ export default function Personalizado() {
                   />
                 </div>
 
+                <div className="mb-6">
+                  <label className="block text-xs uppercase tracking-wider mb-2" style={{ color: t.textSecundario }}>
+                    Fotos de modelo / referência visual (opcional)
+                  </label>
+                  <label className="flex flex-col items-center justify-center cursor-pointer py-8 transition hover:opacity-80"
+                    style={{ border: "2px dashed " + t.borderForte, backgroundColor: t.bgCard }}>
+                    <span className="text-3xl mb-2">📸</span>
+                    <span className="text-sm font-medium" style={{ color: t.text }}>Clique para selecionar imagens</span>
+                    <span className="text-xs mt-1" style={{ color: t.textSecundario }}>PNG, JPG, JPEG — até 5 arquivos</span>
+                    <input type="file" multiple accept="image/*" className="hidden"
+                      onChange={e => {
+                        const files = Array.from(e.target.files).slice(0, 5);
+                        const previews = files.map(f => ({ file: f, url: URL.createObjectURL(f) }));
+                        setForm(prev => ({ ...prev, fotos: previews }));
+                      }} />
+                  </label>
+                  {form.fotos?.length > 0 && (
+                    <div className="flex gap-2 flex-wrap mt-3">
+                      {form.fotos.map((foto, i) => (
+                        <div key={i} className="relative group">
+                          <img src={foto.url} alt={`Referência ${i+1}`}
+                            className="object-cover"
+                            style={{ width: "80px", height: "80px", border: "1px solid " + t.border }} />
+                          <button
+                            onClick={() => setForm(prev => ({ ...prev, fotos: prev.fotos.filter((_, j) => j !== i) }))}
+                            className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100"
+                            style={{ backgroundColor: "#ef4444", color: "white" }}>✕</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex gap-3">
                   <button onClick={() => setEtapa(2)}
                     className="flex-1 py-4 font-semibold transition hover:opacity-70"
@@ -352,11 +387,28 @@ export default function Personalizado() {
                   />
                 </div>
 
+                {/* Fotos de referência na revisão */}
+                {form.fotos?.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-xs uppercase tracking-wider mb-2" style={{ color: t.textSecundario }}>
+                      Fotos de referência ({form.fotos.length})
+                    </p>
+                    <div className="flex gap-2 flex-wrap">
+                      {form.fotos.map((foto, i) => (
+                        <img key={i} src={foto.url} alt={`Ref ${i+1}`}
+                          className="object-cover"
+                          style={{ width: "72px", height: "72px", border: "1px solid " + t.border }} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="p-4 mb-6" style={{ backgroundColor: t.bgSecundario, border: "1px solid " + t.border }}>
                   <p className="text-sm font-semibold mb-1" style={{ color: t.text }}>ℹ️ Como funciona?</p>
                   <p className="text-sm" style={{ color: t.textSecundario }}>
                     Ao clicar em "Enviar pelo WhatsApp", suas informações serão enviadas para nossa equipe.
-                    Entraremos em contato para confirmar detalhes, enviar orçamento e prazo.
+                    {form.fotos?.length > 0 && " Após enviar o texto, envie também as fotos de referência na mesma conversa."}
+                    {" "}Entraremos em contato para confirmar detalhes, enviar orçamento e prazo.
                   </p>
                 </div>
 
@@ -389,7 +441,7 @@ export default function Personalizado() {
                 style={{ border: "1px solid " + t.border, color: t.text }}>
                 Voltar ao início
               </button>
-              <button onClick={() => { setEnviado(false); setEtapa(1); setForm({ nomeEmpresa: "", slogan: "", ramo: "", estilo: "", paleta: "", aplicacoes: [], referencia: "", observacoes: "", quantidade: 1 }); }}
+              <button onClick={() => { setEnviado(false); setEtapa(1); setForm({ nomeEmpresa: "", slogan: "", ramo: "", estilo: "", paleta: "", aplicacoes: [], referencia: "", observacoes: "", quantidade: 1, fotos: [] }); }}
                 className="px-8 py-3 font-semibold transition hover:opacity-80"
                 style={{ backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText }}>
                 Novo pedido
