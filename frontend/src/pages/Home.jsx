@@ -107,16 +107,16 @@ function Home() {
       </section>
 
       {/*
-      /*══════════════════════════════════════════════════════════════
+      ══════════════════════════════════════════════════════════════
       SEÇÃO "NOSSA HISTÓRIA" COM LINHA DO TEMPO — COMENTADA
       Para reativar: remova o bloco de comentário JSX abaixo
-      ══════════════════════════════════════════════════════════════*/}
+      ══════════════════════════════════════════════════════════════
 
       <Divisor />
       <section className="py-24 px-10" style={{ backgroundColor: t.bgSecundario }}>
         ... (seção completa com timeline, números e foto) ...
       </section>
-      
+      */}
 
       <Divisor />
 
