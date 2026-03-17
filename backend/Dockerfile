@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Coleta arquivos estáticos
-ARG CACHE_BUST=3
+ARG CACHE_BUST=10
 RUN DATABASE_URL=sqlite:///tmp/build.db python manage.py collectstatic --noinput
 
 EXPOSE 8000
