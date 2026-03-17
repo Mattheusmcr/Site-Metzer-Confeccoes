@@ -330,57 +330,95 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
 function VerPedidos({ mostrarToast, dark, estilos }) {
   const { text, subtext, cardBg, border } = estilos;
   const [pedidos, setPedidos] = useState([]);
+  const [personalizados, setPersonalizados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [aberto, setAberto] = useState(null);
+  const [aba, setAba] = useState("catalogo"); // "catalogo" | "personalizado"
 
   useEffect(() => {
-    api.get("pedidos/").then(res => setPedidos(res.data))
-      .catch(() => mostrarToast("Erro ao carregar pedidos.", "erro"))
+    Promise.all([
+      api.get("pedidos/"),
+      api.get("pedidos-personalizados/"),
+    ]).then(([r1, r2]) => {
+      setPedidos(r1.data);
+      setPersonalizados(r2.data);
+    }).catch(() => mostrarToast("Erro ao carregar pedidos.", "erro"))
       .finally(() => setLoading(false));
   }, []);
+
+  async function atualizarStatus(id, status) {
+    try {
+      await api.patch(`pedidos-personalizados/${id}/`, { status });
+      setPersonalizados(prev => prev.map(p => p.id === id ? { ...p, status } : p));
+      mostrarToast("Status atualizado!", "sucesso");
+    } catch { mostrarToast("Erro ao atualizar.", "erro"); }
+  }
+
+  const ESTILOS_MAP = { minimalista: "Minimalista", moderno: "Moderno", classico: "Clássico", divertido: "Divertido", manuscrito: "Manuscrito" };
+  const PALETAS_MAP = { "preto-branco": "Preto & Branco", azul: "Azul corporativo", vermelho: "Vermelho vibrante", verde: "Verde natural", dourado: "Dourado premium", personalizada: "Me consulte" };
+  const APLICACOES_MAP = { camisa: "Camisas/Uniformes", banner: "Banner/Impressão", digital: "Uso Digital", acm: "Placa ACM", todos: "Todos os formatos" };
+  const STATUS_CORES = { novo: "#2563eb", em_andamento: "#d97706", concluido: "#16a34a", cancelado: "#dc2626" };
 
   if (loading) return <p style={{ color: subtext }}>Carregando...</p>;
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-2" style={{ color: text }}>Pedidos ({pedidos.length})</h2>
-      <p className="text-sm mb-6" style={{ color: subtext }}>Clique em um pedido para ver os detalhes.</p>
-      {pedidos.length === 0 && <p style={{ color: subtext }}>Nenhum pedido ainda.</p>}
-      <div className="space-y-3">
-        {pedidos.map(p => {
-          const expandido = aberto === p.id;
-          const totalPedido = p.total || p.itens?.reduce((acc, i) => acc + parseFloat(i.produto_preco) * i.quantidade, 0) || 0;
-          return (
-            <div key={p.id} className="rounded-xl overflow-hidden" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
-              <button onClick={() => setAberto(expandido ? null : p.id)} className="w-full p-5 flex items-center justify-between text-left">
-                <div className="flex items-center gap-4">
-                  <span className="text-xs px-2 py-1 rounded-lg font-mono" style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: subtext }}>#{p.id}</span>
-                  <div>
-                    <p className="font-semibold" style={{ color: text }}>{p.nome_cliente}</p>
-                    <p className="text-xs" style={{ color: subtext }}>{new Date(p.data_pedido).toLocaleString("pt-BR")}</p>
+      <h2 className="text-xl font-semibold mb-2" style={{ color: text }}>Pedidos</h2>
+
+      {/* ABAS */}
+      <div className="flex gap-2 mb-6" style={{ borderBottom: "2px solid " + border }}>
+        {[
+          { id: "catalogo",     label: `🛒 Portfólio / Catálogo (${pedidos.length})` },
+          { id: "personalizado", label: `🎨 Personalizados (${personalizados.length})` },
+        ].map(a => (
+          <button key={a.id} onClick={() => setAba(a.id)}
+            className="px-4 py-2 text-sm font-medium transition"
+            style={{
+              borderBottom: aba === a.id ? "2px solid " + text : "2px solid transparent",
+              color: aba === a.id ? text : subtext, backgroundColor: "transparent", marginBottom: "-2px",
+            }}>
+            {a.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── PEDIDOS DO CATÁLOGO ── */}
+      {aba === "catalogo" && (
+        <div className="space-y-3">
+          {pedidos.length === 0 && <p style={{ color: subtext }}>Nenhum pedido ainda.</p>}
+          {pedidos.map(p => {
+            const expandido = aberto === `cat-${p.id}`;
+            const totalPedido = p.total || p.itens?.reduce((acc, i) => acc + parseFloat(i.produto_preco) * i.quantidade, 0) || 0;
+            return (
+              <div key={p.id} className="rounded-xl overflow-hidden" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
+                <button onClick={() => setAberto(expandido ? null : `cat-${p.id}`)}
+                  className="w-full p-5 flex items-center justify-between text-left">
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs px-2 py-1 rounded-lg font-mono" style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: subtext }}>#{p.id}</span>
+                    <div>
+                      <p className="font-semibold" style={{ color: text }}>{p.nome_cliente}</p>
+                      <p className="text-xs" style={{ color: subtext }}>{new Date(p.data_pedido).toLocaleString("pt-BR")}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="font-bold text-sm" style={{ color: text }}>R$ {Number(totalPedido).toFixed(2)}</span>
-                  <span style={{ color: subtext }}>{expandido ? "▲" : "▼"}</span>
-                </div>
-              </button>
-              {expandido && (
-                <div className="px-5 pb-5 space-y-5" style={{ borderTop: "1px solid " + border }}>
-                  <div className="grid md:grid-cols-3 gap-4 pt-4">
-                    {[
-                      { titulo: "👤 Cliente", conteudo: <><p className="font-semibold text-sm" style={{ color: text }}>{p.nome_cliente}</p><p className="text-sm mt-1" style={{ color: subtext }}>📱 {p.telefone}</p></> },
-                      { titulo: "📍 Endereço", conteudo: p.rua ? <div className="text-sm space-y-0.5" style={{ color: text }}><p>{p.rua}, {p.numero}{p.complemento ? ` — ${p.complemento}` : ""}</p><p>{p.bairro}</p><p>{p.cidade}/{p.estado}</p><p style={{ color: subtext }}>CEP: {p.cep}</p></div> : <p className="text-sm" style={{ color: subtext }}>Retirada no local</p> },
-                      { titulo: "💳 Pagamento", conteudo: <><p className="font-semibold text-sm" style={{ color: text }}>{p.forma_pagamento || "Não informado"}</p>{p.observacao && <p className="text-xs mt-2" style={{ color: subtext }}>📝 {p.observacao}</p>}</> },
-                    ].map(({ titulo, conteudo }) => (
-                      <div key={titulo} className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
-                        <p className="text-xs font-bold uppercase mb-3" style={{ color: subtext }}>{titulo}</p>
-                        {conteudo}
-                      </div>
-                    ))}
+                  <div className="flex items-center gap-4">
+                    <span className="font-bold text-sm" style={{ color: text }}>R$ {Number(totalPedido).toFixed(2)}</span>
+                    <span style={{ color: subtext }}>{expandido ? "▲" : "▼"}</span>
                   </div>
-                  <div>
-                    <p className="text-xs font-bold uppercase mb-3" style={{ color: subtext }}>🛍️ Itens</p>
+                </button>
+                {expandido && (
+                  <div className="px-5 pb-5 space-y-4" style={{ borderTop: "1px solid " + border }}>
+                    <div className="grid md:grid-cols-3 gap-4 pt-4">
+                      {[
+                        { titulo: "👤 Cliente", conteudo: <><p className="font-semibold text-sm" style={{ color: text }}>{p.nome_cliente}</p><p className="text-sm mt-1" style={{ color: subtext }}>📱 {p.telefone}</p></> },
+                        { titulo: "📍 Endereço", conteudo: p.rua ? <div className="text-sm space-y-0.5" style={{ color: text }}><p>{p.rua}, {p.numero}</p><p>{p.bairro} — {p.cidade}/{p.estado}</p></div> : <p className="text-sm" style={{ color: subtext }}>Retirada no local</p> },
+                        { titulo: "💳 Pagamento", conteudo: <p className="font-semibold text-sm" style={{ color: text }}>{p.forma_pagamento || "Não informado"}</p> },
+                      ].map(({ titulo, conteudo }) => (
+                        <div key={titulo} className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
+                          <p className="text-xs font-bold uppercase mb-3" style={{ color: subtext }}>{titulo}</p>
+                          {conteudo}
+                        </div>
+                      ))}
+                    </div>
                     <div className="rounded-lg overflow-hidden" style={{ border: "1px solid " + border }}>
                       <table className="w-full text-sm">
                         <thead><tr style={{ backgroundColor: dark ? "#374151" : "#f3f4f6" }}>
@@ -399,22 +437,116 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                             </tr>
                           ))}
                         </tbody>
-                        <tfoot><tr style={{ borderTop: "2px solid " + border }}>
-                          <td colSpan={3} className="p-3 text-right font-bold" style={{ color: text }}>Total:</td>
-                          <td className="p-3 text-right font-bold text-base" style={{ color: text }}>R$ {Number(totalPedido).toFixed(2)}</td>
-                        </tr></tfoot>
                       </table>
                     </div>
+                    <a href={`https://wa.me/55${p.telefone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white"
+                      style={{ backgroundColor: "#16a34a" }}>💬 WhatsApp</a>
                   </div>
-                  <a href={`https://wa.me/55${p.telefone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white"
-                    style={{ backgroundColor: "#16a34a" }}>💬 Entrar em contato via WhatsApp</a>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── PEDIDOS PERSONALIZADOS ── */}
+      {aba === "personalizado" && (
+        <div className="space-y-3">
+          {personalizados.length === 0 && <p style={{ color: subtext }}>Nenhum pedido personalizado ainda.</p>}
+          {personalizados.map(p => {
+            const expandido = aberto === `per-${p.id}`;
+            return (
+              <div key={p.id} className="rounded-xl overflow-hidden" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
+                <button onClick={() => setAberto(expandido ? null : `per-${p.id}`)}
+                  className="w-full p-5 flex items-center justify-between text-left">
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs px-2 py-1 rounded-lg font-mono" style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: subtext }}>#{p.id}</span>
+                    <div>
+                      <p className="font-semibold" style={{ color: text }}>{p.nome_empresa}</p>
+                      <p className="text-xs" style={{ color: subtext }}>{p.nome_cliente} — {new Date(p.data_pedido).toLocaleString("pt-BR")}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs px-2 py-1 rounded-full font-semibold"
+                      style={{ backgroundColor: STATUS_CORES[p.status] + "20", color: STATUS_CORES[p.status] }}>
+                      ● {p.status === "novo" ? "Novo" : p.status === "em_andamento" ? "Em andamento" : p.status === "concluido" ? "Concluído" : "Cancelado"}
+                    </span>
+                    <span style={{ color: subtext }}>{expandido ? "▲" : "▼"}</span>
+                  </div>
+                </button>
+
+                {expandido && (
+                  <div className="px-5 pb-5 space-y-4" style={{ borderTop: "1px solid " + border }}>
+                    <div className="grid md:grid-cols-2 gap-4 pt-4">
+                      <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
+                        <p className="text-xs font-bold uppercase mb-2" style={{ color: subtext }}>🏢 Empresa</p>
+                        <p className="font-semibold text-sm" style={{ color: text }}>{p.nome_empresa}</p>
+                        {p.slogan && <p className="text-xs italic" style={{ color: subtext }}>"{p.slogan}"</p>}
+                        <p className="text-sm" style={{ color: subtext }}>Ramo: {p.ramo}</p>
+                        <p className="text-sm" style={{ color: subtext }}>Quantidade: {p.quantidade} arte(s)</p>
+                      </div>
+                      <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
+                        <p className="text-xs font-bold uppercase mb-2" style={{ color: subtext }}>👤 Contato</p>
+                        <p className="font-semibold text-sm" style={{ color: text }}>{p.nome_cliente}</p>
+                        {p.telefone && <p className="text-sm" style={{ color: subtext }}>📱 {p.telefone}</p>}
+                        {p.email && <p className="text-sm" style={{ color: subtext }}>📧 {p.email}</p>}
+                      </div>
+                      <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
+                        <p className="text-xs font-bold uppercase mb-2" style={{ color: subtext }}>🎨 Design</p>
+                        <p className="text-sm" style={{ color: text }}>Estilo: <strong>{ESTILOS_MAP[p.estilo] || p.estilo}</strong></p>
+                        <p className="text-sm" style={{ color: text }}>Paleta: <strong>{PALETAS_MAP[p.paleta] || p.paleta}</strong></p>
+                        {p.aplicacoes?.length > 0 && (
+                          <p className="text-sm" style={{ color: text }}>
+                            Aplicações: <strong>{p.aplicacoes.map(a => APLICACOES_MAP[a] || a).join(", ")}</strong>
+                          </p>
+                        )}
+                      </div>
+                      <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
+                        <p className="text-xs font-bold uppercase mb-2" style={{ color: subtext }}>📝 Detalhes</p>
+                        {p.referencia && <p className="text-sm" style={{ color: subtext }}>Ref: {p.referencia}</p>}
+                        {p.observacoes && <p className="text-sm" style={{ color: subtext }}>Obs: {p.observacoes}</p>}
+                        {!p.referencia && !p.observacoes && <p className="text-sm" style={{ color: subtext }}>Sem observações</p>}
+                      </div>
+                    </div>
+
+                    {/* ATUALIZAR STATUS */}
+                    <div>
+                      <p className="text-xs uppercase tracking-wider mb-2" style={{ color: subtext }}>Atualizar status</p>
+                      <div className="flex gap-2 flex-wrap">
+                        {[
+                          { id: "novo",         label: "Novo",         cor: "#2563eb" },
+                          { id: "em_andamento", label: "Em andamento", cor: "#d97706" },
+                          { id: "concluido",    label: "Concluído",    cor: "#16a34a" },
+                          { id: "cancelado",    label: "Cancelado",    cor: "#dc2626" },
+                        ].map(s => (
+                          <button key={s.id}
+                            onClick={() => atualizarStatus(p.id, s.id)}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold transition"
+                            style={{
+                              backgroundColor: p.status === s.id ? s.cor : (dark ? "#374151" : "#e5e7eb"),
+                              color: p.status === s.id ? "white" : text,
+                            }}>
+                            {s.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {p.telefone && (
+                      <a href={`https://wa.me/55${p.telefone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white"
+                        style={{ backgroundColor: "#16a34a" }}>
+                        💬 Falar com {p.nome_cliente} pelo WhatsApp
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
