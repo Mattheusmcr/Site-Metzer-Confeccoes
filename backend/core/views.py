@@ -7,8 +7,8 @@ from rest_framework.decorators import action
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from .models import Produto, Pedido, Institucional, Estoque, ItemPedido, ProdutoImagem
-from .serializers import ProdutoSerializer, PedidoSerializer, InstitucionalSerializer, EstoqueSerializer
+from .models import Produto, Pedido, Institucional, Estoque, ItemPedido, ProdutoImagem, PedidoPersonalizado
+from .serializers import ProdutoSerializer, PedidoSerializer, InstitucionalSerializer, EstoqueSerializer, PedidoPersonalizadoSerializer
 
 
 class ProdutoViewSet(viewsets.ModelViewSet):
@@ -132,3 +132,13 @@ class AdminTokenSerializer(TokenObtainPairSerializer):
 
 class AdminLoginView(TokenObtainPairView):
     serializer_class = AdminTokenSerializer
+
+
+class PedidoPersonalizadoViewSet(viewsets.ModelViewSet):
+    queryset = PedidoPersonalizado.objects.all().order_by('-data_pedido')
+    serializer_class = PedidoPersonalizadoSerializer
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return [AllowAny()]
+        return [IsAdminUser()]

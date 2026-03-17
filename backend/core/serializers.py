@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Produto, Pedido, ItemPedido, Institucional, Estoque, ProdutoImagem
+from .models import Produto, Pedido, ItemPedido, Institucional, Estoque, ProdutoImagem, PedidoPersonalizado
 
 
 class EstoqueSerializer(serializers.ModelSerializer):
@@ -60,3 +60,17 @@ class InstitucionalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Institucional
         fields = '__all__'
+
+
+class PedidoPersonalizadoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = PedidoPersonalizado
+        fields = '__all__'
+        extra_kwargs = {
+            'nome_cliente': {'required': False, 'allow_blank': True},
+            'telefone':     {'required': False, 'allow_blank': True},
+            'email':        {'required': False, 'allow_blank': True},
+            'slogan':       {'required': False, 'allow_blank': True},
+            'referencia':   {'required': False, 'allow_blank': True},
+            'observacoes':  {'required': False, 'allow_blank': True},
+        }
