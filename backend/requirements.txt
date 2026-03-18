@@ -12,3 +12,4 @@ dj-database-url
 psycopg2-binary
 cloudinary
 django-cloudinary-storage
+# cache-bust-2026-03-18
