@@ -271,26 +271,55 @@ ${resumo}
                   {form.tiposProduto.map(id => {
                     const tipo = TIPOS_PRODUTO.find(t => t.id === id);
                     const total = totalTipo(id);
+                    const qtds = form.quantidades[id] || {};
+                    const tamanhosSelecionados = Object.entries(qtds).filter(([, v]) => v > 0);
                     return (
-                      <div key={id} style={{
-                        display: "flex", alignItems: "center", gap: "8px",
-                        padding: "6px 12px", backgroundColor: t.text, color: t.btnPrimarioText,
-                        fontSize: "12px", fontFamily: "system-ui",
-                      }}>
-                        <span>{tipo.emoji} {tipo.label}</span>
-                        {isTipoRoupa(id) && total > 0 && (
-                          <span style={{ opacity: 0.7 }}>({total} un)</span>
-                        )}
-                        {isTipoRoupa(id) && (
-                          <button onClick={() => setModalTamanhos(id)}
-                            style={{ background: "none", border: "1px solid rgba(255,255,255,0.4)", color: "white", cursor: "pointer", fontSize: "10px", padding: "2px 6px", fontFamily: "system-ui" }}>
-                            Tamanhos
+                      <div key={id}>
+                        {/* Tag do tipo */}
+                        <div style={{
+                          display: "inline-flex", alignItems: "center", gap: "8px",
+                          padding: "6px 12px", backgroundColor: t.text, color: t.btnPrimarioText,
+                          fontSize: "12px", fontFamily: "system-ui",
+                        }}>
+                          <span>{tipo.emoji} {tipo.label}</span>
+                          {isTipoRoupa(id) && total > 0 && (
+                            <span style={{ opacity: 0.7 }}>({total} un)</span>
+                          )}
+                          <button onClick={() => toggleTipo(id)}
+                            style={{ background: "none", border: "none", color: "rgba(255,255,255,0.7)", cursor: "pointer", fontSize: "14px", lineHeight: 1 }}>
+                            ✕
                           </button>
+                        </div>
+
+                        {/* Botão tamanhos e resumo — abaixo da tag, só para roupas */}
+                        {isTipoRoupa(id) && (
+                          <div style={{ marginTop: "8px", marginBottom: "4px" }}>
+                            <button onClick={() => setModalTamanhos(id)}
+                              style={{
+                                display: "inline-flex", alignItems: "center", gap: "8px",
+                                padding: "8px 14px", border: "1px solid " + t.borderForte,
+                                backgroundColor: t.bgCard, color: t.text, cursor: "pointer",
+                                fontSize: "12px", fontFamily: "system-ui",
+                              }}>
+                              📐 {tamanhosSelecionados.length > 0 ? "Editar tamanhos" : "Selecionar tamanhos"}
+                            </button>
+                            {/* Resumo dos tamanhos */}
+                            {tamanhosSelecionados.length > 0 && (
+                              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "8px" }}>
+                                {tamanhosSelecionados.map(([tam, qtd]) => (
+                                  <span key={tam} style={{
+                                    fontSize: "11px", padding: "3px 8px",
+                                    backgroundColor: t.bgSecundario,
+                                    border: "1px solid " + t.border,
+                                    color: t.text, fontFamily: "system-ui",
+                                  }}>
+                                    {tam}: {qtd}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         )}
-                        <button onClick={() => toggleTipo(id)}
-                          style={{ background: "none", border: "none", color: "rgba(255,255,255,0.7)", cursor: "pointer", fontSize: "14px", lineHeight: 1 }}>
-                          ✕
-                        </button>
                       </div>
                     );
                   })}
