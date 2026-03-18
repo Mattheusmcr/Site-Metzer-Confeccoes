@@ -11,7 +11,7 @@ const t = {
 };
 
 const links = [
-  { to: "/",             label: "INÍCIO" },
+  { to: "/",             label: "HOME" },
   { to: "/catalogo",     label: "PORTFÓLIO" },
   { to: "/infos",        label: "INFORMAÇÕES" },
   { to: "/pedidos",      label: "PEDIDOS" },
