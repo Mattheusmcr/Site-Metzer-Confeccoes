@@ -82,7 +82,7 @@ export default function Home() {
         ))}
         <div className="absolute inset-0" style={{ backgroundColor: "rgba(10,10,10,0.55)" }} />
 
-        <div className="relative z-10 h-full flex flex-col justify-center px-16 md:px-24"
+        <div className="relative z-10 h-full flex flex-col justify-center px-6 md:px-24"
           style={{ opacity: heroVisible ? 1 : 0, transform: heroVisible ? "translateY(0)" : "translateY(30px)", transition: "all 1s ease 0.2s" }}>
           <p className="text-xs uppercase tracking-widest mb-6" style={{ color: "rgba(255,255,255,0.5)", letterSpacing: "0.3em" }}>
             Metzker Confecções
@@ -118,7 +118,7 @@ export default function Home() {
         </div>
 
         {/* Scroll hint */}
-        <div className="absolute bottom-8 right-16 z-10 flex flex-col items-center gap-2">
+        <div className="absolute bottom-8 right-16 z-10 flex-col items-center gap-2 hidden md:flex">
           <p className="text-xs uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.4)", writingMode: "vertical-rl" }}>
             Scroll
           </p>
@@ -131,7 +131,7 @@ export default function Home() {
       {/* ══ NOSSA HISTÓRIA ══ */}
       <section ref={sobreRef} style={{ backgroundColor: t.bg }}>
         {/* Título em destaque */}
-        <div className="px-16 md:px-24 py-20 border-b" style={{ borderColor: t.borderForte }}>
+        <div className="px-6 md:px-24 py-16 border-b" style={{ borderColor: t.borderForte }}>
           <div className="flex items-end justify-between flex-wrap gap-6"
             style={{ opacity: sobreVisible ? 1 : 0, transform: sobreVisible ? "translateY(0)" : "translateY(40px)", transition: "all 0.9s ease" }}>
             <div>
@@ -150,11 +150,11 @@ export default function Home() {
         </div>
 
         {/* Missão — texto + foto lado a lado */}
-        <div ref={missaoRef} className="grid md:grid-cols-2"
+        <div ref={missaoRef} className="grid grid-cols-1 md:grid-cols-2"
           style={{ borderBottom: "2px solid " + t.borderForte }}>
 
           {/* Texto esquerda */}
-          <div className="px-16 md:px-24 py-20 flex flex-col justify-center"
+          <div className="px-6 md:px-24 py-12 md:py-20 flex flex-col justify-center"
             style={{
               borderRight: "2px solid " + t.borderForte,
               opacity: missaoVisible ? 1 : 0,
@@ -206,12 +206,12 @@ export default function Home() {
 
       {/* ══ LINHA DO TEMPO ══ */}
       <section ref={timelineRef} style={{ backgroundColor: t.bgSecundario, borderBottom: "2px solid " + t.borderForte }}>
-        <div className="px-16 md:px-24 py-20">
+        <div className="px-6 md:px-24 py-12 md:py-20">
           <p className="text-xs uppercase tracking-widest mb-16 text-center" style={{ color: t.textSecundario, fontFamily: "system-ui", letterSpacing: "0.25em" }}>
             Nossa trajetória
           </p>
 
-          <div className="grid md:grid-cols-4 gap-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-0">
             {timeline.map((item, i) => (
               <div key={item.ano}
                 style={{
@@ -238,8 +238,8 @@ export default function Home() {
 
       {/* ══ PORTFÓLIO ══ */}
       <section ref={galeriaRef} style={{ backgroundColor: t.bg, borderBottom: "2px solid " + t.borderForte }}>
-        <div className="px-16 md:px-24 py-20">
-          <div className="flex items-end justify-between mb-16 flex-wrap gap-4"
+        <div className="px-6 md:px-24 py-12 md:py-20">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 md:mb-16 gap-4"
             style={{ opacity: galeriaVisible ? 1 : 0, transform: galeriaVisible ? "translateY(0)" : "translateY(20px)", transition: "all 0.8s ease" }}>
             <div>
               <p className="text-xs uppercase tracking-widest mb-4" style={{ color: t.textSecundario, fontFamily: "system-ui", letterSpacing: "0.25em" }}>
@@ -256,7 +256,7 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-3 gap-0"
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-0"
             style={{ border: "2px solid " + t.borderForte }}>
             {galeria.slice(galeriaIndex * FOTOS_POR_SLIDE, galeriaIndex * FOTOS_POR_SLIDE + FOTOS_POR_SLIDE).map((url, i) => (
               <div key={i} className="overflow-hidden relative group"
@@ -295,7 +295,7 @@ export default function Home() {
 
       {/* ══ CTA PERSONALIZADO ══ */}
       <section style={{ backgroundColor: t.text }}>
-        <div className="px-16 md:px-24 py-20 flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="px-6 md:px-24 py-16 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
           <div>
             <p className="text-xs uppercase tracking-widest mb-4" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "system-ui", letterSpacing: "0.25em" }}>
               Comunicação Visual
@@ -314,7 +314,7 @@ export default function Home() {
 
       {/* ══ RODAPÉ ══ */}
       <footer style={{ backgroundColor: t.bgSecundario, borderTop: "2px solid " + t.borderForte }}>
-        <div className="px-16 md:px-24 py-16 grid md:grid-cols-3 gap-10 text-sm">
+        <div className="px-6 md:px-24 py-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
           <div style={{ borderRight: "1px solid " + t.border, paddingRight: "40px" }}>
             <h3 className="mb-4 uppercase" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.text, fontFamily: "system-ui" }}>
               Metzker Têxtil e Comunicações Visuais
@@ -336,7 +336,7 @@ export default function Home() {
             <p style={{ color: t.text, fontFamily: "system-ui" }}>Vila Velha - ES</p>
           </div>
         </div>
-        <div style={{ borderTop: "1px solid " + t.borderForte, padding: "20px 96px" }}>
+        <div style={{ borderTop: "1px solid " + t.borderForte, padding: "20px 24px" }}>
           <p className="text-xs" style={{ color: t.textSecundario, fontFamily: "system-ui", letterSpacing: "0.1em" }}>
             &copy; {new Date().getFullYear()} Metzker Têxtil e Comunicações Visuais
           </p>

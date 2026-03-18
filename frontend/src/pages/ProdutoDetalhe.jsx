@@ -88,7 +88,7 @@ export default function ProdutoDetalhe() {
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto p-6 md:p-10">
+      <div className="max-w-6xl mx-auto p-4 md:p-10">
 
         {/* BREADCRUMB */}
         <p className="text-sm mb-8" style={{ color: t.textSecundario }}>
@@ -116,8 +116,8 @@ export default function ProdutoDetalhe() {
             <div className="relative overflow-hidden"
               style={{ backgroundColor: t.bgSecundario, borderBottom: "2px solid " + t.borderForte }}>
               {imagens.length > 0
-                ? <img src={imagens[imagemIndex]} alt={produto.nome} className="w-full object-contain" style={{ height: "540px" }} />
-                : <div className="w-full flex items-center justify-center text-6xl" style={{ height: "540px" }}>
+                ? <img src={imagens[imagemIndex]} alt={produto.nome} className="w-full object-contain" style={{ height: "clamp(300px, 50vw, 540px)" }} />
+                : <div className="w-full flex items-center justify-center text-6xl" style={{ height: "clamp(300px, 50vw, 540px)" }}>
                     {isComunicacao ? "🖼️" : "👕"}
                   </div>
               }
@@ -290,7 +290,7 @@ export default function ProdutoDetalhe() {
               style={{ backgroundColor: "rgba(0,0,0,0.4)" }} />
           )}
           <div className="fixed top-0 right-0 h-full z-50 shadow-2xl overflow-y-auto transition-transform duration-300"
-            style={{ width: "420px", backgroundColor: t.bgCard, borderLeft: "2px solid " + t.borderForte,
+            style={{ width: "min(420px, 95vw)", backgroundColor: t.bgCard, borderLeft: "2px solid " + t.borderForte,
               transform: drawerAberto ? "translateX(0)" : "translateX(100%)" }}>
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">

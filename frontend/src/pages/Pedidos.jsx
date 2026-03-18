@@ -146,7 +146,7 @@ function Pedidos() {
           <div className="space-y-6">
             <div style={cardStyle}>
               <h2 className="text-lg font-semibold mb-4" style={{ color: t.text }}>📋 Dados Pessoais</h2>
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div><label style={labelStyle("nome")}>Nome completo *</label>
                   <input name="nome" value={cliente.nome} onChange={handleChange} placeholder="Seu nome completo" style={inputStyle("nome")} />
                   {erros.nome && <p className="text-red-500 text-xs mt-1">Campo obrigatório</p>}</div>

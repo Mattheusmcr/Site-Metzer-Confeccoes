@@ -33,7 +33,7 @@ function Sidebar({ filtro, setFiltro }) {
   const [abertos, setAbertos] = useState({ roupas: true, comunicacao: true });
 
   return (
-    <aside className="w-44 shrink-0" style={{ borderRight: "2px solid " + t.borderForte, paddingRight: "24px" }}>
+    <aside className="w-44 shrink-0 hidden md:block" style={{ borderRight: "2px solid " + t.borderForte, paddingRight: "24px" }}>
       <p className="text-xs font-bold tracking-widest mb-4 uppercase" style={{ color: t.textSecundario }}>Categorias</p>
 
       <button onClick={() => setFiltro({ categoria: null, subcategoria: null })}
@@ -154,7 +154,7 @@ function Catalogo() {
         </div>
       )}
 
-      <div style={{ borderBottom: "2px solid " + t.borderForte, backgroundColor: t.bg, padding: "20px 56px" }}>
+      <div style={{ borderBottom: "2px solid " + t.borderForte, backgroundColor: t.bg, padding: "16px 20px" }}>
         <p className="text-xs uppercase tracking-widest" style={{ color: t.textSecundario }}>
           {tituloAtivo} — {produtosFiltrados.length} produto{produtosFiltrados.length !== 1 ? "s" : ""}
         </p>
@@ -162,12 +162,12 @@ function Catalogo() {
 
       <div className="flex" style={{ minHeight: "calc(100vh - 100px)" }}>
         {/* SIDEBAR */}
-        <div style={{ padding: "32px 0 32px 56px" }}>
+        <div style={{ padding: "24px 0 24px 24px" }}>
           <Sidebar filtro={filtro} setFiltro={setFiltro} />
         </div>
 
         {/* GRID */}
-        <div className="flex-1" style={{ padding: "32px 56px 32px 40px" }}>
+        <div className="flex-1" style={{ padding: "16px 16px 24px 16px", flex: 1 }}>
           {produtosFiltrados.length === 0 && (
             <p className="text-center py-20" style={{ color: t.textSecundario }}>
               Nenhum produto nesta categoria ainda.
@@ -204,7 +204,7 @@ function Catalogo() {
                     <div className="relative overflow-hidden" style={{ backgroundColor: t.bgSecundario }}>
                       {imagemAtual
                         ? <img src={imagemAtual} alt={produto.nome} className="w-full object-contain transition duration-500"
-                            style={{ height: "360px" }} />
+                            style={{ height: "280px" }} />
                         : <div className="w-full flex items-center justify-center text-5xl"
                             style={{ height: "360px" }}>
                             {isComunicacao ? "🖼️" : "👕"}
