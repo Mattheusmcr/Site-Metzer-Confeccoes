@@ -36,13 +36,10 @@ const CORES_OPCOES = [
 ];
 
 const MATERIAIS_OPCOES = [
-  { id: "algodao",        label: "100% Algodão",       descricao: "Macio, respirável, ideal para o dia a dia" },
-  { id: "poliester",      label: "Poliéster",           descricao: "Resistente, seca rápido, ótimo para esportes" },
-  { id: "malha-fria",     label: "Malha Fria",          descricao: "Leve e confortável para climas quentes" },
-  { id: "dry-fit",        label: "Dry Fit",             descricao: "Alta performance, absorve suor" },
-  { id: "piquet",         label: "Piquet (Polo)",       descricao: "Clássico para camisas polo" },
-  { id: "brim",           label: "Brim / Sarja",        descricao: "Resistente, ideal para calças e uniformes" },
-  { id: "nao-sei",        label: "Não sei / Me indique", descricao: "Nossa equipe recomenda o melhor para você" },
+  { id: "pv",       label: "PV",            descricao: "Mistura de poliéster e viscose, caimento elegante" },
+  { id: "algodao",  label: "100% Algodão",  descricao: "Macio, respirável, ideal para o dia a dia" },
+  { id: "dry-fit",  label: "Dry Fit",       descricao: "Alta performance, absorve suor, ideal para esportes" },
+  { id: "outro",    label: "Outro — nos indique", descricao: "Descreva o material desejado na descrição do pedido" },
 ];
 
 const FORM_INICIAL = {
