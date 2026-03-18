@@ -29,11 +29,11 @@ const CATEGORIAS = [
   },
 ];
 
-function Sidebar({ filtro, setFiltro }) {
+function Sidebar({ filtro, setFiltro, mobile = false }) {
   const [abertos, setAbertos] = useState({ roupas: true, comunicacao: true });
 
   return (
-    <aside className="w-44 shrink-0 hidden md:block" style={{ borderRight: "2px solid " + t.borderForte, paddingRight: "24px" }}>
+    <aside className={mobile ? "w-full" : "w-44 shrink-0"} style={mobile ? {} : { borderRight: "2px solid " + t.borderForte, paddingRight: "24px" }}>
       <p className="text-xs font-bold tracking-widest mb-4 uppercase" style={{ color: t.textSecundario }}>Categorias</p>
 
       <button onClick={() => setFiltro({ categoria: null, subcategoria: null })}
@@ -175,7 +175,7 @@ function Catalogo() {
       {/* PAINEL DE FILTROS MOBILE */}
       {filtroMobileAberto && (
         <div className="md:hidden px-5 py-4" style={{ backgroundColor: t.bgSecundario, borderBottom: "2px solid " + t.borderForte }}>
-          <Sidebar filtro={filtro} setFiltro={(f) => { setFiltro(f); setFiltroMobileAberto(false); }} />
+          <Sidebar filtro={filtro} setFiltro={(f) => { setFiltro(f); setFiltroMobileAberto(false); }} mobile={true} />
         </div>
       )}
 
