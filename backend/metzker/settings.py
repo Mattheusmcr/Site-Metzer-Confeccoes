@@ -5,14 +5,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# DEBUG DE INICIALIZAÇÃO — aparece nos logs do Railway
-import sys
-print("=" * 60, file=sys.stderr)
-print(f"CLOUDINARY_CLOUD_NAME = {os.environ.get('CLOUDINARY_CLOUD_NAME', 'NÃO DEFINIDO')}", file=sys.stderr)
-print(f"CLOUDINARY_API_KEY = {os.environ.get('CLOUDINARY_API_KEY', 'NÃO DEFINIDO')[:8]}...", file=sys.stderr)
-print(f"DATABASE_URL presente = {bool(os.environ.get('DATABASE_URL'))}", file=sys.stderr)
-print("=" * 60, file=sys.stderr)
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dev-secret-key-troque-em-producao')

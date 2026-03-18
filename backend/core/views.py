@@ -29,19 +29,13 @@ class ProdutoViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         imagens = request.FILES.getlist('imagens')
-        print(f"=== CREATE PRODUTO: {len(imagens)} imagem(ns) recebida(s) ===")
-        import django.conf
-        storage = django.conf.settings.DEFAULT_FILE_STORAGE
-        print(f"=== STORAGE ATIVO: {storage} ===")
         serializer = self.get_serializer(data=request.data)
         if not serializer.is_valid():
             print("ERROS DO SERIALIZER:", serializer.errors)
             return Response(serializer.errors, status=400)
         produto = serializer.save()
         for imagem in imagens:
-            print(f"=== SALVANDO IMAGEM: {imagem.name} ({imagem.size} bytes) ===")
             ProdutoImagem.objects.create(produto=produto, imagem=imagem)
-            print(f"=== IMAGEM SALVA OK ===")
         return Response(serializer.data, status=201)
 
     def update(self, request, *args, **kwargs):
