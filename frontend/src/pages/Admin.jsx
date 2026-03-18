@@ -334,6 +334,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
   const [loading, setLoading] = useState(true);
   const [aberto, setAberto] = useState(null);
   const [aba, setAba] = useState("catalogo"); // "catalogo" | "personalizado"
+  const [pedidoParaExcluir, setPedidoParaExcluir] = useState(null);
 
   useEffect(() => {
     Promise.all([
@@ -352,6 +353,24 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
       setPersonalizados(prev => prev.map(p => p.id === id ? { ...p, status } : p));
       mostrarToast("Status atualizado!", "sucesso");
     } catch { mostrarToast("Erro ao atualizar.", "erro"); }
+  }
+
+  async function excluirPedido() {
+    if (!pedidoParaExcluir) return;
+    try {
+      if (pedidoParaExcluir.tipo === "catalogo") {
+        await api.delete(`pedidos/${pedidoParaExcluir.id}/`);
+        setPedidos(prev => prev.filter(p => p.id !== pedidoParaExcluir.id));
+      } else {
+        await api.delete(`pedidos-personalizados/${pedidoParaExcluir.id}/`);
+        setPersonalizados(prev => prev.filter(p => p.id !== pedidoParaExcluir.id));
+      }
+      mostrarToast("Pedido excluído com sucesso.", "sucesso");
+    } catch {
+      mostrarToast("Erro ao excluir pedido.", "erro");
+    } finally {
+      setPedidoParaExcluir(null);
+    }
   }
 
   const ESTILOS_MAP = { minimalista: "Minimalista", moderno: "Moderno", classico: "Clássico", divertido: "Divertido", manuscrito: "Manuscrito" };
@@ -439,9 +458,16 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                         </tbody>
                       </table>
                     </div>
-                    <a href={`https://wa.me/55${p.telefone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white"
-                      style={{ backgroundColor: "#16a34a" }}>💬 WhatsApp</a>
+                    <div className="flex items-center gap-3">
+                      <a href={`https://wa.me/55${p.telefone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white"
+                        style={{ backgroundColor: "#16a34a" }}>💬 WhatsApp</a>
+                      <button onClick={() => setPedidoParaExcluir({ id: p.id, tipo: "catalogo", nome: p.nome_cliente })}
+                        className="px-4 py-2 rounded-lg text-sm font-medium"
+                        style={{ backgroundColor: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}>
+                        🗑️ Excluir pedido
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -533,18 +559,56 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                       </div>
                     </div>
 
-                    {p.telefone && (
-                      <a href={`https://wa.me/55${p.telefone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white"
-                        style={{ backgroundColor: "#16a34a" }}>
-                        💬 Falar com {p.nome_cliente} pelo WhatsApp
-                      </a>
-                    )}
+                    <div className="flex items-center gap-3 flex-wrap">
+                      {p.telefone && (
+                        <a href={`https://wa.me/55${p.telefone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white"
+                          style={{ backgroundColor: "#16a34a" }}>
+                          💬 Falar com {p.nome_cliente} pelo WhatsApp
+                        </a>
+                      )}
+                      <button onClick={() => setPedidoParaExcluir({ id: p.id, tipo: "personalizado", nome: p.nome_empresa })}
+                        className="px-4 py-2 rounded-lg text-sm font-medium"
+                        style={{ backgroundColor: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}>
+                        🗑️ Excluir pedido
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
             );
           })}
+        </div>
+      )}
+      {/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */}
+      {pedidoParaExcluir && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+          <div className="rounded-2xl p-8 shadow-2xl max-w-md w-full mx-4"
+            style={{ backgroundColor: dark ? "#1f2937" : "#ffffff" }}>
+            <div className="text-center mb-6">
+              <p className="text-4xl mb-4">🗑️</p>
+              <h3 className="text-xl font-bold mb-2" style={{ color: text }}>Excluir pedido?</h3>
+              <p className="text-sm" style={{ color: subtext }}>
+                Você está prestes a excluir o pedido de <strong style={{ color: text }}>{pedidoParaExcluir.nome}</strong>.
+              </p>
+              <p className="text-sm mt-2 font-medium" style={{ color: "#dc2626" }}>
+                ⚠️ Esta ação é irreversível. O pedido será removido permanentemente do painel e o cliente perderá o registro.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setPedidoParaExcluir(null)}
+                className="flex-1 py-3 rounded-lg font-semibold transition hover:opacity-70"
+                style={{ border: "1px solid " + border, color: text, backgroundColor: "transparent" }}>
+                Cancelar
+              </button>
+              <button onClick={excluirPedido}
+                className="flex-1 py-3 rounded-lg font-semibold text-white transition hover:opacity-80"
+                style={{ backgroundColor: "#dc2626" }}>
+                Sim, excluir
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
