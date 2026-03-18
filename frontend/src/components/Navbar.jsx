@@ -39,13 +39,14 @@ function Navbar() {
         style={{ backgroundColor: t.bg, borderBottom: "2px solid " + t.borderForte }}>
         <div className="flex items-center justify-between px-5 md:px-12 py-4">
 
-          {/* LOGO */}
-          <Link to="/" onClick={fecharTudo}>
-            <img src="/LogoEmpresaMetzker.jpg" alt="Logo Metzker"
-              className="h-10 md:h-12 object-contain"
-              onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "block"; }} />
-            <span style={{ display: "none", color: t.text, fontWeight: "700", fontSize: "18px", letterSpacing: "3px" }}>METZKER</span>
-          </Link>
+          {/* LOGO + NAV — esquerda */}
+          <div className="flex items-center gap-10">
+            <Link to="/" onClick={fecharTudo}>
+              <img src="/LogoEmpresaMetzker.jpg" alt="Logo Metzker"
+                className="h-10 md:h-12 object-contain"
+                onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "block"; }} />
+              <span style={{ display: "none", color: t.text, fontWeight: "700", fontSize: "18px", letterSpacing: "3px" }}>METZKER</span>
+            </Link>
 
           {/* NAV DESKTOP */}
           <nav className="hidden md:flex gap-8 text-xs font-semibold tracking-widest">
@@ -58,6 +59,7 @@ function Navbar() {
             ))}
             {isAdmin && <Link to="/admin" style={{ color: "#dc2626" }} className="hover:opacity-70 transition">ADMIN</Link>}
           </nav>
+          </div>
 
           {/* DIREITA */}
           <div className="flex items-center gap-4">

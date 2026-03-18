@@ -101,6 +101,7 @@ function Catalogo() {
   const [alertas, setAlertas] = useState({});
   const [toastMsg, setToastMsg] = useState(null);
   const [filtro, setFiltro] = useState({ categoria: null, subcategoria: null });
+  const [filtroMobileAberto, setFiltroMobileAberto] = useState(false);
   const { addToCart } = useContext(CartContext);
 
   useEffect(() => {
@@ -154,15 +155,33 @@ function Catalogo() {
         </div>
       )}
 
-      <div style={{ borderBottom: "2px solid " + t.borderForte, backgroundColor: t.bg, padding: "16px 20px" }}>
+      <div style={{ borderBottom: "2px solid " + t.borderForte, backgroundColor: t.bg, padding: "16px 20px" }}
+        className="flex items-center justify-between">
         <p className="text-xs uppercase tracking-widest" style={{ color: t.textSecundario }}>
           {tituloAtivo} — {produtosFiltrados.length} produto{produtosFiltrados.length !== 1 ? "s" : ""}
         </p>
+        {/* Botão filtros — só mobile */}
+        <button
+          className="md:hidden flex items-center gap-2 text-xs uppercase tracking-wider px-3 py-1.5"
+          style={{ border: "1px solid " + t.borderForte, color: t.text, backgroundColor: t.bg }}
+          onClick={() => setFiltroMobileAberto(v => !v)}>
+          ☰ {filtroMobileAberto ? "Fechar" : "Filtros"}
+          {(filtro.categoria || filtro.subcategoria) && (
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: t.text }} />
+          )}
+        </button>
       </div>
+
+      {/* PAINEL DE FILTROS MOBILE */}
+      {filtroMobileAberto && (
+        <div className="md:hidden px-5 py-4" style={{ backgroundColor: t.bgSecundario, borderBottom: "2px solid " + t.borderForte }}>
+          <Sidebar filtro={filtro} setFiltro={(f) => { setFiltro(f); setFiltroMobileAberto(false); }} />
+        </div>
+      )}
 
       <div className="flex" style={{ minHeight: "calc(100vh - 100px)" }}>
         {/* SIDEBAR */}
-        <div style={{ padding: "24px 0 24px 24px" }}>
+        <div className="hidden md:block" style={{ padding: "24px 0 24px 24px" }}>
           <Sidebar filtro={filtro} setFiltro={setFiltro} />
         </div>
 
