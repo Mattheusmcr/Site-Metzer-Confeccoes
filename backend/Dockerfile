@@ -11,7 +11,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # CACHE_BUST — incrementar este número força rebuild completo a partir daqui
-ARG CACHE_BUST=20
+ARG CACHE_BUST=99
 COPY . .
 
 RUN DATABASE_URL=sqlite:///tmp/build.db python manage.py collectstatic --noinput
