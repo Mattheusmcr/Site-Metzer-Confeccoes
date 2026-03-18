@@ -19,10 +19,38 @@ const TIPOS_PRODUTO = [
 
 const TAMANHOS_ROUPAS = ["PP", "P", "M", "G", "GG", "XGG", "2XGG"];
 
+const CORES_OPCOES = [
+  { id: "branco",       label: "Branco",        hex: "#FFFFFF" },
+  { id: "preto",        label: "Preto",          hex: "#1a1a1a" },
+  { id: "cinza",        label: "Cinza",          hex: "#9ca3af" },
+  { id: "azul-marinho", label: "Azul Marinho",   hex: "#1e3a8a" },
+  { id: "azul-royal",   label: "Azul Royal",     hex: "#2563eb" },
+  { id: "vermelho",     label: "Vermelho",       hex: "#dc2626" },
+  { id: "verde",        label: "Verde",          hex: "#16a34a" },
+  { id: "amarelo",      label: "Amarelo",        hex: "#ca8a04" },
+  { id: "laranja",      label: "Laranja",        hex: "#ea580c" },
+  { id: "rosa",         label: "Rosa",           hex: "#db2777" },
+  { id: "roxo",         label: "Roxo",           hex: "#7c3aed" },
+  { id: "bege",         label: "Bege",           hex: "#d4b896" },
+  { id: "personalizada", label: "Outra / Me consulte", hex: null },
+];
+
+const MATERIAIS_OPCOES = [
+  { id: "algodao",        label: "100% Algodão",       descricao: "Macio, respirável, ideal para o dia a dia" },
+  { id: "poliester",      label: "Poliéster",           descricao: "Resistente, seca rápido, ótimo para esportes" },
+  { id: "malha-fria",     label: "Malha Fria",          descricao: "Leve e confortável para climas quentes" },
+  { id: "dry-fit",        label: "Dry Fit",             descricao: "Alta performance, absorve suor" },
+  { id: "piquet",         label: "Piquet (Polo)",       descricao: "Clássico para camisas polo" },
+  { id: "brim",           label: "Brim / Sarja",        descricao: "Resistente, ideal para calças e uniformes" },
+  { id: "nao-sei",        label: "Não sei / Me indique", descricao: "Nossa equipe recomenda o melhor para você" },
+];
+
 const FORM_INICIAL = {
   // Detalhes do pedido
   tiposProduto: [],
   quantidades: {}, // { "camisa-comum": { P: 2, M: 3 }, ... }
+  cores: [],
+  material: "",
   descricao: "",
   fotos: [],
   // Finalização
@@ -68,7 +96,9 @@ export default function Personalizado() {
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
   const [modalTipo, setModalTipo] = useState(false);
-  const [modalTamanhos, setModalTamanhos] = useState(null); // id do tipo aberto
+  const [modalTamanhos, setModalTamanhos] = useState(null);
+  const [modalCores, setModalCores] = useState(false);
+  const [modalMaterial, setModalMaterial] = useState(false);
 
   // ── helpers ──
   const inputStyle = {
@@ -148,7 +178,7 @@ export default function Personalizado() {
         estilo:        "",
         paleta:        "",
         aplicacoes:    form.tiposProduto,
-        referencia:    form.descricao,
+        referencia:    `Cores: ${form.cores.join(", ")} | Material: ${form.material} | ${form.descricao}`,
         observacoes:   form.observacoes,
         nome_cliente:  form.nomeCliente,
         telefone:      form.telefone,
@@ -163,6 +193,8 @@ export default function Personalizado() {
   }
 
   function enviarWhatsApp() {
+    const coresLabel = form.cores.map(id => CORES_OPCOES.find(c => c.id === id)?.label).join(", ");
+    const materialLabel = MATERIAIS_OPCOES.find(m => m.id === form.material)?.label || "";
     const resumo = form.tiposProduto.map(id => {
       const tipo = TIPOS_PRODUTO.find(t => t.id === id);
       if (isTipoRoupa(id)) {
@@ -179,6 +211,8 @@ export default function Personalizado() {
 📋 *Produtos solicitados:*
 ${resumo}
 
+🎨 *Cores:* ${coresLabel || "Não informado"}
+🧵 *Material:* ${materialLabel || "Não informado"}
 📝 *Descrição / ideia:* ${form.descricao || "Não informado"}
 📎 *Observações:* ${form.observacoes || "Nenhuma"}
 
@@ -338,6 +372,67 @@ ${resumo}
               </button>
             </div>
 
+            {/* CORES */}
+            <div>
+              <label style={labelStyle}>Cores desejadas</label>
+              {form.cores.length > 0 && (
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "10px" }}>
+                  {form.cores.map(id => {
+                    const cor = CORES_OPCOES.find(c => c.id === id);
+                    return (
+                      <div key={id} style={{
+                        display: "inline-flex", alignItems: "center", gap: "6px",
+                        padding: "4px 10px", border: "1px solid " + t.borderForte,
+                        backgroundColor: t.bgCard, fontSize: "12px", fontFamily: "system-ui",
+                      }}>
+                        {cor.hex && <span style={{ width: "12px", height: "12px", borderRadius: "50%", backgroundColor: cor.hex, border: "1px solid " + t.border, display: "inline-block", flexShrink: 0 }} />}
+                        {cor.label}
+                        <button onClick={() => setForm(prev => ({ ...prev, cores: prev.cores.filter(c => c !== id) }))}
+                          style={{ background: "none", border: "none", cursor: "pointer", color: t.textSecundario, fontSize: "12px", lineHeight: 1, padding: 0 }}>✕</button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              <button onClick={() => setModalCores(true)}
+                style={{
+                  display: "flex", alignItems: "center", gap: "8px", padding: "12px 16px",
+                  border: "2px dashed " + t.borderForte, backgroundColor: t.bgCard,
+                  color: t.text, cursor: "pointer", fontSize: "13px", fontFamily: "system-ui", width: "100%",
+                }}>
+                <span style={{ fontSize: "18px" }}>🎨</span>
+                {form.cores.length === 0 ? "Selecionar cores" : "Adicionar mais cores"}
+              </button>
+            </div>
+
+            {/* MATERIAL */}
+            <div>
+              <label style={labelStyle}>Material preferido</label>
+              {form.material && (
+                <div style={{ marginBottom: "10px", padding: "10px 14px", backgroundColor: t.bgSecundario, border: "1px solid " + t.border, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div>
+                    <p style={{ fontSize: "13px", fontWeight: "600", color: t.text, fontFamily: "system-ui" }}>
+                      {MATERIAIS_OPCOES.find(m => m.id === form.material)?.label}
+                    </p>
+                    <p style={{ fontSize: "11px", color: t.textSecundario, fontFamily: "system-ui", marginTop: "2px" }}>
+                      {MATERIAIS_OPCOES.find(m => m.id === form.material)?.descricao}
+                    </p>
+                  </div>
+                  <button onClick={() => setForm(prev => ({ ...prev, material: "" }))}
+                    style={{ background: "none", border: "none", cursor: "pointer", color: t.textSecundario, fontSize: "16px" }}>✕</button>
+                </div>
+              )}
+              <button onClick={() => setModalMaterial(true)}
+                style={{
+                  display: "flex", alignItems: "center", gap: "8px", padding: "12px 16px",
+                  border: "2px dashed " + t.borderForte, backgroundColor: t.bgCard,
+                  color: t.text, cursor: "pointer", fontSize: "13px", fontFamily: "system-ui", width: "100%",
+                }}>
+                <span style={{ fontSize: "18px" }}>🧵</span>
+                {!form.material ? "Selecionar material" : "Trocar material"}
+              </button>
+            </div>
+
             {/* DESCRIÇÃO */}
             <div>
               <label style={labelStyle}>Descrição do pedido (o que você está pensando)</label>
@@ -450,6 +545,32 @@ ${resumo}
                   <span style={{ fontSize: "11px", color: t.textSecundario, fontFamily: "system-ui", textTransform: "uppercase", letterSpacing: "0.1em" }}>Endereço</span>
                   <p style={{ fontSize: "13px", color: t.text, marginTop: "4px", fontFamily: "system-ui" }}>
                     {form.cidade}/{form.estado} — CEP: {form.cep}
+                  </p>
+                </div>
+              )}
+
+              {form.cores.length > 0 && (
+                <div style={{ padding: "10px 0", borderBottom: "1px solid " + t.border }}>
+                  <span style={{ fontSize: "11px", color: t.textSecundario, fontFamily: "system-ui", textTransform: "uppercase", letterSpacing: "0.1em" }}>Cores</span>
+                  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "6px" }}>
+                    {form.cores.map(id => {
+                      const cor = CORES_OPCOES.find(c => c.id === id);
+                      return (
+                        <span key={id} style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "12px", padding: "3px 8px", backgroundColor: t.bgSecundario, fontFamily: "system-ui" }}>
+                          {cor.hex && <span style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: cor.hex, border: "1px solid " + t.border, display: "inline-block" }} />}
+                          {cor.label}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {form.material && (
+                <div style={{ padding: "10px 0", borderBottom: "1px solid " + t.border }}>
+                  <span style={{ fontSize: "11px", color: t.textSecundario, fontFamily: "system-ui", textTransform: "uppercase", letterSpacing: "0.1em" }}>Material</span>
+                  <p style={{ fontSize: "13px", color: t.text, marginTop: "4px", fontFamily: "system-ui" }}>
+                    {MATERIAIS_OPCOES.find(m => m.id === form.material)?.label}
                   </p>
                 </div>
               )}
@@ -612,6 +733,81 @@ ${resumo}
           </div>
         )}
       </div>
+
+      {/* ══ MODAL — CORES ══ */}
+      {modalCores && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          onClick={e => { if (e.target === e.currentTarget) setModalCores(false); }}>
+          <div style={{ backgroundColor: t.bgCard, width: "100%", maxWidth: "480px", maxHeight: "80vh", overflowY: "auto", borderTop: "2px solid " + t.borderForte }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 20px 16px", borderBottom: "1px solid " + t.border }}>
+              <h3 style={{ fontSize: "16px", fontWeight: "600", color: t.text, fontFamily: "Georgia, serif" }}>🎨 Cores desejadas</h3>
+              <button onClick={() => setModalCores(false)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", color: t.text }}>✕</button>
+            </div>
+            <div style={{ padding: "16px", display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "8px" }}>
+              {CORES_OPCOES.map(cor => {
+                const selecionada = form.cores.includes(cor.id);
+                return (
+                  <button key={cor.id} onClick={() => setForm(prev => ({
+                    ...prev,
+                    cores: prev.cores.includes(cor.id) ? prev.cores.filter(c => c !== cor.id) : [...prev.cores, cor.id]
+                  }))}
+                    style={{
+                      display: "flex", alignItems: "center", gap: "10px", padding: "12px 14px",
+                      cursor: "pointer", textAlign: "left", fontFamily: "system-ui", fontSize: "13px",
+                      border: "2px solid " + (selecionada ? t.text : t.border),
+                      backgroundColor: selecionada ? t.bgSecundario : t.bgCard,
+                      color: t.text,
+                    }}>
+                    <span style={{ width: "20px", height: "20px", borderRadius: "50%", flexShrink: 0, display: "inline-block",
+                      backgroundColor: cor.hex || "transparent",
+                      border: cor.hex ? "1px solid " + t.border : "2px dashed " + t.border }} />
+                    <span style={{ fontWeight: selecionada ? "600" : "400" }}>{cor.label}</span>
+                    {selecionada && <span style={{ marginLeft: "auto" }}>✓</span>}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ padding: "12px 16px 20px", borderTop: "1px solid " + t.border }}>
+              <button onClick={() => setModalCores(false)}
+                style={{ width: "100%", padding: "14px", backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText, border: "none", cursor: "pointer", fontWeight: "700", fontFamily: "system-ui", fontSize: "14px" }}>
+                Confirmar cores
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ MODAL — MATERIAL ══ */}
+      {modalMaterial && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          onClick={e => { if (e.target === e.currentTarget) setModalMaterial(false); }}>
+          <div style={{ backgroundColor: t.bgCard, width: "100%", maxWidth: "480px", maxHeight: "80vh", overflowY: "auto", borderTop: "2px solid " + t.borderForte }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 20px 16px", borderBottom: "1px solid " + t.border }}>
+              <h3 style={{ fontSize: "16px", fontWeight: "600", color: t.text, fontFamily: "Georgia, serif" }}>🧵 Material preferido</h3>
+              <button onClick={() => setModalMaterial(false)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", color: t.text }}>✕</button>
+            </div>
+            <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
+              {MATERIAIS_OPCOES.map(mat => {
+                const selecionado = form.material === mat.id;
+                return (
+                  <button key={mat.id} onClick={() => { setForm(prev => ({ ...prev, material: mat.id })); setModalMaterial(false); }}
+                    style={{
+                      display: "flex", flexDirection: "column", alignItems: "flex-start", padding: "14px 16px",
+                      cursor: "pointer", textAlign: "left", fontFamily: "system-ui",
+                      border: "2px solid " + (selecionado ? t.text : t.border),
+                      backgroundColor: selecionado ? t.bgSecundario : t.bgCard,
+                    }}>
+                    <span style={{ fontSize: "13px", fontWeight: "600", color: t.text }}>{mat.label} {selecionado ? "✓" : ""}</span>
+                    <span style={{ fontSize: "11px", color: t.textSecundario, marginTop: "2px" }}>{mat.descricao}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ══ MODAL — SELECIONAR TIPOS ══ */}
       {modalTipo && (
