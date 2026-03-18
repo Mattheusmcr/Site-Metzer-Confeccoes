@@ -21,7 +21,6 @@ class Produto(models.Model):
         ('gola-polo', 'Gola Polo'),
         ('camisa-comum', 'Camisa Comum'),
         ('calca', 'Calça'),
-        ('logos', 'Logos'),
         ('impressoes', 'Impressões'),
         ('logos-acm', 'Logos ACM'),
     ]
