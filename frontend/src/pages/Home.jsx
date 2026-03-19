@@ -156,8 +156,8 @@ export default function Home() {
           {/* Foto */}
           <div className="relative overflow-hidden"
             style={{ minHeight: "300px", opacity: missaoVisible ? 1 : 0, transform: missaoVisible ? "translateX(0)" : "translateX(30px)", transition: "all 0.9s ease 0.25s" }}>
-            <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=900"
-              alt="Metzker" className="w-full h-full object-cover" style={{ minHeight: "300px" }} />
+            <img src="/FotoMetkzerepai.jpg"
+              alt="Metzkerepai" className="w-full h-full object-cover" style={{ minHeight: "300px" }} />
             <div className="absolute bottom-8 left-8 px-6 py-4"
               style={{ backgroundColor: "rgba(26,26,26,0.9)", color: "white" }}>
               <p className="uppercase" style={{ fontSize: "9px", letterSpacing: "0.2em", color: "rgba(255,255,255,0.5)", fontFamily: "system-ui" }}>
