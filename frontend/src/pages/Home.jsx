@@ -4,9 +4,9 @@ import { Link } from "react-router-dom";
 const GALERIA_KEY = "metzker_galeria_trabalhos";
 
 const GALERIA_PADRAO = [
-  "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=800",
-  "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=800",
-  "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=800",
+  "/Galeria1.jpeg",
+  "/Galeria2.jpeg",
+  "/Galeria3.jpeg",
 ];
 
 const heroImages = [
