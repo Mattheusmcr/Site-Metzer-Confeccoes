@@ -11,9 +11,8 @@ const t = {
 };
 
 const links = [
-  { to: "/",             label: "HOME" },
+  { to: "/",             label: "INÍCIO" },
   { to: "/catalogo",     label: "PORTFÓLIO" },
-  { to: "/infos",        label: "INFORMAÇÕES" },
   { to: "/pedidos",      label: "PEDIDOS" },
   { to: "/personalizado", label: "✦ PERSONALIZADO", cor: "#b45309" },
 ];

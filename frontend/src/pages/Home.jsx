@@ -7,9 +7,6 @@ const GALERIA_PADRAO = [
   "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=800",
   "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=800",
   "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=800",
-  "https://images.unsplash.com/photo-1565084888279-aca607ecce0c?q=80&w=800",
-  "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?q=80&w=800",
-  "https://images.unsplash.com/photo-1582719471384-894fbb16e074?q=80&w=800",
 ];
 
 const heroImages = [
@@ -37,7 +34,6 @@ function useReveal(threshold = 0.15) {
 
 export default function Home() {
   const [heroAtual, setHeroAtual] = useState(0);
-  const [galeriaIndex, setGaleriaIndex] = useState(0);
   const [galeria, setGaleria] = useState(() => {
     try { const s = localStorage.getItem(GALERIA_KEY); return s ? JSON.parse(s) : GALERIA_PADRAO; }
     catch { return GALERIA_PADRAO; }
@@ -46,12 +42,11 @@ export default function Home() {
   const [heroRef, heroVisible] = useReveal(0.01);
   const [sobreRef, sobreVisible] = useReveal();
   const [missaoRef, missaoVisible] = useReveal();
-  const [timelineRef, timelineVisible] = useReveal();
   const [galeriaRef, galeriaVisible] = useReveal();
 
   useEffect(() => {
-    const t = setInterval(() => setHeroAtual(c => (c + 1) % heroImages.length), 4500);
-    return () => clearInterval(t);
+    const timer = setInterval(() => setHeroAtual(c => (c + 1) % heroImages.length), 4500);
+    return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
@@ -60,22 +55,17 @@ export default function Home() {
     return () => window.removeEventListener("storage", fn);
   }, []);
 
+  // Usa até 3 fotos — se admin tiver mais, mostra navegação
+  const fotosMostradas = galeria.slice(0, 3);
+  const [galeriaIndex, setGaleriaIndex] = useState(0);
   const FOTOS_POR_SLIDE = 3;
   const totalSlides = Math.ceil(galeria.length / FOTOS_POR_SLIDE);
-
-  const timeline = [
-    { ano: "2015", titulo: "O Início", texto: "A Metzker nasceu do sonho de oferecer confecções de qualidade para Vila Velha e região, com atendimento próximo e personalizado." },
-    { ano: "2018", titulo: "Crescimento", texto: "Expandimos nosso catálogo com novas peças e passamos a atender clientes de todo o Espírito Santo." },
-    { ano: "2021", titulo: "Comunicação Visual", texto: "Ampliamos para serviços de comunicação visual, atendendo empresas com banners, logos e impressões personalizadas." },
-    { ano: "2024", titulo: "Presença Digital", texto: "Lançamos nossa loja online para atender clientes em todo o Brasil com a mesma qualidade de sempre." },
-  ];
 
   return (
     <div style={{ backgroundColor: t.bg, color: t.text, fontFamily: "Georgia, serif" }}>
 
       {/* ══ HERO ══ */}
-      <section ref={heroRef} className="relative overflow-hidden"
-        style={{ height: "100vh", minHeight: "600px" }}>
+      <section ref={heroRef} className="relative overflow-hidden" style={{ height: "100vh", minHeight: "600px" }}>
         {heroImages.map((img, i) => (
           <div key={i} className="absolute inset-0 transition-opacity duration-1000"
             style={{ opacity: heroAtual === i ? 1 : 0, backgroundImage: `url(${img})`, backgroundSize: "cover", backgroundPosition: "center" }} />
@@ -84,31 +74,31 @@ export default function Home() {
 
         <div className="relative z-10 h-full flex flex-col justify-center px-6 md:px-24"
           style={{ opacity: heroVisible ? 1 : 0, transform: heroVisible ? "translateY(0)" : "translateY(30px)", transition: "all 1s ease 0.2s" }}>
-          <p className="text-xs uppercase tracking-widest mb-6" style={{ color: "rgba(255,255,255,0.5)", letterSpacing: "0.3em" }}>
-            Metzker Confecções
+          <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.3em", color: "rgba(255,255,255,0.5)", marginBottom: "24px", fontFamily: "system-ui" }}>
+            Metzker Soluções
           </p>
-          <h1 style={{ fontSize: "clamp(2.5rem, 6vw, 5.5rem)", fontWeight: "300", color: "white", lineHeight: 1.1, maxWidth: "700px", letterSpacing: "-0.01em" }}>
-            Veste quem<br /><em style={{ fontStyle: "italic", fontWeight: "400" }}>tem estilo.</em>
+          <h1 style={{ fontSize: "clamp(2.2rem, 6vw, 5.5rem)", fontWeight: "300", color: "white", lineHeight: 1.1, maxWidth: "700px", letterSpacing: "-0.01em" }}>
+            Produção têxtil e<br /><em style={{ fontStyle: "italic", fontWeight: "400" }}>comunicação visual</em><br />alinhadas para fortalecer marcas.
           </h1>
-          <p className="mt-6 text-lg" style={{ color: "rgba(255,255,255,0.65)", maxWidth: "420px", lineHeight: 1.7, fontFamily: "system-ui, sans-serif" }}>
-            Moda com identidade, qualidade e estilo para quem veste atitude.
+          <p className="mt-6" style={{ color: "rgba(255,255,255,0.65)", maxWidth: "480px", lineHeight: 1.8, fontFamily: "system-ui", fontSize: "15px" }}>
+            Qualidade, consistência e identidade em cada entrega.
           </p>
           <div className="flex gap-4 mt-10 flex-wrap">
             <Link to="/catalogo"
               className="px-8 py-3 text-sm uppercase tracking-widest font-medium transition hover:opacity-80"
-              style={{ backgroundColor: "white", color: "#1a1a1a", letterSpacing: "0.15em" }}>
-              Ver Catálogo
+              style={{ backgroundColor: "white", color: "#1a1a1a", letterSpacing: "0.15em", fontFamily: "system-ui" }}>
+              Ver Portfólio
             </Link>
             <a href="https://wa.me/5527997878391" target="_blank" rel="noreferrer"
               className="px-8 py-3 text-sm uppercase tracking-widest font-medium transition hover:bg-white hover:text-black"
-              style={{ border: "1px solid rgba(255,255,255,0.6)", color: "white", letterSpacing: "0.15em" }}>
+              style={{ border: "1px solid rgba(255,255,255,0.6)", color: "white", letterSpacing: "0.15em", fontFamily: "system-ui" }}>
               WhatsApp
             </a>
           </div>
         </div>
 
         {/* Indicadores */}
-        <div className="absolute bottom-8 left-16 flex gap-3 z-10">
+        <div className="absolute bottom-8 left-6 md:left-16 flex gap-3 z-10">
           {heroImages.map((_, i) => (
             <button key={i} onClick={() => setHeroAtual(i)} style={{
               width: i === heroAtual ? "32px" : "8px", height: "2px", border: "none", cursor: "pointer",
@@ -116,133 +106,78 @@ export default function Home() {
             }} />
           ))}
         </div>
-
-        {/* Scroll hint */}
-        <div className="absolute bottom-8 right-16 z-10 flex-col items-center gap-2 hidden md:flex">
-          <p className="text-xs uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.4)", writingMode: "vertical-rl" }}>
-            Scroll
-          </p>
-          <div style={{ width: "1px", height: "40px", backgroundColor: "rgba(255,255,255,0.2)" }}>
-            <div style={{ width: "1px", height: "20px", backgroundColor: "white", animation: "scrollLine 1.5s ease-in-out infinite" }} />
-          </div>
-        </div>
       </section>
 
-      {/* ══ NOSSA HISTÓRIA ══ */}
+      {/* ══ SOBRE — MISSÃO ══ */}
       <section ref={sobreRef} style={{ backgroundColor: t.bg }}>
-        {/* Título em destaque */}
+        {/* Título */}
         <div className="px-6 md:px-24 py-16 border-b" style={{ borderColor: t.borderForte }}>
-          <div className="flex items-end justify-between flex-wrap gap-6"
-            style={{ opacity: sobreVisible ? 1 : 0, transform: sobreVisible ? "translateY(0)" : "translateY(40px)", transition: "all 0.9s ease" }}>
-            <div>
-              <p className="text-xs uppercase tracking-widest mb-4" style={{ color: t.textSecundario, letterSpacing: "0.25em", fontFamily: "system-ui" }}>
-                Quem somos
-              </p>
-              <h2 style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: "300", lineHeight: 1.05, color: t.text, letterSpacing: "-0.02em" }}>
-                Nossa<br /><em style={{ fontStyle: "italic" }}>História</em>
-              </h2>
-            </div>
-            <p style={{ maxWidth: "420px", color: t.textSecundario, lineHeight: 1.8, fontFamily: "system-ui, sans-serif", fontSize: "15px" }}>
-              Somos uma empresa familiar localizada em Vila Velha, especializada em confecções de alta qualidade.
-              Trabalhamos com dedicação, atenção aos detalhes e compromisso com a satisfação dos nossos clientes.
+          <div style={{ opacity: sobreVisible ? 1 : 0, transform: sobreVisible ? "translateY(0)" : "translateY(40px)", transition: "all 0.9s ease" }}>
+            <p className="uppercase mb-4" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
+              Quem somos
             </p>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <h2 style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: "300", lineHeight: 1.05, color: t.text, letterSpacing: "-0.02em" }}>
+                Soluções com<br /><em style={{ fontStyle: "italic" }}>qualidade e atendimento</em><br />próximo e personalizado.
+              </h2>
+              <p style={{ maxWidth: "380px", color: t.textSecundario, lineHeight: 1.8, fontFamily: "system-ui", fontSize: "14px", flexShrink: 0 }}>
+                Cada projeto é desenvolvido para unir prazo, qualidade e satisfação — porque acreditamos que excelência deve ser acessível.
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Missão — texto + foto lado a lado */}
-        <div ref={missaoRef} className="grid grid-cols-1 md:grid-cols-2"
-          style={{ borderBottom: "2px solid " + t.borderForte }}>
-
-          {/* Texto esquerda */}
+        {/* Missão — texto + foto */}
+        <div ref={missaoRef} className="grid grid-cols-1 md:grid-cols-2" style={{ borderBottom: "2px solid " + t.borderForte }}>
           <div className="px-6 md:px-24 py-12 md:py-20 flex flex-col justify-center"
-            style={{
-              borderRight: "2px solid " + t.borderForte,
-              opacity: missaoVisible ? 1 : 0,
-              transform: missaoVisible ? "translateX(0)" : "translateX(-30px)",
-              transition: "all 0.9s ease 0.1s",
-            }}>
-            <p className="text-xs uppercase tracking-widest mb-6" style={{ color: t.textSecundario, fontFamily: "system-ui", letterSpacing: "0.25em" }}>
+            style={{ borderRight: "none", opacity: missaoVisible ? 1 : 0, transform: missaoVisible ? "translateX(0)" : "translateX(-30px)", transition: "all 0.9s ease 0.1s" }}>
+
+            <p className="uppercase mb-6" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
               Nossa Missão
             </p>
-            <h3 style={{ fontSize: "clamp(1.8rem, 3vw, 2.8rem)", fontWeight: "300", color: t.text, lineHeight: 1.2, marginBottom: "24px", letterSpacing: "-0.01em" }}>
-              Vestir com qualidade,<br /><em style={{ fontStyle: "italic" }}>atender com carinho.</em>
-            </h3>
-            <p style={{ color: t.textSecundario, lineHeight: 1.9, fontFamily: "system-ui, sans-serif", fontSize: "15px", marginBottom: "32px" }}>
-              Cada peça é pensada para combinar conforto, estilo e durabilidade — porque acreditamos que moda
-              de qualidade deve estar ao alcance de todos. Nossa equipe trabalha com dedicação para entregar
-              o melhor produto e a melhor experiência.
+            <p style={{ fontSize: "clamp(1.4rem, 2.5vw, 2.2rem)", fontWeight: "300", color: t.text, lineHeight: 1.3, marginBottom: "24px", letterSpacing: "-0.01em" }}>
+              Trabalhamos com dedicação para entregar o melhor produto e uma experiência que realmente faça a diferença.
             </p>
 
             {/* Números */}
-            <div className="flex gap-12">
-              {[{ num: "9+", label: "Anos de mercado" }, { num: "500+", label: "Clientes" }, { num: "1000+", label: "Peças" }].map(({ num, label }) => (
+            <div className="flex gap-12 mt-4">
+              {[
+                { num: "+20", label: "Anos de mercado" },
+                { num: "Todo", label: "Sudeste Brasileiro" },
+              ].map(({ num, label }) => (
                 <div key={label}>
                   <p style={{ fontSize: "2rem", fontWeight: "300", color: t.text, fontFamily: "Georgia, serif" }}>{num}</p>
-                  <p className="text-xs uppercase tracking-widest mt-1" style={{ color: t.textSecundario, fontFamily: "system-ui", letterSpacing: "0.15em" }}>{label}</p>
+                  <p className="uppercase mt-1" style={{ fontSize: "10px", letterSpacing: "0.15em", color: t.textSecundario, fontFamily: "system-ui" }}>{label}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Foto direita */}
+          {/* Foto */}
           <div className="relative overflow-hidden"
-            style={{ minHeight: "500px", opacity: missaoVisible ? 1 : 0, transform: missaoVisible ? "translateX(0)" : "translateX(30px)", transition: "all 0.9s ease 0.25s" }}>
+            style={{ minHeight: "300px", opacity: missaoVisible ? 1 : 0, transform: missaoVisible ? "translateX(0)" : "translateX(30px)", transition: "all 0.9s ease 0.25s" }}>
             <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=900"
-              alt="Metzker" className="w-full h-full object-cover"
-              style={{ minHeight: "500px" }} />
-            {/* Tag decorativa sobreposta */}
+              alt="Metzker" className="w-full h-full object-cover" style={{ minHeight: "300px" }} />
             <div className="absolute bottom-8 left-8 px-6 py-4"
               style={{ backgroundColor: "rgba(26,26,26,0.9)", color: "white" }}>
-              <p className="text-xs uppercase tracking-widest" style={{ letterSpacing: "0.2em", color: "rgba(255,255,255,0.5)", fontFamily: "system-ui" }}>
+              <p className="uppercase" style={{ fontSize: "9px", letterSpacing: "0.2em", color: "rgba(255,255,255,0.5)", fontFamily: "system-ui" }}>
                 Localização
               </p>
-              <p style={{ fontSize: "1.1rem", fontWeight: "300", fontFamily: "Georgia, serif", marginTop: "4px" }}>
-                Vila Velha, ES
+              <p style={{ fontSize: "1rem", fontWeight: "300", fontFamily: "Georgia, serif", marginTop: "4px" }}>
+                Polo Têxtil Santa Inês
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ══ LINHA DO TEMPO ══ */}
-      <section ref={timelineRef} style={{ backgroundColor: t.bgSecundario, borderBottom: "2px solid " + t.borderForte }}>
-        <div className="px-6 md:px-24 py-12 md:py-20">
-          <p className="text-xs uppercase tracking-widest mb-16 text-center" style={{ color: t.textSecundario, fontFamily: "system-ui", letterSpacing: "0.25em" }}>
-            Nossa trajetória
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-0">
-            {timeline.map((item, i) => (
-              <div key={item.ano}
-                style={{
-                  borderLeft: "1px solid " + t.borderForte,
-                  padding: "0 32px 0 32px",
-                  opacity: timelineVisible ? 1 : 0,
-                  transform: timelineVisible ? "translateY(0)" : "translateY(20px)",
-                  transition: `all 0.7s ease ${i * 0.12}s`,
-                }}>
-                <p style={{ fontSize: "3rem", fontWeight: "200", color: t.text, fontFamily: "Georgia, serif", lineHeight: 1, marginBottom: "16px" }}>
-                  {item.ano}
-                </p>
-                <p className="text-xs uppercase tracking-widest mb-3" style={{ color: t.textSecundario, fontFamily: "system-ui", letterSpacing: "0.2em" }}>
-                  {item.titulo}
-                </p>
-                <p style={{ color: t.textSecundario, fontSize: "14px", lineHeight: 1.8, fontFamily: "system-ui, sans-serif" }}>
-                  {item.texto}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ══ PORTFÓLIO ══ */}
-      <section ref={galeriaRef} style={{ backgroundColor: t.bg, borderBottom: "2px solid " + t.borderForte }}>
+      <section ref={galeriaRef} style={{ backgroundColor: t.bgSecundario, borderBottom: "2px solid " + t.borderForte }}>
         <div className="px-6 md:px-24 py-12 md:py-20">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 md:mb-16 gap-4"
             style={{ opacity: galeriaVisible ? 1 : 0, transform: galeriaVisible ? "translateY(0)" : "translateY(20px)", transition: "all 0.8s ease" }}>
             <div>
-              <p className="text-xs uppercase tracking-widest mb-4" style={{ color: t.textSecundario, fontFamily: "system-ui", letterSpacing: "0.25em" }}>
+              <p className="uppercase mb-4" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
                 Portfólio
               </p>
               <h2 style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: "300", color: t.text, letterSpacing: "-0.02em" }}>
@@ -252,26 +187,24 @@ export default function Home() {
             <Link to="/catalogo"
               className="text-sm uppercase tracking-widest transition hover:opacity-50"
               style={{ color: t.text, fontFamily: "system-ui", letterSpacing: "0.2em", borderBottom: "1px solid " + t.text, paddingBottom: "4px" }}>
-              Ver catálogo completo →
+              Ver portfólio completo →
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-0"
-            style={{ border: "2px solid " + t.borderForte }}>
+          {/* Grade de fotos — máx 3, navegação só se admin adicionar mais */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-0" style={{ border: "2px solid " + t.borderForte }}>
             {galeria.slice(galeriaIndex * FOTOS_POR_SLIDE, galeriaIndex * FOTOS_POR_SLIDE + FOTOS_POR_SLIDE).map((url, i) => (
               <div key={i} className="overflow-hidden relative group"
-                style={{ height: "400px", borderRight: i < 2 ? "2px solid " + t.borderForte : "none",
-                  opacity: galeriaVisible ? 1 : 0,
-                  transform: galeriaVisible ? "translateY(0)" : "translateY(20px)",
+                style={{ height: "350px", borderRight: i < 2 ? "2px solid " + t.borderForte : "none",
+                  opacity: galeriaVisible ? 1 : 0, transform: galeriaVisible ? "translateY(0)" : "translateY(20px)",
                   transition: `all 0.7s ease ${i * 0.1}s` }}>
                 <img src={url} alt={`Trabalho ${i + 1}`}
                   className="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
-                <div className="absolute inset-0 transition duration-300 opacity-0 group-hover:opacity-100"
-                  style={{ backgroundColor: "rgba(0,0,0,0.2)" }} />
               </div>
             ))}
           </div>
 
+          {/* Navegação só aparece se tiver mais de 3 fotos */}
           {totalSlides > 1 && (
             <div className="flex items-center gap-6 mt-8">
               <button onClick={() => setGaleriaIndex(i => i > 0 ? i - 1 : totalSlides - 1)}
@@ -297,17 +230,20 @@ export default function Home() {
       <section style={{ backgroundColor: t.text }}>
         <div className="px-6 md:px-24 py-16 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
           <div>
-            <p className="text-xs uppercase tracking-widest mb-4" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "system-ui", letterSpacing: "0.25em" }}>
+            <p className="uppercase mb-4" style={{ fontSize: "10px", letterSpacing: "0.25em", color: "rgba(255,255,255,0.4)", fontFamily: "system-ui" }}>
               Comunicação Visual
             </p>
-            <h2 style={{ fontSize: "clamp(1.8rem, 3.5vw, 3rem)", fontWeight: "300", color: "white", lineHeight: 1.2 }}>
-              Crie sua identidade<br /><em style={{ fontStyle: "italic" }}>visual do zero.</em>
+            <h2 style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.8rem)", fontWeight: "300", color: "white", lineHeight: 1.2 }}>
+              Tenha as soluções que sua empresa<br /><em style={{ fontStyle: "italic" }}>e seus eventos precisam.</em>
             </h2>
+            <p className="mt-3" style={{ color: "rgba(255,255,255,0.6)", fontFamily: "system-ui", fontSize: "14px", maxWidth: "480px", lineHeight: 1.7 }}>
+              Impressões digitais e personalização de logos para fachadas e ambientes internos.
+            </p>
           </div>
           <Link to="/personalizado"
             className="px-10 py-4 text-sm uppercase tracking-widest font-medium transition hover:opacity-80 shrink-0"
             style={{ backgroundColor: "white", color: "#1a1a1a", letterSpacing: "0.15em", fontFamily: "system-ui" }}>
-            Fazer Personalizado →
+            Quero orçar minha ideia →
           </Link>
         </div>
       </section>
@@ -315,30 +251,29 @@ export default function Home() {
       {/* ══ RODAPÉ ══ */}
       <footer style={{ backgroundColor: t.bgSecundario, borderTop: "2px solid " + t.borderForte }}>
         <div className="px-6 md:px-24 py-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
-          <div style={{ borderRight: "1px solid " + t.border, paddingRight: "40px" }}>
+          <div style={{ borderRight: "none", paddingRight: "0" }} className="md:border-r md:pr-10" style2={{ borderColor: t.border }}>
             <h3 className="mb-4 uppercase" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.text, fontFamily: "system-ui" }}>
-              Metzker Têxtil e Comunicações Visuais
+              Metzker Soluções
             </h3>
-            <p style={{ color: t.textSecundario, lineHeight: 1.8, fontFamily: "system-ui, sans-serif" }}>
-              Peças de alta qualidade focadas em conforto, estilo e durabilidade.
+            <p style={{ color: t.textSecundario, lineHeight: 1.8, fontFamily: "system-ui" }}>
+              Soluções completas com foco em qualidade, resistência e prazo.
             </p>
           </div>
-          <div style={{ borderRight: "1px solid " + t.border, paddingRight: "40px" }}>
+          <div className="md:border-r md:pr-10" style={{ borderColor: t.border }}>
             <h3 className="mb-4 uppercase" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.text, fontFamily: "system-ui" }}>Contato</h3>
             <p style={{ color: t.textSecundario, fontFamily: "system-ui" }}>WhatsApp</p>
-            <p style={{ color: t.text, fontFamily: "system-ui" }}>(27) 99885-3043</p>
+            <p style={{ color: t.text, fontFamily: "system-ui" }}>(27) 99787-8391</p>
             <p className="mt-2" style={{ color: t.textSecundario, fontFamily: "system-ui" }}>Email</p>
-            <p style={{ color: t.text, fontFamily: "system-ui" }}>contato@metzker.com</p>
+            <p style={{ color: t.text, fontFamily: "system-ui" }}>andremetzkrr@gmail.com</p>
           </div>
           <div>
             <h3 className="mb-4 uppercase" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.text, fontFamily: "system-ui" }}>Localização</h3>
-            <p style={{ color: t.text, fontFamily: "system-ui" }}>Rua Tobias Barreto, 37</p>
-            <p style={{ color: t.text, fontFamily: "system-ui" }}>Vila Velha - ES</p>
+            <p style={{ color: t.text, fontFamily: "system-ui" }}>Polo Têxtil Santa Inês</p>
           </div>
         </div>
         <div style={{ borderTop: "1px solid " + t.borderForte, padding: "20px 24px" }}>
           <p className="text-xs" style={{ color: t.textSecundario, fontFamily: "system-ui", letterSpacing: "0.1em" }}>
-            &copy; {new Date().getFullYear()} Metzker Têxtil e Comunicações Visuais
+            &copy; {new Date().getFullYear()} Metzker Soluções
           </p>
         </div>
       </footer>

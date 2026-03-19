@@ -14,9 +14,11 @@ const CATEGORIAS = [
   {
     id: "roupas", label: "ITEM DE ROUPA",
     subcategorias: [
-      { id: "gola-polo",    label: "Polos"   },
-      { id: "camisa-comum", label: "Camisas" },
-      { id: "calca",        label: "Calças"  },
+      { id: "gola-polo",    label: "Polos"      },
+      { id: "camisa-comum", label: "Camisas"    },
+      { id: "baby-look",    label: "Baby Look"  },
+      { id: "infantil",     label: "Infantil"   },
+      { id: "calca",        label: "Calças"     },
     ],
   },
   {

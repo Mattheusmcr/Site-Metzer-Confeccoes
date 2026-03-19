@@ -10,14 +10,18 @@ const t = {
 };
 
 const TIPOS_PRODUTO = [
-  { id: "camisa-comum",       label: "Camisa Comum",        emoji: "👕" },
-  { id: "polo",               label: "Polo",                emoji: "👔" },
-  { id: "calcas",             label: "Calças",              emoji: "👖" },
-  { id: "logos-acm",         label: "Logos ACM",           emoji: "🪧" },
-  { id: "impressoes-digitais", label: "Impressões Digitais", emoji: "🖨️" },
+  { id: "camisa-comum",        label: "Camisa Comum",        emoji: "👕", tamanhos: "adulto" },
+  { id: "polo",                label: "Polo",                emoji: "👔", tamanhos: "adulto" },
+  { id: "baby-look",           label: "Baby Look",           emoji: "👗", tamanhos: "baby"   },
+  { id: "infantil",            label: "Infantil",            emoji: "🧒", tamanhos: "infantil"},
+  { id: "calcas",              label: "Calças",              emoji: "👖", tamanhos: "adulto" },
+  { id: "logos-acm",          label: "Logos ACM",           emoji: "🪧", tamanhos: null      },
+  { id: "impressoes-digitais", label: "Impressões Digitais", emoji: "🖨️", tamanhos: null     },
 ];
 
-const TAMANHOS_ROUPAS = ["PP", "P", "M", "G", "GG", "XGG", "2XGG"];
+const TAMANHOS_ROUPAS = ["PP", "P", "M", "G", "GG", "EXG", "EXGG"];
+const TAMANHOS_BABY_LOOK = ["PP", "P", "M", "G", "GG", "EXG", "EXGG"];
+const TAMANHOS_INFANTIL = ["4", "6", "8", "10", "12", "14"];
 
 const CORES_OPCOES = [
   { id: "branco",       label: "Branco",        hex: "#FFFFFF" },
@@ -83,7 +87,7 @@ function validarTel(v) {
   return "";
 }
 
-const isTipoRoupa = (id) => ["camisa-comum", "polo", "calcas"].includes(id);
+const isTipoRoupa = (id) => TIPOS_PRODUTO.find(t => t.id === id)?.tamanhos !== null && TIPOS_PRODUTO.find(t => t.id === id)?.tamanhos !== undefined;
 
 export default function Personalizado() {
   const navigate = useNavigate();
@@ -887,7 +891,13 @@ ${resumo}
                       Informe a quantidade por tamanho:
                     </p>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
-                      {TAMANHOS_ROUPAS.map(tam => (
+                      {(() => {
+                        const tipoInfo = TIPOS_PRODUTO.find(t => t.id === modalTamanhos);
+                        const lista = tipoInfo?.tamanhos === "infantil" ? TAMANHOS_INFANTIL
+                          : tipoInfo?.tamanhos === "baby" ? TAMANHOS_BABY_LOOK
+                          : TAMANHOS_ROUPAS;
+                        return lista;
+                      })().map(tam => (
                         <div key={tam} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", border: "1px solid " + t.border, backgroundColor: (qtds[tam] || 0) > 0 ? t.bgSecundario : t.bgCard }}>
                           <span style={{ fontSize: "14px", fontWeight: "700", color: t.text, fontFamily: "system-ui", minWidth: "32px" }}>{tam}</span>
                           <div style={{ display: "flex", alignItems: "center", gap: "0" }}>

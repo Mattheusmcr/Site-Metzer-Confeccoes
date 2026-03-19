@@ -4,7 +4,6 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import Catalogo from "./pages/Catalogo";
 import Pedidos from "./pages/Pedidos";
-import Infos from "./pages/Infos";
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -23,8 +22,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/catalogo" element={<Catalogo />} />
-              <Route path="/infos" element={<Infos />} />
-              <Route path="/pedidos" element={<Pedidos />} />
+                            <Route path="/pedidos" element={<Pedidos />} />
           <Route path="/personalizado" element={<Personalizado />} />
               <Route path="/produto/:id" element={<ProdutoDetalhe />} />
               <Route path="/admin-login" element={<AdminLogin />} />
