@@ -9,6 +9,41 @@ const t = {
   btnPrimarioBg: "#1a1a1a", btnPrimarioText: "#FAF8F5",
 };
 
+// Formata telefone: (27) 99999-9999
+function formatTelefone(valor) {
+  const n = valor.replace(/\D/g, "").slice(0, 11);
+  if (n.length <= 2)  return n;
+  if (n.length <= 6)  return `(${n.slice(0,2)}) ${n.slice(2)}`;
+  if (n.length <= 10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
+  return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
+}
+
+// Formata CEP: 29000-000
+function formatCEP(valor) {
+  const n = valor.replace(/\D/g, "").slice(0, 8);
+  if (n.length <= 5) return n;
+  return `${n.slice(0,5)}-${n.slice(5)}`;
+}
+
+// Busca CEP na ViaCEP e preenche endereço
+async function buscarCEP(cep, setCliente) {
+  const numeros = cep.replace(/\D/g, "");
+  if (numeros.length !== 8) return;
+  try {
+    const res = await fetch(`https://viacep.com.br/ws/${numeros}/json/`);
+    const data = await res.json();
+    if (!data.erro) {
+      setCliente(prev => ({
+        ...prev,
+        rua:    data.logradouro || prev.rua,
+        bairro: data.bairro     || prev.bairro,
+        cidade: data.localidade || prev.cidade,
+        estado: data.uf         || prev.estado,
+      }));
+    }
+  } catch {}
+}
+
 function Pedidos() {
   const { cart, increase, decrease, removeFromCart, setCart } = useContext(CartContext);
   const [cliente, setCliente] = useState({
@@ -18,18 +53,37 @@ function Pedidos() {
   });
   const [erros, setErros] = useState({});
   const [tentouEnviar, setTentouEnviar] = useState(false);
+  const [mensagemEstoque, setMensagemEstoque] = useState("");
 
   const camposObrigatorios = ["nome", "telefone", "cep", "rua", "numero", "bairro", "cidade", "estado", "formaPagamento"];
   const total = cart.reduce((acc, item) => acc + (parseFloat(item.produto?.preco) || 0) * item.quantidade, 0);
-  const estoqueInsuficiente = cart.some(item => {
+
+  // Verifica estoque item a item
+  const itensComProblema = cart.filter(item => {
     const est = item.produto.estoques?.find(e => e.tamanho === item.tamanho);
     return !est || item.quantidade > est.quantidade;
   });
+  const estoqueInsuficiente = itensComProblema.length > 0;
 
   function handleChange(e) {
     const { name, value } = e.target;
-    setCliente({ ...cliente, [name]: value });
+    setCliente(prev => ({ ...prev, [name]: value }));
     if (tentouEnviar) setErros(prev => ({ ...prev, [name]: !value.trim() }));
+  }
+
+  function handleTelefone(e) {
+    const formatted = formatTelefone(e.target.value);
+    setCliente(prev => ({ ...prev, telefone: formatted }));
+    if (tentouEnviar) setErros(prev => ({ ...prev, telefone: !formatted.trim() }));
+  }
+
+  function handleCEP(e) {
+    const formatted = formatCEP(e.target.value);
+    setCliente(prev => ({ ...prev, cep: formatted }));
+    if (formatted.replace(/\D/g, "").length === 8) {
+      buscarCEP(formatted, setCliente);
+    }
+    if (tentouEnviar) setErros(prev => ({ ...prev, cep: !formatted.trim() }));
   }
 
   function validar() {
@@ -49,13 +103,34 @@ function Pedidos() {
 
   function enviarWhatsApp() {
     setTentouEnviar(true);
+    setMensagemEstoque("");
+
+    // Bloqueia se tiver estoque insuficiente
+    if (estoqueInsuficiente) {
+      const nomes = itensComProblema.map(i => i.produto.nome).join(", ");
+      setMensagemEstoque(`⚠️ Não é possível enviar o pedido pois os seguintes itens estão sem estoque suficiente: ${nomes}. Ajuste as quantidades ou remova os itens para continuar.`);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
     if (!validar() || cart.length === 0) return;
     window.open(`https://wa.me/5527997878391?text=${montarMensagem()}`, "_blank");
   }
 
   async function finalizarPedido() {
     setTentouEnviar(true);
-    if (!validar() || estoqueInsuficiente) return;
+    setMensagemEstoque("");
+
+    // Mostra mensagem de estoque mesmo ao clicar em confirmar
+    if (estoqueInsuficiente) {
+      const nomes = itensComProblema.map(i => i.produto.nome).join(", ");
+      setMensagemEstoque(`⚠️ Não é possível confirmar o pedido pois os seguintes itens estão sem estoque suficiente: ${nomes}. Ajuste as quantidades ou remova os itens para continuar.`);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    if (!validar()) return;
+
     try {
       await api.post("pedidos/", {
         nome_cliente: cliente.nome, telefone: cliente.telefone,
@@ -67,31 +142,43 @@ function Pedidos() {
       });
       window.open(`https://wa.me/5527997878391?text=${montarMensagem()}`, "_blank");
       setCart([]);
-    } catch { alert("Erro ao finalizar pedido."); }
+    } catch { alert("Erro ao finalizar pedido. Tente novamente."); }
   }
 
   const inputStyle = (campo) => ({
     width: "100%", padding: "10px 12px", borderRadius: "6px", boxSizing: "border-box",
     border: "1px solid " + (erros[campo] ? "#ef4444" : t.inputBorder),
     backgroundColor: erros[campo] ? "#fff5f5" : t.inputBg,
-    color: t.text, fontSize: "14px", outline: "none",
+    color: t.text, fontSize: "14px", outline: "none", fontFamily: "system-ui",
   });
   const labelStyle = (campo) => ({
     display: "block", fontSize: "11px", fontWeight: "600", marginBottom: "4px",
     textTransform: "uppercase", letterSpacing: "0.05em",
-    color: erros[campo] ? "#ef4444" : t.textSecundario,
+    color: erros[campo] ? "#ef4444" : t.textSecundario, fontFamily: "system-ui",
   });
   const cardStyle = { backgroundColor: t.bgCard, border: "1px solid " + t.border, borderRadius: "12px", padding: "24px" };
   const qtdErros = Object.keys(erros).filter(k => erros[k]).length;
 
   return (
     <div style={{ backgroundColor: t.bg, color: t.text, minHeight: "100vh" }}>
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-4xl mx-auto px-4 md:p-6 py-8">
         <h1 className="text-3xl font-bold mb-8" style={{ color: t.text }}>Finalizar Pedido</h1>
 
         {cart.length === 0 && <p style={{ color: t.textSecundario }}>Carrinho vazio.</p>}
 
-        {tentouEnviar && qtdErros > 0 && (
+        {/* ALERTA DE ESTOQUE — aparece ao tentar enviar/confirmar */}
+        {mensagemEstoque && (
+          <div className="rounded-xl p-4 mb-6 flex items-start gap-3"
+            style={{ backgroundColor: "#fef2f2", border: "2px solid #fecaca" }}>
+            <span style={{ fontSize: "20px" }}>🚫</span>
+            <div>
+              <p className="font-semibold" style={{ color: "#dc2626" }}>Pedido bloqueado — estoque insuficiente</p>
+              <p className="text-sm mt-1" style={{ color: "#7f1d1d" }}>{mensagemEstoque}</p>
+            </div>
+          </div>
+        )}
+
+        {tentouEnviar && qtdErros > 0 && !mensagemEstoque && (
           <div className="rounded-xl p-4 mb-6 flex items-start gap-3"
             style={{ backgroundColor: "#fff5f5", border: "1px solid #fecaca" }}>
             <span>⚠️</span>
@@ -112,14 +199,18 @@ function Pedidos() {
                 const semEstoque = !est || item.quantidade > est.quantidade;
                 return (
                   <div key={i} className="rounded-xl p-4 flex justify-between items-center"
-                    style={{ backgroundColor: t.bgCard, border: "1px solid " + t.border }}>
+                    style={{ backgroundColor: t.bgCard, border: "1px solid " + (semEstoque ? "#fecaca" : t.border) }}>
                     <div>
                       <p className="font-semibold" style={{ color: t.text }}>{item.produto.nome}</p>
                       <p className="text-sm" style={{ color: t.textSecundario }}>Tamanho: {item.tamanho}</p>
                       <p className="text-sm font-medium" style={{ color: t.text }}>
                         R$ {(parseFloat(item.produto?.preco || 0) * item.quantidade).toFixed(2)}
                       </p>
-                      {semEstoque && <p className="text-red-500 text-sm">⚠️ Estoque insuficiente</p>}
+                      {semEstoque && (
+                        <p className="text-sm font-semibold mt-1" style={{ color: "#dc2626" }}>
+                          🚫 Estoque insuficiente — remova ou reduza a quantidade
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <button onClick={() => decrease(item.produto.id, item.tamanho)}
@@ -144,42 +235,106 @@ function Pedidos() {
 
         {cart.length > 0 && (
           <div className="space-y-6">
+            {/* DADOS PESSOAIS */}
             <div style={cardStyle}>
               <h2 className="text-lg font-semibold mb-4" style={{ color: t.text }}>📋 Dados Pessoais</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><label style={labelStyle("nome")}>Nome completo *</label>
-                  <input name="nome" value={cliente.nome} onChange={handleChange} placeholder="Seu nome completo" style={inputStyle("nome")} />
-                  {erros.nome && <p className="text-red-500 text-xs mt-1">Campo obrigatório</p>}</div>
-                <div><label style={labelStyle("telefone")}>Telefone / WhatsApp *</label>
-                  <input name="telefone" value={cliente.telefone} onChange={handleChange} placeholder="(27) 99999-9999" style={inputStyle("telefone")} />
-                  {erros.telefone && <p className="text-red-500 text-xs mt-1">Campo obrigatório</p>}</div>
+                <div>
+                  <label style={labelStyle("nome")}>Nome completo *</label>
+                  <input name="nome" value={cliente.nome} onChange={handleChange}
+                    placeholder="Seu nome completo" style={inputStyle("nome")} />
+                  {erros.nome && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
+                </div>
+                <div>
+                  <label style={labelStyle("telefone")}>Telefone / WhatsApp *</label>
+                  <input name="telefone" value={cliente.telefone}
+                    onChange={handleTelefone}
+                    placeholder="(27) 99999-9999"
+                    inputMode="tel" maxLength={15}
+                    style={inputStyle("telefone")} />
+                  {erros.telefone && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
+                </div>
               </div>
             </div>
 
+            {/* ENDEREÇO */}
             <div style={cardStyle}>
               <h2 className="text-lg font-semibold mb-1" style={{ color: t.text }}>📍 Endereço de Entrega</h2>
-              <p className="text-sm mb-4" style={{ color: t.textSecundario }}>Todos os campos são obrigatórios.</p>
+              <p className="text-sm mb-4" style={{ color: t.textSecundario }}>Digite o CEP para preencher automaticamente.</p>
               <div className="grid md:grid-cols-3 gap-4">
-                {[["cep","CEP *","29000-000",1],["rua","Rua / Avenida *","Rua das Flores",2],["numero","Número *","123",1],
-                  ["complemento","Complemento","Apto 2",1],["bairro","Bairro *","Centro",1],
-                  ["cidade","Cidade *","Vila Velha",1],["estado","Estado *","ES",1]
-                ].map(([name, label, placeholder, span]) => (
-                  <div key={name} className={span === 2 ? "md:col-span-2" : ""}>
-                    <label style={labelStyle(name)}>{label}</label>
-                    <input name={name} value={cliente[name]} onChange={handleChange} placeholder={placeholder} style={inputStyle(name)} />
-                    {erros[name] && name !== "complemento" && <p className="text-red-500 text-xs mt-1">Campo obrigatório</p>}
-                  </div>
-                ))}
+                {/* CEP com auto-preenchimento */}
+                <div>
+                  <label style={labelStyle("cep")}>CEP *</label>
+                  <input name="cep" value={cliente.cep}
+                    onChange={handleCEP}
+                    placeholder="29000-000"
+                    inputMode="numeric" maxLength={9}
+                    style={inputStyle("cep")} />
+                  {erros.cep && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
+                  {cliente.cep.replace(/\D/g, "").length === 8 && cliente.cidade && (
+                    <p className="text-xs mt-1" style={{ color: "#16a34a" }}>✅ {cliente.cidade}/{cliente.estado}</p>
+                  )}
+                </div>
+
+                {/* Rua */}
+                <div className="md:col-span-2">
+                  <label style={labelStyle("rua")}>Rua / Avenida *</label>
+                  <input name="rua" value={cliente.rua} onChange={handleChange}
+                    placeholder="Rua das Flores" style={inputStyle("rua")} />
+                  {erros.rua && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
+                </div>
+
+                {/* Número */}
+                <div>
+                  <label style={labelStyle("numero")}>Número *</label>
+                  <input name="numero" value={cliente.numero} onChange={handleChange}
+                    placeholder="123" style={inputStyle("numero")} />
+                  {erros.numero && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
+                </div>
+
+                {/* Complemento */}
+                <div>
+                  <label style={labelStyle("complemento")}>Complemento</label>
+                  <input name="complemento" value={cliente.complemento} onChange={handleChange}
+                    placeholder="Apto 2, Bloco B" style={inputStyle("complemento")} />
+                </div>
+
+                {/* Bairro */}
+                <div>
+                  <label style={labelStyle("bairro")}>Bairro *</label>
+                  <input name="bairro" value={cliente.bairro} onChange={handleChange}
+                    placeholder="Centro" style={inputStyle("bairro")} />
+                  {erros.bairro && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
+                </div>
+
+                {/* Cidade */}
+                <div>
+                  <label style={labelStyle("cidade")}>Cidade *</label>
+                  <input name="cidade" value={cliente.cidade} onChange={handleChange}
+                    placeholder="Vila Velha" style={inputStyle("cidade")} />
+                  {erros.cidade && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
+                </div>
+
+                {/* Estado */}
+                <div>
+                  <label style={labelStyle("estado")}>Estado *</label>
+                  <input name="estado" value={cliente.estado} onChange={handleChange}
+                    placeholder="ES" maxLength={2}
+                    style={{ ...inputStyle("estado"), textTransform: "uppercase" }}
+                    onInput={e => { e.target.value = e.target.value.toUpperCase(); }} />
+                  {erros.estado && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
+                </div>
               </div>
             </div>
 
+            {/* PAGAMENTO */}
             <div style={{ ...cardStyle, borderColor: erros.formaPagamento ? "#fecaca" : t.border }}>
               <h2 className="text-lg font-semibold mb-1" style={{ color: t.text }}>💳 Forma de Pagamento *</h2>
-              {erros.formaPagamento && <p className="text-red-500 text-sm mb-3">⚠️ Selecione uma forma de pagamento</p>}
+              {erros.formaPagamento && <p className="text-sm mb-3" style={{ color: "#dc2626" }}>⚠️ Selecione uma forma de pagamento</p>}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
                 {["PIX", "Cartão de Crédito", "Cartão de Débito", "Dinheiro"].map(forma => (
                   <button key={forma}
-                    onClick={() => { setCliente({ ...cliente, formaPagamento: forma }); setErros(prev => ({ ...prev, formaPagamento: false })); }}
+                    onClick={() => { setCliente(prev => ({ ...prev, formaPagamento: forma })); setErros(prev => ({ ...prev, formaPagamento: false })); }}
                     className="py-3 px-4 rounded-lg text-sm font-medium transition"
                     style={{
                       backgroundColor: cliente.formaPagamento === forma ? t.btnPrimarioBg : t.bgSecundario,
@@ -190,6 +345,7 @@ function Pedidos() {
               </div>
             </div>
 
+            {/* OBSERVAÇÕES */}
             <div style={cardStyle}>
               <h2 className="text-lg font-semibold mb-4" style={{ color: t.text }}>
                 📝 Observações <span style={{ color: t.textSecundario, fontWeight: 400, fontSize: "14px" }}>(opcional)</span>
@@ -199,17 +355,18 @@ function Pedidos() {
                 style={{ ...inputStyle("observacao"), resize: "none" }} />
             </div>
 
+            {/* BOTÕES */}
             <div className="grid md:grid-cols-2 gap-4 pb-8">
               <button onClick={enviarWhatsApp}
                 className="py-4 rounded-xl font-semibold text-white flex items-center justify-center gap-2 hover:opacity-90 transition"
-                style={{ backgroundColor: "#22c55e" }}>💬 Enviar pelo WhatsApp</button>
-              <button onClick={finalizarPedido} disabled={estoqueInsuficiente}
+                style={{ backgroundColor: "#22c55e" }}>
+                💬 Enviar pelo WhatsApp
+              </button>
+              <button onClick={finalizarPedido}
                 className="py-4 rounded-xl font-semibold hover:opacity-90 transition"
-                style={{
-                  backgroundColor: estoqueInsuficiente ? "#d1c9c0" : t.btnPrimarioBg,
-                  color: estoqueInsuficiente ? t.textSecundario : t.btnPrimarioText,
-                  cursor: estoqueInsuficiente ? "not-allowed" : "pointer",
-                }}>✅ Confirmar Pedido</button>
+                style={{ backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText, cursor: "pointer" }}>
+                ✅ Confirmar Pedido
+              </button>
             </div>
           </div>
         )}
