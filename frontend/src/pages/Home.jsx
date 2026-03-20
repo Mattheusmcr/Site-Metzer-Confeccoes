@@ -153,7 +153,7 @@ export default function Home() {
             <img
               src="/FotoMetkzerepai.jpg"
               alt="Metzker"
-              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
             />
             <div style={{ position: "absolute", bottom: "32px", left: "32px", padding: "16px 24px", backgroundColor: "rgba(26,26,26,0.9)", color: "white" }}>
               <p style={{ fontSize: "9px", letterSpacing: "0.2em", color: "rgba(255,255,255,0.5)", fontFamily: "system-ui", textTransform: "uppercase" }}>
@@ -274,7 +274,10 @@ export default function Home() {
           </p>
           <p className="text-xs" style={{ color: t.textSecundario, fontFamily: "system-ui", letterSpacing: "0.05em" }}>
             Desenvolvido por{" "}
-            <span style={{ color: t.text, fontWeight: "600" }}>Matheus Costa Rodrigues</span>
+            <a href="https://github.com/Mattheusmcr" target="_blank" rel="noreferrer"
+              style={{ color: t.text, fontWeight: "600", textDecoration: "none", borderBottom: "1px solid " + t.border }}>
+              Matheus Costa Rodrigues
+            </a>
           </p>
         </div>
       </footer>
