@@ -16,8 +16,6 @@ const CATEGORIAS = [
     subcategorias: [
       { id: "gola-polo",    label: "Polos"      },
       { id: "camisa-comum", label: "Camisas"    },
-      { id: "baby-look",    label: "Baby Look"  },
-      { id: "infantil",     label: "Infantil"   },
       { id: "calca",        label: "Calças"     },
     ],
   },

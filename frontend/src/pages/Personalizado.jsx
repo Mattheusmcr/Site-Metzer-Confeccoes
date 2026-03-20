@@ -9,76 +9,42 @@ const t = {
   btnPrimarioBg: "#1a1a1a", btnPrimarioText: "#FAF8F5",
 };
 
-const TIPOS_PRODUTO = [
-  { id: "camisa-comum",        label: "Camisa Comum",        emoji: "👕", tamanhos: "adulto" },
-  { id: "polo",                label: "Polo",                emoji: "👔", tamanhos: "adulto" },
-  { id: "baby-look",           label: "Baby Look",           emoji: "👗", tamanhos: "baby"   },
-  { id: "infantil",            label: "Infantil",            emoji: "🧒", tamanhos: "infantil"},
-  { id: "calcas",              label: "Calças",              emoji: "👖", tamanhos: "adulto" },
-  { id: "logos-acm",          label: "Logos ACM",           emoji: "🪧", tamanhos: null      },
-  { id: "impressoes-digitais", label: "Impressões Digitais", emoji: "🖨️", tamanhos: null     },
+// ── CATEGORIAS PRINCIPAIS ──────────────────────────────────────────────────
+const CATEGORIAS = [
+  { id: "roupas",      label: "Item de Roupa",       emoji: "👕" },
+  { id: "comunicacao", label: "Comunicação Visual",  emoji: "🖨️" },
 ];
 
-const TAMANHOS_ROUPAS = ["PP", "P", "M", "G", "GG", "EXG", "EXGG"];
+// ── TIPOS POR CATEGORIA ────────────────────────────────────────────────────
+const TIPOS_ROUPA = [
+  { id: "camisa-comum", label: "Camisa Comum" },
+  { id: "polo",         label: "Polo" },
+  { id: "baby-look",   label: "Baby Look" },
+  { id: "infantil",    label: "Infantil" },
+  { id: "calcas",      label: "Calças" },
+];
+
+const TIPOS_COMUNICACAO = [
+  { id: "logos-acm",          label: "Logos ACM" },
+  { id: "impressoes-digitais", label: "Impressões Digitais" },
+];
+
+// ── TAMANHOS POR TIPO ──────────────────────────────────────────────────────
+const TAMANHOS_ADULTO    = ["PP", "P", "M", "G", "GG", "EXG", "EXGG"];
 const TAMANHOS_BABY_LOOK = ["PP", "P", "M", "G", "GG", "EXG", "EXGG"];
-const TAMANHOS_INFANTIL = ["4", "6", "8", "10", "12", "14"];
+const TAMANHOS_INFANTIL  = ["4", "6", "8", "10", "12", "14"];
+const TAMANHOS_CALCAS    = ["36", "38", "40", "42", "44", "46", "48", "50"];
+const MATERIAL_CALCAS    = ["Jeans", "Brim"];
 
-const CORES_OPCOES = [
-  { id: "branco",       label: "Branco",        hex: "#FFFFFF" },
-  { id: "preto",        label: "Preto",          hex: "#1a1a1a" },
-  { id: "cinza",        label: "Cinza",          hex: "#9ca3af" },
-  { id: "azul-marinho", label: "Azul Marinho",   hex: "#1e3a8a" },
-  { id: "azul-royal",   label: "Azul Royal",     hex: "#2563eb" },
-  { id: "vermelho",     label: "Vermelho",       hex: "#dc2626" },
-  { id: "verde",        label: "Verde",          hex: "#16a34a" },
-  { id: "amarelo",      label: "Amarelo",        hex: "#ca8a04" },
-  { id: "laranja",      label: "Laranja",        hex: "#ea580c" },
-  { id: "rosa",         label: "Rosa",           hex: "#db2777" },
-  { id: "roxo",         label: "Roxo",           hex: "#7c3aed" },
-  { id: "bege",         label: "Bege",           hex: "#d4b896" },
-  { id: "personalizada", label: "Outra / Me consulte", hex: null },
-];
-
-const MATERIAIS_OPCOES = [
-  { id: "pv",       label: "PV",            descricao: "Mistura de poliéster e viscose, caimento elegante" },
-  { id: "algodao",  label: "100% Algodão",  descricao: "Macio, respirável, ideal para o dia a dia" },
-  { id: "dry-fit",  label: "Dry Fit",       descricao: "Alta performance, absorve suor, ideal para esportes" },
-  { id: "outro",    label: "Outro — nos indique", descricao: "Descreva o material desejado na descrição do pedido" },
-];
-
-const FORM_INICIAL = {
-  // Detalhes do pedido
-  tiposProduto: [],
-  quantidades: {}, // { "camisa-comum": { P: 2, M: 3 }, ... }
-  cores: [],
-  material: "",
-  descricao: "",
-  fotos: [],
-  // Finalização
-  nomeCliente: "",
-  telefone: "",
-  email: "",
-  observacoes: "",
-};
-
-function emailValido(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
-function cepValido(c) { return /^\d{5}-?\d{3}$/.test(c.replace(/\D/g, "").padStart(8, "0")) && c.replace(/\D/g, "").length === 8; }
-
-async function buscarCep(cep, setForm) {
-  const numeros = cep.replace(/\D/g, "");
-  if (numeros.length !== 8) return;
-  try {
-    const res = await fetch(`https://viacep.com.br/ws/${numeros}/json/`);
-    const data = await res.json();
-    if (!data.erro) {
-      setForm(prev => ({
-        ...prev,
-        cidade: data.localidade || prev.cidade,
-        estado: data.uf || prev.estado,
-      }));
-    }
-  } catch {}
+function getTamanhos(tipoId) {
+  if (tipoId === "baby-look")  return TAMANHOS_BABY_LOOK;
+  if (tipoId === "infantil")   return TAMANHOS_INFANTIL;
+  if (tipoId === "calcas")     return TAMANHOS_CALCAS;
+  return TAMANHOS_ADULTO;
 }
+
+// ── HELPERS ────────────────────────────────────────────────────────────────
+function emailValido(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
 function validarTel(v) {
   const n = v.replace(/\D/g, "");
   if (!n) return "Obrigatório";
@@ -87,21 +53,34 @@ function validarTel(v) {
   return "";
 }
 
-const isTipoRoupa = (id) => TIPOS_PRODUTO.find(t => t.id === id)?.tamanhos !== null && TIPOS_PRODUTO.find(t => t.id === id)?.tamanhos !== undefined;
+const FORM_INICIAL = {
+  categoria: "",        // "roupas" | "comunicacao"
+  // Roupas
+  tiposRoupa: [],       // ids dos tipos selecionados
+  quantidades: {},      // { "camisa-comum": { P: 2, M: 3 }, ... }
+  materialCalca: "",    // "Jeans" | "Brim"
+  // Comunicação visual
+  tipoComunicacao: "",  // id do tipo
+  dimensoes: "",        // tamanho/dimensões do logo
+  // Comuns
+  descricao: "",
+  fotos: [],
+  // Finalização
+  nomeCliente: "", telefone: "", email: "",
+  cep: "", cidade: "", estado: "",
+  observacoes: "",
+};
 
 export default function Personalizado() {
   const navigate = useNavigate();
-  const [etapa, setEtapa] = useState(1);
+  const [etapa, setEtapa] = useState(1); // 1 = detalhes, 2 = finalizar
   const [form, setForm] = useState(FORM_INICIAL);
   const [enviado, setEnviado] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
-  const [modalTipo, setModalTipo] = useState(false);
-  const [modalTamanhos, setModalTamanhos] = useState(null);
-  const [modalCores, setModalCores] = useState(false);
-  const [modalMaterial, setModalMaterial] = useState(false);
+  const [modalTamanhos, setModalTamanhos] = useState(null); // tipoId aberto
 
-  // ── helpers ──
+  // ── styles ──
   const inputStyle = {
     width: "100%", padding: "12px 14px", outline: "none",
     border: "1px solid " + t.border, backgroundColor: t.bgCard,
@@ -111,21 +90,15 @@ export default function Personalizado() {
     display: "block", fontSize: "11px", fontWeight: "600", color: t.textSecundario,
     marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "system-ui",
   };
+  const btnPrimary = (ativo) => ({
+    padding: "14px", fontWeight: "700", fontSize: "14px", fontFamily: "system-ui",
+    cursor: ativo ? "pointer" : "not-allowed", border: "none",
+    backgroundColor: ativo ? t.btnPrimarioBg : t.border,
+    color: ativo ? t.btnPrimarioText : t.textSecundario,
+  });
 
-  function toggleTipo(id) {
-    setForm(prev => {
-      const existe = prev.tiposProduto.includes(id);
-      return {
-        ...prev,
-        tiposProduto: existe ? prev.tiposProduto.filter(t => t !== id) : [...prev.tiposProduto, id],
-        quantidades: existe
-          ? Object.fromEntries(Object.entries(prev.quantidades).filter(([k]) => k !== id))
-          : prev.quantidades,
-      };
-    });
-  }
-
-  function setQtdTamanho(tipoId, tamanho, valor) {
+  // ── quantidade por tamanho ──
+  function setQtd(tipoId, tamanho, valor) {
     const num = Math.max(0, parseInt(valor) || 0);
     setForm(prev => ({
       ...prev,
@@ -135,92 +108,103 @@ export default function Personalizado() {
       },
     }));
   }
-
   function totalTipo(tipoId) {
     return Object.values(form.quantidades[tipoId] || {}).reduce((a, b) => a + b, 0);
   }
 
-  // Validações etapa 1
-  const telErro = validarTel(form.telefone);
-  const etapa1Valida = form.tiposProduto.length > 0;
+  function toggleTipoRoupa(id) {
+    setForm(prev => {
+      const existe = prev.tiposRoupa.includes(id);
+      const novosTipos = existe ? prev.tiposRoupa.filter(t => t !== id) : [...prev.tiposRoupa, id];
+      const novasQtds = existe
+        ? Object.fromEntries(Object.entries(prev.quantidades).filter(([k]) => k !== id))
+        : prev.quantidades;
+      return { ...prev, tiposRoupa: novosTipos, quantidades: novasQtds,
+               materialCalca: novosTipos.includes("calcas") ? prev.materialCalca : "" };
+    });
+  }
 
-  // Validação finalização
+  // ── validações ──
+  const etapa1Valida = (() => {
+    if (!form.categoria) return false;
+    if (form.categoria === "roupas") return form.tiposRoupa.length > 0;
+    if (form.categoria === "comunicacao") return !!form.tipoComunicacao;
+    return false;
+  })();
+
   const finalizacaoValida = (
     form.nomeCliente.trim() &&
     !validarTel(form.telefone) &&
-    emailValido(form.email) &&
-    cepValido(form.cep) &&
-    form.cidade.trim() &&
-    form.estado.trim()
+    emailValido(form.email)
   );
 
   // ── salvar ──
   async function salvarNoBanco() {
     setSalvando(true); setErro("");
     try {
-      const resumoTipos = form.tiposProduto.map(id => {
-        const tipo = TIPOS_PRODUTO.find(t => t.id === id);
-        if (isTipoRoupa(id)) {
+      let resumo = "";
+      if (form.categoria === "roupas") {
+        resumo = form.tiposRoupa.map(id => {
+          const tipo = TIPOS_ROUPA.find(t => t.id === id);
           const qtds = form.quantidades[id] || {};
-          const detalhe = Object.entries(qtds)
-            .filter(([, v]) => v > 0)
-            .map(([tam, v]) => `${tam}: ${v}`)
-            .join(", ");
-          return `${tipo.label}${detalhe ? " (" + detalhe + ")" : ""}`;
-        }
-        return tipo.label;
-      }).join(" | ");
+          const det = Object.entries(qtds).filter(([, v]) => v > 0).map(([t, v]) => `${t}:${v}`).join(" ");
+          const mat = id === "calcas" && form.materialCalca ? ` [${form.materialCalca}]` : "";
+          return `${tipo.label}${mat}${det ? " (" + det + ")" : ""}`;
+        }).join(" | ");
+      } else {
+        const tipo = TIPOS_COMUNICACAO.find(t => t.id === form.tipoComunicacao);
+        resumo = `${tipo?.label}${form.dimensoes ? " — " + form.dimensoes : ""}`;
+      }
 
       await api.post("pedidos-personalizados/", {
         nome_empresa:  form.nomeCliente,
-        slogan:        "",
-        ramo:          resumoTipos,
-        quantidade:    form.tiposProduto.length,
-        estilo:        "",
-        paleta:        "",
-        aplicacoes:    form.tiposProduto,
-        referencia:    `Cores: ${form.cores.join(", ")} | Material: ${form.material} | ${form.descricao}`,
+        slogan:        form.categoria === "comunicacao" ? form.dimensoes : "",
+        ramo:          resumo,
+        quantidade:    form.categoria === "roupas" ? form.tiposRoupa.length : 1,
+        estilo:        form.categoria,
+        paleta:        form.materialCalca,
+        aplicacoes:    form.categoria === "roupas" ? form.tiposRoupa : [form.tipoComunicacao],
+        referencia:    form.descricao,
         observacoes:   form.observacoes,
         nome_cliente:  form.nomeCliente,
         telefone:      form.telefone,
         email:         form.email,
-        observacoes:   form.observacoes + (form.cep ? ` | CEP: ${form.cep} | ${form.cidade}/${form.estado}` : ""),
       });
       setEnviado(true);
     } catch (e) {
-      console.error(e.response?.data);
       setErro("Erro ao salvar. Tente novamente ou use o WhatsApp.");
     } finally { setSalvando(false); }
   }
 
   function enviarWhatsApp() {
-    const coresLabel = form.cores.map(id => CORES_OPCOES.find(c => c.id === id)?.label).join(", ");
-    const materialLabel = MATERIAIS_OPCOES.find(m => m.id === form.material)?.label || "";
-    const resumo = form.tiposProduto.map(id => {
-      const tipo = TIPOS_PRODUTO.find(t => t.id === id);
-      if (isTipoRoupa(id)) {
+    let resumo = "";
+    if (form.categoria === "roupas") {
+      resumo = form.tiposRoupa.map(id => {
+        const tipo = TIPOS_ROUPA.find(t => t.id === id);
         const qtds = form.quantidades[id] || {};
-        const detalhe = Object.entries(qtds).filter(([, v]) => v > 0).map(([t, v]) => `${t}: ${v}`).join(", ");
-        return `${tipo.label}${detalhe ? " — " + detalhe : ""}`;
-      }
-      return tipo.label;
-    }).join("\n");
+        const det = Object.entries(qtds).filter(([, v]) => v > 0).map(([t, v]) => `${t}: ${v}`).join(", ");
+        const mat = id === "calcas" && form.materialCalca ? ` [Material: ${form.materialCalca}]` : "";
+        return `${tipo.label}${mat}${det ? " — " + det : ""}`;
+      }).join("\n");
+    } else {
+      const tipo = TIPOS_COMUNICACAO.find(t => t.id === form.tipoComunicacao);
+      resumo = `${tipo?.label}${form.dimensoes ? "\nDimensões: " + form.dimensoes : ""}`;
+    }
 
     const msg = `
 🎨 *PEDIDO PERSONALIZADO — METZKER*
 
-📋 *Produtos solicitados:*
+📦 *Categoria:* ${form.categoria === "roupas" ? "Item de Roupa" : "Comunicação Visual"}
+
+📋 *Detalhes:*
 ${resumo}
 
-🎨 *Cores:* ${coresLabel || "Não informado"}
-🧵 *Material:* ${materialLabel || "Não informado"}
-📝 *Descrição / ideia:* ${form.descricao || "Não informado"}
-📎 *Observações:* ${form.observacoes || "Nenhuma"}
+📝 *Descrição:* ${form.descricao || "Não informado"}
+📝 *Observações:* ${form.observacoes || "Nenhuma"}
 
 👤 *Contato:* ${form.nomeCliente}
 📱 ${form.telefone}
 📧 ${form.email}
-📍 ${form.cidade}/${form.estado} — CEP: ${form.cep}
     `.trim();
 
     window.open(`https://wa.me/5527997878391?text=${encodeURIComponent(msg)}`, "_blank");
@@ -231,20 +215,17 @@ ${resumo}
     enviarWhatsApp();
   }
 
-  // ── sucesso ──
+  // ── SUCESSO ──
   if (enviado) return (
     <div style={{ backgroundColor: t.bg, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div className="text-center px-6" style={{ maxWidth: "480px" }}>
         <div style={{ fontSize: "64px", marginBottom: "24px" }}>🎉</div>
-        <h2 style={{ fontSize: "2rem", fontWeight: "300", color: t.text, marginBottom: "16px", fontFamily: "Georgia, serif" }}>
-          Pedido recebido!
-        </h2>
+        <h2 style={{ fontSize: "2rem", fontWeight: "300", color: t.text, marginBottom: "16px", fontFamily: "Georgia, serif" }}>Pedido recebido!</h2>
         <p style={{ color: t.textSecundario, lineHeight: 1.8, marginBottom: "32px", fontFamily: "system-ui" }}>
           Seu pedido foi registrado. Nossa equipe entrará em contato em breve.
         </p>
         <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
-          <button onClick={() => navigate("/")}
-            style={{ padding: "12px 24px", border: "1px solid " + t.border, color: t.text, backgroundColor: t.bg, cursor: "pointer", fontFamily: "system-ui" }}>
+          <button onClick={() => navigate("/")} style={{ padding: "12px 24px", border: "1px solid " + t.border, color: t.text, backgroundColor: t.bg, cursor: "pointer", fontFamily: "system-ui" }}>
             Voltar ao início
           </button>
           <button onClick={() => { setEnviado(false); setEtapa(1); setForm(FORM_INICIAL); }}
@@ -273,15 +254,12 @@ ${resumo}
           </p>
         </div>
 
-        {/* PROGRESSO — 2 etapas */}
+        {/* PROGRESSO */}
         <div style={{ marginBottom: "40px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
             {["Detalhes do pedido", "Finalizar pedido"].map((label, i) => (
-              <span key={i} style={{
-                fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em",
-                fontFamily: "system-ui", color: etapa > i ? t.text : t.textSecundario,
-                fontWeight: etapa === i + 1 ? "700" : "400",
-              }}>{label}</span>
+              <span key={i} style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: "system-ui",
+                color: etapa > i ? t.text : t.textSecundario, fontWeight: etapa === i + 1 ? "700" : "400" }}>{label}</span>
             ))}
           </div>
           <div style={{ height: "2px", backgroundColor: t.border }}>
@@ -289,216 +267,223 @@ ${resumo}
           </div>
         </div>
 
-        {/* ══ ETAPA 1 — DETALHES DO PEDIDO ══ */}
+        {/* ══ ETAPA 1 — DETALHES ══ */}
         {etapa === 1 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
             <h2 style={{ fontSize: "1.4rem", fontWeight: "400", color: t.text, fontFamily: "Georgia, serif" }}>
               Detalhes do Pedido
             </h2>
 
-            {/* TIPOS DE PRODUTO */}
+            {/* ESCOLHA DA CATEGORIA */}
             <div>
-              <label style={labelStyle}>Tipos de produto *</label>
+              <label style={labelStyle}>O que você precisa? *</label>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                {CATEGORIAS.map(cat => (
+                  <button key={cat.id} onClick={() => setForm(prev => ({ ...prev, categoria: cat.id, tiposRoupa: [], quantidades: {}, tipoComunicacao: "", dimensoes: "", materialCalca: "" }))}
+                    style={{
+                      padding: "20px 16px", cursor: "pointer", textAlign: "center", fontFamily: "system-ui",
+                      border: "2px solid " + (form.categoria === cat.id ? t.text : t.border),
+                      backgroundColor: form.categoria === cat.id ? t.text : t.bgCard,
+                      color: form.categoria === cat.id ? t.btnPrimarioText : t.text,
+                    }}>
+                    <div style={{ fontSize: "28px", marginBottom: "8px" }}>{cat.emoji}</div>
+                    <div style={{ fontWeight: "600", fontSize: "13px" }}>{cat.label}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-              {/* Itens selecionados */}
-              {form.tiposProduto.length > 0 && (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "12px" }}>
-                  {form.tiposProduto.map(id => {
-                    const tipo = TIPOS_PRODUTO.find(t => t.id === id);
-                    const total = totalTipo(id);
-                    const qtds = form.quantidades[id] || {};
-                    const tamanhosSelecionados = Object.entries(qtds).filter(([, v]) => v > 0);
-                    return (
-                      <div key={id}>
-                        {/* Tag do tipo */}
-                        <div style={{
-                          display: "inline-flex", alignItems: "center", gap: "8px",
-                          padding: "6px 12px", backgroundColor: t.text, color: t.btnPrimarioText,
-                          fontSize: "12px", fontFamily: "system-ui",
-                        }}>
-                          <span>{tipo.emoji} {tipo.label}</span>
-                          {isTipoRoupa(id) && total > 0 && (
-                            <span style={{ opacity: 0.7 }}>({total} un)</span>
-                          )}
-                          <button onClick={() => toggleTipo(id)}
-                            style={{ background: "none", border: "none", color: "rgba(255,255,255,0.7)", cursor: "pointer", fontSize: "14px", lineHeight: 1 }}>
-                            ✕
+            {/* ══ CAMPOS DE ROUPA ══ */}
+            {form.categoria === "roupas" && (
+              <>
+                {/* Tipos de roupa */}
+                <div>
+                  <label style={labelStyle}>Tipos de produto * (selecione um ou mais)</label>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {TIPOS_ROUPA.map(tipo => {
+                      const sel = form.tiposRoupa.includes(tipo.id);
+                      const total = totalTipo(tipo.id);
+                      const qtds = form.quantidades[tipo.id] || {};
+                      const tamSel = Object.entries(qtds).filter(([, v]) => v > 0);
+                      return (
+                        <div key={tipo.id}>
+                          <button onClick={() => toggleTipoRoupa(tipo.id)}
+                            style={{
+                              display: "flex", alignItems: "center", justifyContent: "space-between",
+                              width: "100%", padding: "14px 16px", cursor: "pointer", textAlign: "left",
+                              fontFamily: "system-ui", fontSize: "14px",
+                              border: "2px solid " + (sel ? t.text : t.border),
+                              backgroundColor: sel ? t.bgSecundario : t.bgCard, color: t.text,
+                            }}>
+                            <span style={{ fontWeight: sel ? "600" : "400" }}>{tipo.label}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              {sel && total > 0 && (
+                                <span style={{ fontSize: "12px", color: t.textSecundario }}>{total} un</span>
+                              )}
+                              <span style={{ fontSize: "18px", color: sel ? t.text : t.border }}>{sel ? "✓" : "+"}</span>
+                            </div>
                           </button>
+
+                          {/* Botão tamanhos + resumo */}
+                          {sel && (
+                            <div style={{ padding: "10px 16px", backgroundColor: t.bgSecundario, border: "1px solid " + t.border, borderTop: "none" }}>
+
+                              {/* Material — só para calças */}
+                              {tipo.id === "calcas" && (
+                                <div style={{ marginBottom: "12px" }}>
+                                  <label style={{ ...labelStyle, marginBottom: "8px" }}>Material da calça *</label>
+                                  <div style={{ display: "flex", gap: "8px" }}>
+                                    {MATERIAL_CALCAS.map(mat => (
+                                      <button key={mat} onClick={() => setForm(prev => ({ ...prev, materialCalca: mat }))}
+                                        style={{
+                                          padding: "8px 20px", cursor: "pointer", fontFamily: "system-ui", fontSize: "13px",
+                                          border: "2px solid " + (form.materialCalca === mat ? t.text : t.border),
+                                          backgroundColor: form.materialCalca === mat ? t.text : t.bgCard,
+                                          color: form.materialCalca === mat ? t.btnPrimarioText : t.text,
+                                        }}>
+                                        {mat}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              <button onClick={() => setModalTamanhos(tipo.id)}
+                                style={{
+                                  display: "inline-flex", alignItems: "center", gap: "8px",
+                                  padding: "8px 14px", border: "1px solid " + t.borderForte,
+                                  backgroundColor: t.bgCard, color: t.text, cursor: "pointer",
+                                  fontSize: "12px", fontFamily: "system-ui",
+                                }}>
+                                📐 {tamSel.length > 0 ? "Editar tamanhos" : "Selecionar tamanhos e quantidades"}
+                              </button>
+
+                              {tamSel.length > 0 && (
+                                <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "8px" }}>
+                                  {tamSel.map(([tam, qtd]) => (
+                                    <span key={tam} style={{ fontSize: "11px", padding: "3px 8px", backgroundColor: t.bgCard, border: "1px solid " + t.border, fontFamily: "system-ui" }}>
+                                      {tam}: {qtd}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
-
-                        {/* Botão tamanhos e resumo — abaixo da tag, só para roupas */}
-                        {isTipoRoupa(id) && (
-                          <div style={{ marginTop: "8px", marginBottom: "4px" }}>
-                            <button onClick={() => setModalTamanhos(id)}
-                              style={{
-                                display: "inline-flex", alignItems: "center", gap: "8px",
-                                padding: "8px 14px", border: "1px solid " + t.borderForte,
-                                backgroundColor: t.bgCard, color: t.text, cursor: "pointer",
-                                fontSize: "12px", fontFamily: "system-ui",
-                              }}>
-                              📐 {tamanhosSelecionados.length > 0 ? "Editar tamanhos" : "Selecionar tamanhos"}
-                            </button>
-                            {/* Resumo dos tamanhos */}
-                            {tamanhosSelecionados.length > 0 && (
-                              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "8px" }}>
-                                {tamanhosSelecionados.map(([tam, qtd]) => (
-                                  <span key={tam} style={{
-                                    fontSize: "11px", padding: "3px 8px",
-                                    backgroundColor: t.bgSecundario,
-                                    border: "1px solid " + t.border,
-                                    color: t.text, fontFamily: "system-ui",
-                                  }}>
-                                    {tam}: {qtd}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
-              )}
+              </>
+            )}
 
-              {/* Botão abrir modal */}
-              <button onClick={() => setModalTipo(true)}
-                style={{
-                  display: "flex", alignItems: "center", gap: "8px", padding: "12px 16px",
-                  border: "2px dashed " + t.borderForte, backgroundColor: t.bgCard,
-                  color: t.text, cursor: "pointer", fontSize: "13px", fontFamily: "system-ui", width: "100%",
-                }}>
-                <span style={{ fontSize: "18px" }}>+</span>
-                {form.tiposProduto.length === 0 ? "Selecionar tipos de produto" : "Adicionar mais tipos"}
-              </button>
-            </div>
-
-            {/* CORES */}
-            <div>
-              <label style={labelStyle}>Cores desejadas</label>
-              {form.cores.length > 0 && (
-                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "10px" }}>
-                  {form.cores.map(id => {
-                    const cor = CORES_OPCOES.find(c => c.id === id);
-                    return (
-                      <div key={id} style={{
-                        display: "inline-flex", alignItems: "center", gap: "6px",
-                        padding: "4px 10px", border: "1px solid " + t.borderForte,
-                        backgroundColor: t.bgCard, fontSize: "12px", fontFamily: "system-ui",
-                      }}>
-                        {cor.hex && <span style={{ width: "12px", height: "12px", borderRadius: "50%", backgroundColor: cor.hex, border: "1px solid " + t.border, display: "inline-block", flexShrink: 0 }} />}
-                        {cor.label}
-                        <button onClick={() => setForm(prev => ({ ...prev, cores: prev.cores.filter(c => c !== id) }))}
-                          style={{ background: "none", border: "none", cursor: "pointer", color: t.textSecundario, fontSize: "12px", lineHeight: 1, padding: 0 }}>✕</button>
-                      </div>
-                    );
-                  })}
+            {/* ══ CAMPOS DE COMUNICAÇÃO VISUAL ══ */}
+            {form.categoria === "comunicacao" && (
+              <>
+                <div>
+                  <label style={labelStyle}>Tipo de serviço *</label>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {TIPOS_COMUNICACAO.map(tipo => (
+                      <button key={tipo.id} onClick={() => setForm(prev => ({ ...prev, tipoComunicacao: tipo.id }))}
+                        style={{
+                          display: "flex", alignItems: "center", gap: "12px", padding: "14px 16px",
+                          cursor: "pointer", textAlign: "left", fontFamily: "system-ui", fontSize: "14px",
+                          border: "2px solid " + (form.tipoComunicacao === tipo.id ? t.text : t.border),
+                          backgroundColor: form.tipoComunicacao === tipo.id ? t.bgSecundario : t.bgCard,
+                          color: t.text, fontWeight: form.tipoComunicacao === tipo.id ? "600" : "400",
+                        }}>
+                        {form.tipoComunicacao === tipo.id ? "✓" : "○"} {tipo.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              )}
-              <button onClick={() => setModalCores(true)}
-                style={{
-                  display: "flex", alignItems: "center", gap: "8px", padding: "12px 16px",
-                  border: "2px dashed " + t.borderForte, backgroundColor: t.bgCard,
-                  color: t.text, cursor: "pointer", fontSize: "13px", fontFamily: "system-ui", width: "100%",
-                }}>
-                <span style={{ fontSize: "18px" }}>🎨</span>
-                {form.cores.length === 0 ? "Selecionar cores" : "Adicionar mais cores"}
-              </button>
-            </div>
 
-            {/* MATERIAL */}
-            <div>
-              <label style={labelStyle}>Material preferido</label>
-              {form.material && (
-                <div style={{ marginBottom: "10px", padding: "10px 14px", backgroundColor: t.bgSecundario, border: "1px solid " + t.border, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                {/* Dimensões — só aparece quando tipo escolhido */}
+                {form.tipoComunicacao && (
                   <div>
-                    <p style={{ fontSize: "13px", fontWeight: "600", color: t.text, fontFamily: "system-ui" }}>
-                      {MATERIAIS_OPCOES.find(m => m.id === form.material)?.label}
-                    </p>
-                    <p style={{ fontSize: "11px", color: t.textSecundario, fontFamily: "system-ui", marginTop: "2px" }}>
-                      {MATERIAIS_OPCOES.find(m => m.id === form.material)?.descricao}
+                    <label style={labelStyle}>Dimensões / Tamanho *</label>
+                    <input value={form.dimensoes}
+                      onChange={e => setForm(prev => ({ ...prev, dimensoes: e.target.value }))}
+                      placeholder={form.tipoComunicacao === "logos-acm" ? "Ex: 1,2m x 0,8m ou A4, A3..." : "Ex: 50cm x 30cm, A4, Bandeira..."}
+                      style={inputStyle} />
+                    <p style={{ fontSize: "11px", color: t.textSecundario, marginTop: "4px", fontFamily: "system-ui" }}>
+                      Informe as dimensões desejadas ou o formato (A4, A3, banner, etc.)
                     </p>
                   </div>
-                  <button onClick={() => setForm(prev => ({ ...prev, material: "" }))}
-                    style={{ background: "none", border: "none", cursor: "pointer", color: t.textSecundario, fontSize: "16px" }}>✕</button>
+                )}
+              </>
+            )}
+
+            {/* DESCRIÇÃO — aparece sempre que categoria escolhida */}
+            {form.categoria && (
+              <>
+                <div>
+                  <label style={labelStyle}>
+                    {form.categoria === "roupas" ? "Descrição do pedido (estampa, cores, modelo...)" : "Descrição do projeto (o que você precisa?)"}
+                  </label>
+                  <textarea value={form.descricao}
+                    onChange={e => setForm(prev => ({ ...prev, descricao: e.target.value }))}
+                    rows={4}
+                    placeholder={form.categoria === "roupas"
+                      ? "Descreva a estampa, cores preferidas, estilo do modelo..."
+                      : "Descreva o logo, cores da empresa, estilo desejado, referências..."}
+                    style={{ ...inputStyle, resize: "none" }} />
                 </div>
-              )}
-              <button onClick={() => setModalMaterial(true)}
-                style={{
-                  display: "flex", alignItems: "center", gap: "8px", padding: "12px 16px",
-                  border: "2px dashed " + t.borderForte, backgroundColor: t.bgCard,
-                  color: t.text, cursor: "pointer", fontSize: "13px", fontFamily: "system-ui", width: "100%",
-                }}>
-                <span style={{ fontSize: "18px" }}>🧵</span>
-                {!form.material ? "Selecionar material" : "Trocar material"}
-              </button>
-            </div>
 
-            {/* DESCRIÇÃO */}
-            <div>
-              <label style={labelStyle}>Descrição do pedido (o que você está pensando)</label>
-              <textarea value={form.descricao}
-                onChange={e => setForm(prev => ({ ...prev, descricao: e.target.value }))}
-                rows={4}
-                placeholder="Descreva a ideia, cores que gosta, estilo que imagina, referências..."
-                style={{ ...inputStyle, resize: "none" }} />
-            </div>
-
-            {/* UPLOAD FOTOS — renomeado para Artes e Estampas */}
-            <div>
-              <label style={labelStyle}>Artes e estampas (opcional — até 5 imagens)</label>
-              <label style={{
-                display: "flex", flexDirection: "column", alignItems: "center",
-                justifyContent: "center", padding: "28px", cursor: "pointer",
-                border: "2px dashed " + t.borderForte, backgroundColor: t.bgCard,
-              }}>
-                <span style={{ fontSize: "28px", marginBottom: "8px" }}>📸</span>
-                <span style={{ fontSize: "13px", fontWeight: "500", color: t.text, fontFamily: "system-ui" }}>
-                  Clique para selecionar imagens
-                </span>
-                <span style={{ fontSize: "11px", color: t.textSecundario, marginTop: "4px", fontFamily: "system-ui" }}>
-                  PNG, JPG — até 5 arquivos
-                </span>
-                <input type="file" multiple accept="image/*" style={{ display: "none" }}
-                  onChange={e => {
-                    const files = Array.from(e.target.files).slice(0, 5);
-                    setForm(prev => ({ ...prev, fotos: files.map(f => ({ file: f, url: URL.createObjectURL(f) })) }));
-                  }} />
-              </label>
-              {form.fotos.length > 0 && (
-                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "10px" }}>
-                  {form.fotos.map((foto, i) => (
-                    <div key={i} style={{ position: "relative" }}>
-                      <img src={foto.url} alt="" style={{ width: "72px", height: "72px", objectFit: "cover", border: "1px solid " + t.border }} />
-                      <button onClick={() => setForm(prev => ({ ...prev, fotos: prev.fotos.filter((_, j) => j !== i) }))}
-                        style={{ position: "absolute", top: "-5px", right: "-5px", width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#ef4444", color: "white", border: "none", cursor: "pointer", fontSize: "10px" }}>
-                        ✕
-                      </button>
+                {/* Upload */}
+                <div>
+                  <label style={labelStyle}>
+                    {form.categoria === "roupas" ? "Artes e estampas (opcional — até 5 imagens)" : "Arquivos de referência (logo, imagens, exemplos — até 5)"}
+                  </label>
+                  <label style={{
+                    display: "flex", flexDirection: "column", alignItems: "center",
+                    justifyContent: "center", padding: "28px", cursor: "pointer",
+                    border: "2px dashed " + t.borderForte, backgroundColor: t.bgCard,
+                  }}>
+                    <span style={{ fontSize: "28px", marginBottom: "8px" }}>📎</span>
+                    <span style={{ fontSize: "13px", fontWeight: "500", color: t.text, fontFamily: "system-ui" }}>
+                      Clique para selecionar arquivos
+                    </span>
+                    <span style={{ fontSize: "11px", color: t.textSecundario, marginTop: "4px", fontFamily: "system-ui" }}>
+                      PNG, JPG, PDF — até 5 arquivos
+                    </span>
+                    <input type="file" multiple accept="image/*,.pdf" style={{ display: "none" }}
+                      onChange={e => {
+                        const files = Array.from(e.target.files).slice(0, 5);
+                        setForm(prev => ({ ...prev, fotos: files.map(f => ({ file: f, url: f.type.startsWith("image/") ? URL.createObjectURL(f) : null, name: f.name })) }));
+                      }} />
+                  </label>
+                  {form.fotos.length > 0 && (
+                    <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "10px" }}>
+                      {form.fotos.map((foto, i) => (
+                        <div key={i} style={{ position: "relative" }}>
+                          {foto.url
+                            ? <img src={foto.url} alt="" style={{ width: "72px", height: "72px", objectFit: "cover", border: "1px solid " + t.border }} />
+                            : <div style={{ width: "72px", height: "72px", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: t.bgSecundario, border: "1px solid " + t.border, fontSize: "11px", color: t.textSecundario, textAlign: "center", padding: "4px" }}>📄 {foto.name.split(".").pop().toUpperCase()}</div>
+                          }
+                          <button onClick={() => setForm(prev => ({ ...prev, fotos: prev.fotos.filter((_, j) => j !== i) }))}
+                            style={{ position: "absolute", top: "-5px", right: "-5px", width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#ef4444", color: "white", border: "none", cursor: "pointer", fontSize: "10px" }}>✕</button>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
+                  {form.fotos.length > 0 && (
+                    <p style={{ fontSize: "11px", color: t.textSecundario, marginTop: "6px", fontFamily: "system-ui" }}>
+                      💡 Envie os arquivos pelo WhatsApp após finalizar o pedido.
+                    </p>
+                  )}
                 </div>
-              )}
-              {form.fotos.length > 0 && (
-                <p style={{ fontSize: "11px", color: t.textSecundario, marginTop: "6px", fontFamily: "system-ui" }}>
-                  💡 Envie as imagens pelo WhatsApp após finalizar o pedido.
-                </p>
-              )}
-            </div>
+              </>
+            )}
 
             <button onClick={() => { if (etapa1Valida) setEtapa(2); }}
-              disabled={!etapa1Valida}
-              style={{
-                padding: "14px", fontWeight: "700", fontSize: "14px", fontFamily: "system-ui",
-                cursor: etapa1Valida ? "pointer" : "not-allowed",
-                backgroundColor: etapa1Valida ? t.btnPrimarioBg : t.border,
-                color: etapa1Valida ? t.btnPrimarioText : t.textSecundario, border: "none",
-              }}>
+              disabled={!etapa1Valida} style={{ ...btnPrimary(etapa1Valida), width: "100%" }}>
               Próximo →
             </button>
           </div>
         )}
 
-        {/* ══ ETAPA 2 — FINALIZAR PEDIDO ══ */}
+        {/* ══ ETAPA 2 — FINALIZAR ══ */}
         {etapa === 2 && (
           <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             <h2 style={{ fontSize: "1.4rem", fontWeight: "400", color: t.text, fontFamily: "Georgia, serif" }}>
@@ -511,27 +496,32 @@ ${resumo}
                 Resumo do pedido
               </p>
 
-              {/* Tipos e tamanhos */}
-              {form.tiposProduto.map(id => {
-                const tipo = TIPOS_PRODUTO.find(t => t.id === id);
+              <div style={{ padding: "8px 0", borderBottom: "1px solid " + t.border }}>
+                <span style={{ fontSize: "11px", color: t.textSecundario, fontFamily: "system-ui", textTransform: "uppercase" }}>Categoria</span>
+                <p style={{ fontSize: "13px", fontWeight: "600", color: t.text, fontFamily: "system-ui", marginTop: "4px" }}>
+                  {form.categoria === "roupas" ? "👕 Item de Roupa" : "🖨️ Comunicação Visual"}
+                </p>
+              </div>
+
+              {/* Resumo roupas */}
+              {form.categoria === "roupas" && form.tiposRoupa.map(id => {
+                const tipo = TIPOS_ROUPA.find(t => t.id === id);
                 const qtds = form.quantidades[id] || {};
-                const total = totalTipo(id);
+                const tamSel = Object.entries(qtds).filter(([, v]) => v > 0);
+                const total = tamSel.reduce((a, [, v]) => a + v, 0);
                 return (
                   <div key={id} style={{ padding: "10px 0", borderBottom: "1px solid " + t.border }}>
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span style={{ fontSize: "13px", fontWeight: "600", color: t.text, fontFamily: "system-ui" }}>
-                        {tipo.emoji} {tipo.label}
-                      </span>
-                      {isTipoRoupa(id) && total > 0 && (
-                        <span style={{ fontSize: "12px", color: t.textSecundario, fontFamily: "system-ui" }}>
-                          {total} unidade{total !== 1 ? "s" : ""}
-                        </span>
-                      )}
+                      <span style={{ fontSize: "13px", fontWeight: "600", color: t.text, fontFamily: "system-ui" }}>{tipo.label}</span>
+                      {total > 0 && <span style={{ fontSize: "12px", color: t.textSecundario, fontFamily: "system-ui" }}>{total} un</span>}
                     </div>
-                    {isTipoRoupa(id) && Object.entries(qtds).filter(([, v]) => v > 0).length > 0 && (
-                      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "6px" }}>
-                        {Object.entries(qtds).filter(([, v]) => v > 0).map(([tam, qtd]) => (
-                          <span key={tam} style={{ fontSize: "11px", padding: "2px 8px", backgroundColor: t.bgSecundario, color: t.text, fontFamily: "system-ui" }}>
+                    {id === "calcas" && form.materialCalca && (
+                      <p style={{ fontSize: "12px", color: t.textSecundario, fontFamily: "system-ui", marginTop: "2px" }}>Material: {form.materialCalca}</p>
+                    )}
+                    {tamSel.length > 0 && (
+                      <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "6px" }}>
+                        {tamSel.map(([tam, qtd]) => (
+                          <span key={tam} style={{ fontSize: "11px", padding: "2px 8px", backgroundColor: t.bgSecundario, border: "1px solid " + t.border, fontFamily: "system-ui" }}>
                             {tam}: {qtd}
                           </span>
                         ))}
@@ -541,88 +531,68 @@ ${resumo}
                 );
               })}
 
-              {form.cep && (
-                <div style={{ padding: "10px 0", borderBottom: "1px solid " + t.border }}>
-                  <span style={{ fontSize: "11px", color: t.textSecundario, fontFamily: "system-ui", textTransform: "uppercase", letterSpacing: "0.1em" }}>Endereço</span>
-                  <p style={{ fontSize: "13px", color: t.text, marginTop: "4px", fontFamily: "system-ui" }}>
-                    {form.cidade}/{form.estado} — CEP: {form.cep}
-                  </p>
-                </div>
-              )}
-
-              {form.cores.length > 0 && (
-                <div style={{ padding: "10px 0", borderBottom: "1px solid " + t.border }}>
-                  <span style={{ fontSize: "11px", color: t.textSecundario, fontFamily: "system-ui", textTransform: "uppercase", letterSpacing: "0.1em" }}>Cores</span>
-                  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "6px" }}>
-                    {form.cores.map(id => {
-                      const cor = CORES_OPCOES.find(c => c.id === id);
-                      return (
-                        <span key={id} style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "12px", padding: "3px 8px", backgroundColor: t.bgSecundario, fontFamily: "system-ui" }}>
-                          {cor.hex && <span style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: cor.hex, border: "1px solid " + t.border, display: "inline-block" }} />}
-                          {cor.label}
-                        </span>
-                      );
-                    })}
+              {/* Resumo comunicação */}
+              {form.categoria === "comunicacao" && (
+                <>
+                  <div style={{ padding: "10px 0", borderBottom: "1px solid " + t.border }}>
+                    <span style={{ fontSize: "11px", color: t.textSecundario, fontFamily: "system-ui", textTransform: "uppercase" }}>Serviço</span>
+                    <p style={{ fontSize: "13px", fontWeight: "600", color: t.text, fontFamily: "system-ui", marginTop: "4px" }}>
+                      {TIPOS_COMUNICACAO.find(t => t.id === form.tipoComunicacao)?.label}
+                    </p>
                   </div>
-                </div>
-              )}
-
-              {form.material && (
-                <div style={{ padding: "10px 0", borderBottom: "1px solid " + t.border }}>
-                  <span style={{ fontSize: "11px", color: t.textSecundario, fontFamily: "system-ui", textTransform: "uppercase", letterSpacing: "0.1em" }}>Material</span>
-                  <p style={{ fontSize: "13px", color: t.text, marginTop: "4px", fontFamily: "system-ui" }}>
-                    {MATERIAIS_OPCOES.find(m => m.id === form.material)?.label}
-                  </p>
-                </div>
+                  {form.dimensoes && (
+                    <div style={{ padding: "10px 0", borderBottom: "1px solid " + t.border }}>
+                      <span style={{ fontSize: "11px", color: t.textSecundario, fontFamily: "system-ui", textTransform: "uppercase" }}>Dimensões</span>
+                      <p style={{ fontSize: "13px", color: t.text, fontFamily: "system-ui", marginTop: "4px" }}>{form.dimensoes}</p>
+                    </div>
+                  )}
+                </>
               )}
 
               {form.descricao && (
                 <div style={{ padding: "10px 0", borderBottom: "1px solid " + t.border }}>
-                  <span style={{ fontSize: "11px", color: t.textSecundario, fontFamily: "system-ui", textTransform: "uppercase", letterSpacing: "0.1em" }}>Descrição</span>
-                  <p style={{ fontSize: "13px", color: t.text, marginTop: "4px", fontFamily: "system-ui" }}>{form.descricao}</p>
+                  <span style={{ fontSize: "11px", color: t.textSecundario, fontFamily: "system-ui", textTransform: "uppercase" }}>Descrição</span>
+                  <p style={{ fontSize: "13px", color: t.text, fontFamily: "system-ui", marginTop: "4px" }}>{form.descricao}</p>
                 </div>
               )}
 
               {form.fotos.length > 0 && (
                 <div style={{ paddingTop: "10px" }}>
-                  <span style={{ fontSize: "11px", color: t.textSecundario, fontFamily: "system-ui", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-                    Artes/Estampas ({form.fotos.length})
+                  <span style={{ fontSize: "11px", color: t.textSecundario, fontFamily: "system-ui", textTransform: "uppercase" }}>
+                    Arquivos ({form.fotos.length})
                   </span>
                   <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginTop: "8px" }}>
                     {form.fotos.map((foto, i) => (
-                      <img key={i} src={foto.url} alt="" style={{ width: "56px", height: "56px", objectFit: "cover", border: "1px solid " + t.border }} />
+                      foto.url
+                        ? <img key={i} src={foto.url} alt="" style={{ width: "56px", height: "56px", objectFit: "cover", border: "1px solid " + t.border }} />
+                        : <div key={i} style={{ width: "56px", height: "56px", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: t.bgSecundario, border: "1px solid " + t.border, fontSize: "10px", color: t.textSecundario }}>📄</div>
                     ))}
                   </div>
                 </div>
               )}
             </div>
 
-            {/* DADOS DE CONTATO — obrigatórios */}
+            {/* DADOS DE CONTATO */}
             <div style={{ borderTop: "2px solid " + t.borderForte, paddingTop: "20px" }}>
               <p style={{ fontSize: "13px", fontWeight: "600", color: t.text, fontFamily: "system-ui", marginBottom: "16px" }}>
                 Seus dados para contato *
               </p>
-
               <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                 <div>
                   <label style={labelStyle}>Nome completo *</label>
-                  <input value={form.nomeCliente}
-                    onChange={e => setForm(prev => ({ ...prev, nomeCliente: e.target.value }))}
+                  <input value={form.nomeCliente} onChange={e => setForm(prev => ({ ...prev, nomeCliente: e.target.value }))}
                     placeholder="Ex: João Silva" style={inputStyle} />
                 </div>
-
                 <div>
                   <label style={labelStyle}>Telefone / WhatsApp *</label>
                   <input value={form.telefone}
                     onChange={e => setForm(prev => ({ ...prev, telefone: e.target.value.replace(/[^0-9()\-\s+]/g, "") }))}
-                    placeholder="Ex: (27) 99999-9999"
-                    maxLength={15} inputMode="tel"
+                    placeholder="(27) 99999-9999" maxLength={15} inputMode="tel"
                     style={{ ...inputStyle, borderColor: form.telefone && validarTel(form.telefone) ? "#ef4444" : t.border }} />
                   {form.telefone && validarTel(form.telefone) && (
                     <p style={{ fontSize: "11px", color: "#ef4444", marginTop: "4px", fontFamily: "system-ui" }}>⚠️ {validarTel(form.telefone)}</p>
                   )}
                 </div>
-
                 <div>
                   <label style={labelStyle}>E-mail *</label>
                   <input value={form.email} type="email"
@@ -633,60 +603,19 @@ ${resumo}
                     <p style={{ fontSize: "11px", color: "#ef4444", marginTop: "4px", fontFamily: "system-ui" }}>⚠️ E-mail inválido</p>
                   )}
                 </div>
-
-                <div>
-                  <label style={labelStyle}>CEP *</label>
-                  <input value={form.cep}
-                    onChange={e => {
-                      const v = e.target.value.replace(/\D/g, "").slice(0, 8);
-                      const formatted = v.length > 5 ? v.slice(0,5) + "-" + v.slice(5) : v;
-                      setForm(prev => ({ ...prev, cep: formatted }));
-                      if (v.length === 8) buscarCep(v, setForm);
-                    }}
-                    placeholder="Ex: 29100-000"
-                    inputMode="numeric"
-                    maxLength={9}
-                    style={{ ...inputStyle, borderColor: form.cep && !cepValido(form.cep) ? "#ef4444" : t.border }} />
-                  {form.cep && !cepValido(form.cep) && (
-                    <p style={{ fontSize: "11px", color: "#ef4444", marginTop: "4px", fontFamily: "system-ui" }}>⚠️ CEP inválido — 8 dígitos</p>
-                  )}
-                  {form.cep && cepValido(form.cep) && form.cidade && (
-                    <p style={{ fontSize: "11px", color: "#16a34a", marginTop: "4px", fontFamily: "system-ui" }}>✅ {form.cidade}/{form.estado}</p>
-                  )}
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "12px" }}>
-                  <div>
-                    <label style={labelStyle}>Cidade *</label>
-                    <input value={form.cidade}
-                      onChange={e => setForm(prev => ({ ...prev, cidade: e.target.value }))}
-                      placeholder="Ex: Vila Velha" style={inputStyle} />
-                  </div>
-                  <div style={{ width: "80px" }}>
-                    <label style={labelStyle}>Estado *</label>
-                    <input value={form.estado}
-                      onChange={e => setForm(prev => ({ ...prev, estado: e.target.value.toUpperCase().slice(0, 2) }))}
-                      placeholder="ES" maxLength={2}
-                      style={{ ...inputStyle, textAlign: "center", textTransform: "uppercase" }} />
-                  </div>
-                </div>
-
                 <div>
                   <label style={labelStyle}>Observações finais (opcional)</label>
-                  <textarea value={form.observacoes}
-                    onChange={e => setForm(prev => ({ ...prev, observacoes: e.target.value }))}
-                    rows={3} placeholder="Alguma informação extra..."
-                    style={{ ...inputStyle, resize: "none" }} />
+                  <textarea value={form.observacoes} onChange={e => setForm(prev => ({ ...prev, observacoes: e.target.value }))}
+                    rows={3} placeholder="Alguma informação extra..." style={{ ...inputStyle, resize: "none" }} />
                 </div>
               </div>
             </div>
 
-            {/* INFO */}
             <div style={{ backgroundColor: t.bgSecundario, border: "1px solid " + t.border, padding: "14px" }}>
               <p style={{ fontSize: "13px", color: t.textSecundario, lineHeight: 1.7, fontFamily: "system-ui" }}>
                 ℹ️ <strong style={{ color: t.text }}>Finalizar pelo site</strong> registra o pedido no painel.
                 <strong style={{ color: t.text }}> Enviar pelo WhatsApp</strong> salva e abre o WhatsApp com tudo preenchido.
-                {form.fotos.length > 0 && " Envie as artes/estampas na conversa do WhatsApp."}
+                {form.fotos.length > 0 && " Envie os arquivos na conversa do WhatsApp."}
               </p>
             </div>
 
@@ -696,38 +625,22 @@ ${resumo}
               </div>
             )}
 
-            {!finalizacaoValida && (
-              <p style={{ fontSize: "12px", color: t.textSecundario, fontFamily: "system-ui" }}>
-                * Preencha nome, telefone e e-mail para finalizar.
-              </p>
-            )}
-
-            <div style={{ display: "flex", gap: "10px" }}>
-              <button onClick={() => setEtapa(1)}
-                style={{ flex: 1, padding: "14px", border: "1px solid " + t.border, color: t.text, backgroundColor: t.bg, cursor: "pointer", fontFamily: "system-ui", fontWeight: "600" }}>
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button onClick={() => setEtapa(1)} style={{ flex: 1, padding: "14px", border: "1px solid " + t.border, color: t.text, backgroundColor: t.bg, cursor: "pointer", fontFamily: "system-ui", fontWeight: "600" }}>
                 ← Voltar
               </button>
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               <button onClick={salvarNoBanco} disabled={salvando || !finalizacaoValida}
-                style={{
-                  padding: "16px", fontWeight: "700", fontSize: "15px", fontFamily: "system-ui",
-                  cursor: salvando || !finalizacaoValida ? "not-allowed" : "pointer",
-                  backgroundColor: salvando || !finalizacaoValida ? t.border : t.btnPrimarioBg,
-                  color: salvando || !finalizacaoValida ? t.textSecundario : t.btnPrimarioText,
-                  border: "none",
-                }}>
+                style={{ ...btnPrimary(!salvando && finalizacaoValida), width: "100%", padding: "16px" }}>
                 {salvando ? "Salvando..." : "✅ Finalizar pedido pelo site"}
               </button>
-
               <button onClick={finalizarComWhatsApp} disabled={salvando || !finalizacaoValida}
-                style={{
-                  padding: "16px", fontWeight: "600", fontSize: "14px", fontFamily: "system-ui",
+                style={{ width: "100%", padding: "16px", fontWeight: "600", fontSize: "14px", fontFamily: "system-ui",
                   cursor: salvando || !finalizacaoValida ? "not-allowed" : "pointer",
                   backgroundColor: salvando || !finalizacaoValida ? "#86efac" : "#22c55e",
-                  color: "white", border: "none",
-                }}>
+                  color: "white", border: "none" }}>
                 💬 Enviar pelo WhatsApp
               </button>
             </div>
@@ -735,178 +648,43 @@ ${resumo}
         )}
       </div>
 
-      {/* ══ MODAL — CORES ══ */}
-      {modalCores && (
-        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-          onClick={e => { if (e.target === e.currentTarget) setModalCores(false); }}>
-          <div style={{ backgroundColor: t.bgCard, width: "100%", maxWidth: "480px", maxHeight: "80vh", overflowY: "auto", borderTop: "2px solid " + t.borderForte }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 20px 16px", borderBottom: "1px solid " + t.border }}>
-              <h3 style={{ fontSize: "16px", fontWeight: "600", color: t.text, fontFamily: "Georgia, serif" }}>🎨 Cores desejadas</h3>
-              <button onClick={() => setModalCores(false)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", color: t.text }}>✕</button>
-            </div>
-            <div style={{ padding: "16px", display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "8px" }}>
-              {CORES_OPCOES.map(cor => {
-                const selecionada = form.cores.includes(cor.id);
-                return (
-                  <button key={cor.id} onClick={() => setForm(prev => ({
-                    ...prev,
-                    cores: prev.cores.includes(cor.id) ? prev.cores.filter(c => c !== cor.id) : [...prev.cores, cor.id]
-                  }))}
-                    style={{
-                      display: "flex", alignItems: "center", gap: "10px", padding: "12px 14px",
-                      cursor: "pointer", textAlign: "left", fontFamily: "system-ui", fontSize: "13px",
-                      border: "2px solid " + (selecionada ? t.text : t.border),
-                      backgroundColor: selecionada ? t.bgSecundario : t.bgCard,
-                      color: t.text,
-                    }}>
-                    <span style={{ width: "20px", height: "20px", borderRadius: "50%", flexShrink: 0, display: "inline-block",
-                      backgroundColor: cor.hex || "transparent",
-                      border: cor.hex ? "1px solid " + t.border : "2px dashed " + t.border }} />
-                    <span style={{ fontWeight: selecionada ? "600" : "400" }}>{cor.label}</span>
-                    {selecionada && <span style={{ marginLeft: "auto" }}>✓</span>}
-                  </button>
-                );
-              })}
-            </div>
-            <div style={{ padding: "12px 16px 20px", borderTop: "1px solid " + t.border }}>
-              <button onClick={() => setModalCores(false)}
-                style={{ width: "100%", padding: "14px", backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText, border: "none", cursor: "pointer", fontWeight: "700", fontFamily: "system-ui", fontSize: "14px" }}>
-                Confirmar cores
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ══ MODAL — MATERIAL ══ */}
-      {modalMaterial && (
-        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-          onClick={e => { if (e.target === e.currentTarget) setModalMaterial(false); }}>
-          <div style={{ backgroundColor: t.bgCard, width: "100%", maxWidth: "480px", maxHeight: "80vh", overflowY: "auto", borderTop: "2px solid " + t.borderForte }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 20px 16px", borderBottom: "1px solid " + t.border }}>
-              <h3 style={{ fontSize: "16px", fontWeight: "600", color: t.text, fontFamily: "Georgia, serif" }}>🧵 Material preferido</h3>
-              <button onClick={() => setModalMaterial(false)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", color: t.text }}>✕</button>
-            </div>
-            <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
-              {MATERIAIS_OPCOES.map(mat => {
-                const selecionado = form.material === mat.id;
-                return (
-                  <button key={mat.id} onClick={() => { setForm(prev => ({ ...prev, material: mat.id })); setModalMaterial(false); }}
-                    style={{
-                      display: "flex", flexDirection: "column", alignItems: "flex-start", padding: "14px 16px",
-                      cursor: "pointer", textAlign: "left", fontFamily: "system-ui",
-                      border: "2px solid " + (selecionado ? t.text : t.border),
-                      backgroundColor: selecionado ? t.bgSecundario : t.bgCard,
-                    }}>
-                    <span style={{ fontSize: "13px", fontWeight: "600", color: t.text }}>{mat.label} {selecionado ? "✓" : ""}</span>
-                    <span style={{ fontSize: "11px", color: t.textSecundario, marginTop: "2px" }}>{mat.descricao}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ══ MODAL — SELECIONAR TIPOS ══ */}
-      {modalTipo && (
-        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-          onClick={e => { if (e.target === e.currentTarget) setModalTipo(false); }}>
-          <div style={{
-            backgroundColor: t.bgCard, width: "100%", maxWidth: "480px",
-            maxHeight: "80vh", overflowY: "auto",
-            borderTop: "2px solid " + t.borderForte,
-          }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 20px 16px", borderBottom: "1px solid " + t.border }}>
-              <h3 style={{ fontSize: "16px", fontWeight: "600", color: t.text, fontFamily: "Georgia, serif" }}>
-                Tipos de produto
-              </h3>
-              <button onClick={() => setModalTipo(false)}
-                style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", color: t.text }}>✕</button>
-            </div>
-            <div style={{ padding: "16px" }}>
-              {TIPOS_PRODUTO.map(tipo => {
-                const selecionado = form.tiposProduto.includes(tipo.id);
-                return (
-                  <button key={tipo.id}
-                    onClick={() => toggleTipo(tipo.id)}
-                    style={{
-                      display: "flex", alignItems: "center", gap: "14px", width: "100%",
-                      padding: "14px 16px", marginBottom: "8px", cursor: "pointer",
-                      textAlign: "left", fontFamily: "system-ui", fontSize: "14px",
-                      border: "2px solid " + (selecionado ? t.text : t.border),
-                      backgroundColor: selecionado ? t.text : t.bgCard,
-                      color: selecionado ? t.btnPrimarioText : t.text,
-                    }}>
-                    <span style={{ fontSize: "22px" }}>{tipo.emoji}</span>
-                    <span style={{ fontWeight: "600" }}>{tipo.label}</span>
-                    {selecionado && <span style={{ marginLeft: "auto", fontSize: "16px" }}>✓</span>}
-                  </button>
-                );
-              })}
-            </div>
-            <div style={{ padding: "12px 16px 20px", borderTop: "1px solid " + t.border }}>
-              <button onClick={() => setModalTipo(false)}
-                style={{ width: "100%", padding: "14px", backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText, border: "none", cursor: "pointer", fontWeight: "700", fontFamily: "system-ui", fontSize: "14px" }}>
-                Confirmar seleção
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ══ MODAL — TAMANHOS E QUANTIDADES ══ */}
+      {/* ══ MODAL TAMANHOS ══ */}
       {modalTamanhos && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
           style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
           onClick={e => { if (e.target === e.currentTarget) setModalTamanhos(null); }}>
-          <div style={{
-            backgroundColor: t.bgCard, width: "100%", maxWidth: "480px",
-            maxHeight: "80vh", overflowY: "auto",
-            borderTop: "2px solid " + t.borderForte,
-          }}>
+          <div style={{ backgroundColor: t.bgCard, width: "100%", maxWidth: "480px", maxHeight: "80vh", overflowY: "auto", borderTop: "2px solid " + t.borderForte }}>
             {(() => {
-              const tipo = TIPOS_PRODUTO.find(t => t.id === modalTamanhos);
+              const tipo = TIPOS_ROUPA.find(t => t.id === modalTamanhos);
+              const tamanhos = getTamanhos(modalTamanhos);
               const qtds = form.quantidades[modalTamanhos] || {};
               const total = Object.values(qtds).reduce((a, b) => a + b, 0);
               return (
                 <>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 20px 16px", borderBottom: "1px solid " + t.border }}>
                     <div>
-                      <h3 style={{ fontSize: "16px", fontWeight: "600", color: t.text, fontFamily: "Georgia, serif" }}>
-                        {tipo?.emoji} {tipo?.label}
-                      </h3>
+                      <h3 style={{ fontSize: "16px", fontWeight: "600", color: t.text, fontFamily: "Georgia, serif" }}>{tipo?.label}</h3>
                       <p style={{ fontSize: "12px", color: t.textSecundario, fontFamily: "system-ui", marginTop: "2px" }}>
                         Total: {total} unidade{total !== 1 ? "s" : ""}
                       </p>
                     </div>
-                    <button onClick={() => setModalTamanhos(null)}
-                      style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", color: t.text }}>✕</button>
+                    <button onClick={() => setModalTamanhos(null)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", color: t.text }}>✕</button>
                   </div>
                   <div style={{ padding: "16px 20px" }}>
                     <p style={{ fontSize: "12px", color: t.textSecundario, fontFamily: "system-ui", marginBottom: "16px" }}>
                       Informe a quantidade por tamanho:
                     </p>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
-                      {(() => {
-                        const tipoInfo = TIPOS_PRODUTO.find(t => t.id === modalTamanhos);
-                        const lista = tipoInfo?.tamanhos === "infantil" ? TAMANHOS_INFANTIL
-                          : tipoInfo?.tamanhos === "baby" ? TAMANHOS_BABY_LOOK
-                          : TAMANHOS_ROUPAS;
-                        return lista;
-                      })().map(tam => (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px" }}>
+                      {tamanhos.map(tam => (
                         <div key={tam} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", border: "1px solid " + t.border, backgroundColor: (qtds[tam] || 0) > 0 ? t.bgSecundario : t.bgCard }}>
-                          <span style={{ fontSize: "14px", fontWeight: "700", color: t.text, fontFamily: "system-ui", minWidth: "32px" }}>{tam}</span>
-                          <div style={{ display: "flex", alignItems: "center", gap: "0" }}>
-                            <button onClick={() => setQtdTamanho(modalTamanhos, tam, (qtds[tam] || 0) - 1)}
+                          <span style={{ fontSize: "14px", fontWeight: "700", color: t.text, fontFamily: "system-ui", minWidth: "36px" }}>{tam}</span>
+                          <div style={{ display: "flex", alignItems: "center" }}>
+                            <button onClick={() => setQtd(modalTamanhos, tam, (qtds[tam] || 0) - 1)}
                               style={{ width: "28px", height: "28px", border: "1px solid " + t.border, backgroundColor: t.bg, color: t.text, cursor: "pointer", fontSize: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>−</button>
                             <span style={{ width: "36px", textAlign: "center", fontSize: "14px", fontWeight: "600", color: t.text, fontFamily: "system-ui", borderTop: "1px solid " + t.border, borderBottom: "1px solid " + t.border, padding: "4px 0", lineHeight: "20px" }}>
                               {qtds[tam] || 0}
                             </span>
-                            <button onClick={() => setQtdTamanho(modalTamanhos, tam, (qtds[tam] || 0) + 1)}
+                            <button onClick={() => setQtd(modalTamanhos, tam, (qtds[tam] || 0) + 1)}
                               style={{ width: "28px", height: "28px", border: "1px solid " + t.border, backgroundColor: t.bg, color: t.text, cursor: "pointer", fontSize: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
                           </div>
                         </div>

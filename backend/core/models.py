@@ -20,8 +20,6 @@ class Produto(models.Model):
     SUBCATEGORIA_CHOICES = [
         ('gola-polo', 'Gola Polo'),
         ('camisa-comum', 'Camisa Comum'),
-        ('baby-look', 'Baby Look'),
-        ('infantil', 'Infantil'),
         ('calca', 'Calça'),
         ('impressoes', 'Impressões'),
         ('logos-acm', 'Logos ACM'),
