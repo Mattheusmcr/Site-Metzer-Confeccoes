@@ -45,6 +45,35 @@ function getTamanhos(tipoId) {
 
 // ── HELPERS ────────────────────────────────────────────────────────────────
 function emailValido(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+
+function formatTel(v) {
+  const n = v.replace(/\D/g, "").slice(0, 11);
+  if (n.length <= 2)  return n;
+  if (n.length <= 6)  return `(${n.slice(0,2)}) ${n.slice(2)}`;
+  if (n.length <= 10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
+  return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
+}
+
+function formatCEP(v) {
+  const n = v.replace(/\D/g, "").slice(0, 8);
+  return n.length > 5 ? `${n.slice(0,5)}-${n.slice(5)}` : n;
+}
+
+async function buscarCEP(cep, setForm) {
+  const n = cep.replace(/\D/g, "");
+  if (n.length !== 8) return;
+  try {
+    const res = await fetch(`https://viacep.com.br/ws/${n}/json/`);
+    const data = await res.json();
+    if (!data.erro) {
+      setForm(prev => ({
+        ...prev,
+        cidade: data.localidade || prev.cidade,
+        estado: data.uf        || prev.estado,
+      }));
+    }
+  } catch {}
+}
 function validarTel(v) {
   const n = v.replace(/\D/g, "");
   if (!n) return "Obrigatório";
@@ -127,15 +156,28 @@ export default function Personalizado() {
   // ── validações ──
   const etapa1Valida = (() => {
     if (!form.categoria) return false;
-    if (form.categoria === "roupas") return form.tiposRoupa.length > 0;
-    if (form.categoria === "comunicacao") return !!form.tipoComunicacao;
+    if (form.categoria === "roupas") {
+      if (form.tiposRoupa.length === 0) return false;
+      // Cada tipo de roupa precisa ter pelo menos 1 tamanho selecionado
+      for (const id of form.tiposRoupa) {
+        const total = Object.values(form.quantidades[id] || {}).reduce((a, b) => a + b, 0);
+        if (total === 0) return false;
+        // Calças precisam de material escolhido
+        if (id === "calcas" && !form.materialCalca) return false;
+      }
+      return true;
+    }
+    if (form.categoria === "comunicacao") return !!form.tipoComunicacao && !!form.dimensoes.trim();
     return false;
   })();
 
   const finalizacaoValida = (
     form.nomeCliente.trim() &&
     !validarTel(form.telefone) &&
-    emailValido(form.email)
+    emailValido(form.email) &&
+    form.cep.replace(/\D/g, "").length === 8 &&
+    form.cidade.trim() &&
+    form.estado.trim()
   );
 
   // ── salvar ──
@@ -586,12 +628,43 @@ ${resumo}
                 <div>
                   <label style={labelStyle}>Telefone / WhatsApp *</label>
                   <input value={form.telefone}
-                    onChange={e => setForm(prev => ({ ...prev, telefone: e.target.value.replace(/[^0-9()\-\s+]/g, "") }))}
+                    onChange={e => setForm(prev => ({ ...prev, telefone: formatTel(e.target.value) }))}
                     placeholder="(27) 99999-9999" maxLength={15} inputMode="tel"
                     style={{ ...inputStyle, borderColor: form.telefone && validarTel(form.telefone) ? "#ef4444" : t.border }} />
                   {form.telefone && validarTel(form.telefone) && (
                     <p style={{ fontSize: "11px", color: "#ef4444", marginTop: "4px", fontFamily: "system-ui" }}>⚠️ {validarTel(form.telefone)}</p>
                   )}
+                </div>
+
+                {/* CEP com auto-preenchimento */}
+                <div>
+                  <label style={labelStyle}>CEP *</label>
+                  <input value={form.cep}
+                    onChange={e => {
+                      const fmt = formatCEP(e.target.value);
+                      setForm(prev => ({ ...prev, cep: fmt }));
+                      if (fmt.replace(/\D/g, "").length === 8) buscarCEP(fmt, setForm);
+                    }}
+                    placeholder="29000-000" maxLength={9} inputMode="numeric"
+                    style={{ ...inputStyle, borderColor: form.cep && form.cep.replace(/\D/g,"").length < 8 ? "#ef4444" : t.border }} />
+                  {form.cep && form.cep.replace(/\D/g,"").length === 8 && form.cidade && (
+                    <p style={{ fontSize: "11px", color: "#16a34a", marginTop: "4px", fontFamily: "system-ui" }}>✅ {form.cidade}/{form.estado}</p>
+                  )}
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 80px", gap: "12px" }}>
+                  <div>
+                    <label style={labelStyle}>Cidade *</label>
+                    <input value={form.cidade} onChange={e => setForm(prev => ({ ...prev, cidade: e.target.value }))}
+                      placeholder="Vila Velha" style={inputStyle} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Estado *</label>
+                    <input value={form.estado}
+                      onChange={e => setForm(prev => ({ ...prev, estado: e.target.value.toUpperCase().slice(0,2) }))}
+                      placeholder="ES" maxLength={2}
+                      style={{ ...inputStyle, textAlign: "center", textTransform: "uppercase" }} />
+                  </div>
                 </div>
                 <div>
                   <label style={labelStyle}>E-mail *</label>
