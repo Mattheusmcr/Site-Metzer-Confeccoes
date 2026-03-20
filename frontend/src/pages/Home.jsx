@@ -55,8 +55,6 @@ export default function Home() {
     return () => window.removeEventListener("storage", fn);
   }, []);
 
-  // Usa até 3 fotos — se admin tiver mais, mostra navegação
-  const fotosMostradas = galeria.slice(0, 3);
   const [galeriaIndex, setGaleriaIndex] = useState(0);
   const FOTOS_POR_SLIDE = 3;
   const totalSlides = Math.ceil(galeria.length / FOTOS_POR_SLIDE);
@@ -97,7 +95,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Indicadores */}
         <div className="absolute bottom-8 left-6 md:left-16 flex gap-3 z-10">
           {heroImages.map((_, i) => (
             <button key={i} onClick={() => setHeroAtual(i)} style={{
@@ -110,7 +107,6 @@ export default function Home() {
 
       {/* ══ SOBRE — MISSÃO ══ */}
       <section ref={sobreRef} style={{ backgroundColor: t.bg }}>
-        {/* Título */}
         <div className="px-6 md:px-24 py-16 border-b" style={{ borderColor: t.borderForte }}>
           <div style={{ opacity: sobreVisible ? 1 : 0, transform: sobreVisible ? "translateY(0)" : "translateY(40px)", transition: "all 0.9s ease" }}>
             <p className="uppercase mb-4" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
@@ -130,21 +126,15 @@ export default function Home() {
         {/* Missão — texto + foto */}
         <div ref={missaoRef} className="grid grid-cols-1 md:grid-cols-2" style={{ borderBottom: "2px solid " + t.borderForte }}>
           <div className="px-6 md:px-24 py-12 md:py-20 flex flex-col justify-center"
-            style={{ borderRight: "none", opacity: missaoVisible ? 1 : 0, transform: missaoVisible ? "translateX(0)" : "translateX(-30px)", transition: "all 0.9s ease 0.1s" }}>
-
+            style={{ opacity: missaoVisible ? 1 : 0, transform: missaoVisible ? "translateX(0)" : "translateX(-30px)", transition: "all 0.9s ease 0.1s" }}>
             <p className="uppercase mb-6" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
               Nossa Missão
             </p>
             <p style={{ fontSize: "clamp(1.4rem, 2.5vw, 2.2rem)", fontWeight: "300", color: t.text, lineHeight: 1.3, marginBottom: "24px", letterSpacing: "-0.01em" }}>
               Trabalhamos com dedicação para entregar o melhor produto e uma experiência que realmente faça a diferença.
             </p>
-
-            {/* Números */}
             <div className="flex gap-12 mt-4">
-              {[
-                { num: "+20", label: "Anos de mercado" },
-                { num: "Todo", label: "Sudeste Brasileiro" },
-              ].map(({ num, label }) => (
+              {[{ num: "+20", label: "Anos de mercado" }, { num: "Todo", label: "Sudeste Brasileiro" }].map(({ num, label }) => (
                 <div key={label}>
                   <p style={{ fontSize: "2rem", fontWeight: "300", color: t.text, fontFamily: "Georgia, serif" }}>{num}</p>
                   <p className="uppercase mt-1" style={{ fontSize: "10px", letterSpacing: "0.15em", color: t.textSecundario, fontFamily: "system-ui" }}>{label}</p>
@@ -153,13 +143,20 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Foto */}
-          <div className="relative overflow-hidden"
-            style={{ minHeight: "300px", opacity: missaoVisible ? 1 : 0, transform: missaoVisible ? "translateX(0)" : "translateX(30px)", transition: "all 0.9s ease 0.25s" }}>
-            <img src="/FotoMetkzerepai.jpg" alt="Metzkerepai" className="w-full h-full object-cover" style={{ minHeight: "20px" }} />
-            <div className="absolute bottom-8 left-8 px-6 py-4"
-              style={{ backgroundColor: "rgba(26,26,26,0.9)", color: "white" }}>
-              <p className="uppercase" style={{ fontSize: "9px", letterSpacing: "0.2em", color: "rgba(255,255,255,0.5)", fontFamily: "system-ui" }}>
+          {/* ── FOTO — altura fixa, object-cover, ancora no topo ── */}
+          <div style={{
+            height: "480px", overflow: "hidden", position: "relative",
+            opacity: missaoVisible ? 1 : 0,
+            transform: missaoVisible ? "translateX(0)" : "translateX(30px)",
+            transition: "all 0.9s ease 0.25s",
+          }}>
+            <img
+              src="/FotoMetkzerepai.jpg"
+              alt="Metzker"
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
+            />
+            <div style={{ position: "absolute", bottom: "32px", left: "32px", padding: "16px 24px", backgroundColor: "rgba(26,26,26,0.9)", color: "white" }}>
+              <p style={{ fontSize: "9px", letterSpacing: "0.2em", color: "rgba(255,255,255,0.5)", fontFamily: "system-ui", textTransform: "uppercase" }}>
                 Localização
               </p>
               <p style={{ fontSize: "1rem", fontWeight: "300", fontFamily: "Georgia, serif", marginTop: "4px" }}>
@@ -190,7 +187,6 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Grade de fotos — máx 3, navegação só se admin adicionar mais */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-0" style={{ border: "2px solid " + t.borderForte }}>
             {galeria.slice(galeriaIndex * FOTOS_POR_SLIDE, galeriaIndex * FOTOS_POR_SLIDE + FOTOS_POR_SLIDE).map((url, i) => (
               <div key={i} className="overflow-hidden relative group"
@@ -203,7 +199,6 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Navegação só aparece se tiver mais de 3 fotos */}
           {totalSlides > 1 && (
             <div className="flex items-center gap-6 mt-8">
               <button onClick={() => setGaleriaIndex(i => i > 0 ? i - 1 : totalSlides - 1)}
@@ -250,7 +245,7 @@ export default function Home() {
       {/* ══ RODAPÉ ══ */}
       <footer style={{ backgroundColor: t.bgSecundario, borderTop: "2px solid " + t.borderForte }}>
         <div className="px-6 md:px-24 py-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
-          <div style={{ borderRight: "none", paddingRight: "0" }} className="md:border-r md:pr-10" style2={{ borderColor: t.border }}>
+          <div className="md:border-r md:pr-10" style={{ borderColor: t.border }}>
             <h3 className="mb-4 uppercase" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.text, fontFamily: "system-ui" }}>
               Metzker Soluções
             </h3>
@@ -270,9 +265,16 @@ export default function Home() {
             <p style={{ color: t.text, fontFamily: "system-ui" }}>Polo Têxtil Santa Inês</p>
           </div>
         </div>
-        <div style={{ borderTop: "1px solid " + t.borderForte, padding: "20px 24px" }}>
+
+        {/* Rodapé inferior */}
+        <div style={{ borderTop: "1px solid " + t.borderForte, padding: "16px 24px" }}
+          className="flex flex-col md:flex-row items-center justify-between gap-2">
           <p className="text-xs" style={{ color: t.textSecundario, fontFamily: "system-ui", letterSpacing: "0.1em" }}>
             &copy; {new Date().getFullYear()} Metzker Soluções
+          </p>
+          <p className="text-xs" style={{ color: t.textSecundario, fontFamily: "system-ui", letterSpacing: "0.05em" }}>
+            Desenvolvido por{" "}
+            <span style={{ color: t.text, fontWeight: "600" }}>Matheus Costa Rodrigues</span>
           </p>
         </div>
       </footer>
