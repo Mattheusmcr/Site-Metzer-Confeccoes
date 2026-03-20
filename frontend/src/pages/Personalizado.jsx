@@ -69,7 +69,9 @@ async function buscarCEP(cep, setForm) {
       setForm(prev => ({
         ...prev,
         cidade: data.localidade || prev.cidade,
-        estado: data.uf        || prev.estado,
+        estado: data.uf         || prev.estado,
+        rua:    data.logradouro || prev.rua,
+        bairro: data.bairro     || prev.bairro,
       }));
     }
   } catch {}
@@ -96,7 +98,7 @@ const FORM_INICIAL = {
   fotos: [],
   // Finalização
   nomeCliente: "", telefone: "", email: "",
-  cep: "", cidade: "", estado: "",
+  cep: "", cidade: "", estado: "", rua: "", numero: "", bairro: "", complemento: "",
   observacoes: "",
 };
 
@@ -171,13 +173,16 @@ export default function Personalizado() {
     return false;
   })();
 
-  const finalizacaoValida = (
+  const finalizacaoValida = Boolean(
     form.nomeCliente.trim() &&
     !validarTel(form.telefone) &&
-    emailValido(form.email) &&
-    form.cep.replace(/\D/g, "").length === 8 &&
+    form.email.trim() && emailValido(form.email) &&
+    form.cep && form.cep.replace(/\D/g, "").length === 8 &&
     form.cidade.trim() &&
-    form.estado.trim()
+    form.estado.trim() &&
+    (form.rua || "").trim() &&
+    (form.numero || "").trim() &&
+    (form.bairro || "").trim()
   );
 
   // ── salvar ──
@@ -247,6 +252,8 @@ ${resumo}
 👤 *Contato:* ${form.nomeCliente}
 📱 ${form.telefone}
 📧 ${form.email}
+📍 ${form.rua}, ${form.numero}${form.complemento ? " — " + form.complemento : ""}
+   ${form.bairro} — ${form.cidade}/${form.estado} — CEP: ${form.cep}
     `.trim();
 
     window.open(`https://wa.me/5527997878391?text=${encodeURIComponent(msg)}`, "_blank");
@@ -591,6 +598,16 @@ ${resumo}
                 </>
               )}
 
+              {form.rua && (
+                <div style={{ padding: "10px 0", borderBottom: "1px solid " + t.border }}>
+                  <span style={{ fontSize: "11px", color: t.textSecundario, fontFamily: "system-ui", textTransform: "uppercase" }}>Endereço</span>
+                  <p style={{ fontSize: "13px", color: t.text, fontFamily: "system-ui", marginTop: "4px" }}>
+                    {form.rua}, {form.numero}{form.complemento ? ` — ${form.complemento}` : ""}<br/>
+                    {form.bairro} — {form.cidade}/{form.estado} — CEP: {form.cep}
+                  </p>
+                </div>
+              )}
+
               {form.descricao && (
                 <div style={{ padding: "10px 0", borderBottom: "1px solid " + t.border }}>
                   <span style={{ fontSize: "11px", color: t.textSecundario, fontFamily: "system-ui", textTransform: "uppercase" }}>Descrição</span>
@@ -666,6 +683,32 @@ ${resumo}
                       style={{ ...inputStyle, textAlign: "center", textTransform: "uppercase" }} />
                   </div>
                 </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "12px" }}>
+                  <div>
+                    <label style={labelStyle}>Rua / Avenida *</label>
+                    <input value={form.rua || ""} onChange={e => setForm(prev => ({ ...prev, rua: e.target.value }))}
+                      placeholder="Rua das Flores" style={inputStyle} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Número *</label>
+                    <input value={form.numero || ""} onChange={e => setForm(prev => ({ ...prev, numero: e.target.value }))}
+                      placeholder="123" style={inputStyle} />
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                  <div>
+                    <label style={labelStyle}>Bairro *</label>
+                    <input value={form.bairro || ""} onChange={e => setForm(prev => ({ ...prev, bairro: e.target.value }))}
+                      placeholder="Centro" style={inputStyle} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Complemento</label>
+                    <input value={form.complemento || ""} onChange={e => setForm(prev => ({ ...prev, complemento: e.target.value }))}
+                      placeholder="Apto 2, Bloco B" style={inputStyle} />
+                  </div>
+                </div>
                 <div>
                   <label style={labelStyle}>E-mail *</label>
                   <input value={form.email} type="email"
@@ -673,7 +716,10 @@ ${resumo}
                     placeholder="Ex: joao@email.com"
                     style={{ ...inputStyle, borderColor: form.email && !emailValido(form.email) ? "#ef4444" : t.border }} />
                   {form.email && !emailValido(form.email) && (
-                    <p style={{ fontSize: "11px", color: "#ef4444", marginTop: "4px", fontFamily: "system-ui" }}>⚠️ E-mail inválido</p>
+                    <p style={{ fontSize: "11px", color: "#ef4444", marginTop: "4px", fontFamily: "system-ui" }}>⚠️ E-mail inválido — verifique o formato</p>
+                  )}
+                  {form.email && emailValido(form.email) && (
+                    <p style={{ fontSize: "11px", color: "#16a34a", marginTop: "4px", fontFamily: "system-ui" }}>✅ E-mail válido</p>
                   )}
                 </div>
                 <div>
@@ -691,6 +737,26 @@ ${resumo}
                 {form.fotos.length > 0 && " Envie os arquivos na conversa do WhatsApp."}
               </p>
             </div>
+
+            {/* Campos faltando */}
+            {!finalizacaoValida && (
+              <div style={{ backgroundColor: "#fef9f0", border: "1px solid #fde68a", padding: "14px" }}>
+                <p style={{ fontSize: "12px", fontWeight: "600", color: "#92400e", marginBottom: "8px", fontFamily: "system-ui" }}>
+                  ⚠️ Preencha os campos obrigatórios para finalizar:
+                </p>
+                <ul style={{ fontSize: "12px", color: "#92400e", fontFamily: "system-ui", lineHeight: 1.8, paddingLeft: "16px", margin: 0 }}>
+                  {!form.nomeCliente.trim() && <li>Nome completo</li>}
+                  {validarTel(form.telefone) && <li>Telefone válido (mín. 10 dígitos)</li>}
+                  {(!form.email.trim() || !emailValido(form.email)) && <li>E-mail válido</li>}
+                  {(!form.cep || form.cep.replace(/\D/g, "").length < 8) && <li>CEP completo (8 dígitos)</li>}
+                  {!form.cidade.trim() && <li>Cidade</li>}
+                  {!form.estado.trim() && <li>Estado</li>}
+                  {!(form.rua || "").trim() && <li>Rua / Avenida</li>}
+                  {!(form.numero || "").trim() && <li>Número</li>}
+                  {!(form.bairro || "").trim() && <li>Bairro</li>}
+                </ul>
+              </div>
+            )}
 
             {erro && (
               <div style={{ backgroundColor: "#fef2f2", border: "1px solid #fecaca", padding: "12px", color: "#dc2626", fontSize: "13px", fontFamily: "system-ui" }}>
