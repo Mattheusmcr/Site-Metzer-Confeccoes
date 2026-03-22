@@ -153,7 +153,7 @@ export default function Home() {
             <img
               src="/FotoMetkzerepai.jpg"
               alt="Metzker"
-              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 15%" }}
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%" }}
             />
             <div style={{ position: "absolute", bottom: "32px", left: "32px", padding: "16px 24px", backgroundColor: "rgba(26,26,26,0.9)", color: "white" }}>
               <p style={{ fontSize: "9px", letterSpacing: "0.2em", color: "rgba(255,255,255,0.5)", fontFamily: "system-ui", textTransform: "uppercase" }}>
