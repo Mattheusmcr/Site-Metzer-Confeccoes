@@ -411,7 +411,7 @@ export default function Personalizado() {
                             {/* Cor — só para camisa/polo */}
                             {tipo.temCor && (
                               <div>
-                                <label style={{ ...labelStyle, marginBottom: "8px" }}>Cor(es) *</label>
+                                <label style={{ ...labelStyle, marginBottom: "8px" }}>Cor(es)</label>
                                 {coresSel.length > 0 && (
                                   <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "8px" }}>
                                     {coresSel.map(id => {
@@ -436,7 +436,7 @@ export default function Personalizado() {
                             {/* Material — só para camisa/polo */}
                             {tipo.temMaterial && (
                               <div>
-                                <label style={{ ...labelStyle, marginBottom: "8px" }}>Material *</label>
+                                <label style={{ ...labelStyle, marginBottom: "8px" }}>Material</label>
                                 {matSel ? (
                                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                                     <span style={{ fontSize: "13px", color: t.text, fontFamily: "system-ui" }}>
@@ -508,11 +508,18 @@ export default function Personalizado() {
                   </div>
                 </div>
                 {form.tipoComunicacao && (
-                  <div>
-                    <label style={labelStyle}>Dimensões / Tamanho *</label>
-                    <input value={form.dimensoes} onChange={e => setForm(prev => ({ ...prev, dimensoes: e.target.value }))}
-                      placeholder="Ex: 1,2m x 0,8m ou A4, A3, banner..." style={inputStyle} />
-                  </div>
+                  <>
+                    <div style={{ padding: "10px 12px", backgroundColor: t.bgSecundario, border: "1px solid " + t.border }}>
+                      <p style={{ fontSize: "12px", color: t.textSecundario, fontFamily: "system-ui" }}>
+                        📦 <strong style={{ color: t.text }}>Quantidade mínima:</strong> consulte nossa equipe sobre quantidades mínimas — envie o pedido e entraremos em contato para alinhar detalhes.
+                      </p>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>Dimensões / Tamanho *</label>
+                      <input value={form.dimensoes} onChange={e => setForm(prev => ({ ...prev, dimensoes: e.target.value }))}
+                        placeholder="Ex: 1,2m x 0,8m ou A4, A3, banner..." style={inputStyle} />
+                    </div>
+                  </>
                 )}
               </>
             )}

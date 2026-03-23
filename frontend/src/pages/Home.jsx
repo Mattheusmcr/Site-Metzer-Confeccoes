@@ -9,11 +9,13 @@ const GALERIA_PADRAO = [
   "/Galeria3.jpeg",
 ];
 
+// Cada imagem tem sua própria posição — ajuste o "position" conforme necessário
+// "center center" = padrão | "center top" = ancora topo | "center 30%" = 30% do topo
 const heroImages = [
-  "/ImagemPrincipal.jpg",
-  "/ImagemPrincipal2.jpg",
-  "/ImagemPrincipa3.jpg",
-  "/ImagemPrincipal4.jpg"
+  { src: "/ImagemPrincipal.jpg",  position: "center center" },
+  { src: "/ImagemPrincipal2.jpg", position: "center center" },
+  { src: "/ImagemPrincipal3.jpg", position: "center center" }, 
+  { src: "/ImagemPrincipal4.jpg", position: "center center" },
 ];
 
 const t = {
@@ -67,9 +69,15 @@ export default function Home() {
       <section ref={heroRef} className="relative overflow-hidden" style={{ height: "100vh", minHeight: "600px" }}>
         {heroImages.map((img, i) => (
           <div key={i} className="absolute inset-0 transition-opacity duration-1000"
-            style={{ opacity: heroAtual === i ? 1 : 0, backgroundImage: `url(${img})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+            style={{
+              opacity: heroAtual === i ? 1 : 0,
+              backgroundImage: `url(${img.src})`,
+              backgroundSize: "cover",
+              backgroundPosition: img.position,
+              backgroundRepeat: "no-repeat",
+            }} />
         ))}
-        <div className="absolute inset-0" style={{ backgroundColor: "rgba(10,10,10,0.55)" }} />
+        <div className="absolute inset-0" style={{ backgroundColor: "rgba(10,10,10,0.50)" }} />
 
         <div className="relative z-10 h-full flex flex-col justify-center px-6 md:px-24"
           style={{ opacity: heroVisible ? 1 : 0, transform: heroVisible ? "translateY(0)" : "translateY(30px)", transition: "all 1s ease 0.2s" }}>
@@ -144,18 +152,15 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ── FOTO — altura fixa, object-cover, ancora no topo ── */}
+          {/* FOTO */}
           <div style={{
             height: "480px", overflow: "hidden", position: "relative",
             opacity: missaoVisible ? 1 : 0,
             transform: missaoVisible ? "translateX(0)" : "translateX(30px)",
             transition: "all 0.9s ease 0.25s",
           }}>
-            <img
-              src="/FotoMetkzerepai.jpg"
-              alt="Metzker"
-              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%" }}
-            />
+            <img src="/FotoMetkzerepai.jpg" alt="Metzker"
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%" }} />
             <div style={{ position: "absolute", bottom: "32px", left: "32px", padding: "16px 24px", backgroundColor: "rgba(26,26,26,0.9)", color: "white" }}>
               <p style={{ fontSize: "9px", letterSpacing: "0.2em", color: "rgba(255,255,255,0.5)", fontFamily: "system-ui", textTransform: "uppercase" }}>
                 Localização
@@ -266,8 +271,6 @@ export default function Home() {
             <p style={{ color: t.text, fontFamily: "system-ui" }}>Polo Têxtil Santa Inês</p>
           </div>
         </div>
-
-        {/* Rodapé inferior */}
         <div style={{ borderTop: "1px solid " + t.borderForte, padding: "16px 24px" }}
           className="flex flex-col md:flex-row items-center justify-between gap-2">
           <p className="text-xs" style={{ color: t.textSecundario, fontFamily: "system-ui", letterSpacing: "0.1em" }}>
