@@ -10,9 +10,10 @@ const GALERIA_PADRAO = [
 ];
 
 const heroImages = [
-  "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=1600",
-  "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=1600",
-  "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1600",
+  "/ImagemPrincipal.jpg",
+  "/ImagemPrincipal2.jpg",
+  "/ImagemPrincipa3.jpg",
+  "/ImagemPrincipal4.jpg"
 ];
 
 const t = {

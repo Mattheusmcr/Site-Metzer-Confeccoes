@@ -200,6 +200,9 @@ export default function Personalizado() {
   }
 
   // ── validações ──
+  // Total geral de unidades em roupas
+  const totalUnidadesGeral = form.tiposRoupa.reduce((acc, id) => acc + totalTipo(id), 0);
+
   const etapa1Valida = (() => {
     if (!form.categoria) return false;
     if (form.categoria === "roupas") {
@@ -208,7 +211,13 @@ export default function Personalizado() {
         const total = totalTipo(id);
         if (total === 0) return false;
         if (id === "calcas" && !form.materialCalca) return false;
+        // Cor obrigatória para todos os tipos
+        if ((form.cores[id] || []).length === 0) return false;
+        // Material obrigatório para camisa e polo
+        if ((id === "camisa-comum" || id === "polo") && !form.materiais[id]) return false;
       }
+      // Mínimo de 20 unidades no total
+      if (totalUnidadesGeral < 20) return false;
       return true;
     }
     if (form.categoria === "comunicacao") return !!form.tipoComunicacao && !!form.dimensoes.trim();
@@ -354,6 +363,9 @@ export default function Personalizado() {
             {form.categoria === "roupas" && (
               <div>
                 <label style={labelStyle}>Tipos de produto * (selecione um ou mais)</label>
+                <p style={{ fontSize: "12px", color: t.textSecundario, fontFamily: "system-ui", marginBottom: "12px", padding: "8px 12px", backgroundColor: t.bgSecundario, border: "1px solid " + t.border }}>
+                  📦 Pedido mínimo de <strong style={{ color: t.text }}>20 unidades</strong> no total entre todos os tipos.
+                </p>
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   {TIPOS_ROUPA.map(tipo => {
                     const sel = form.tiposRoupa.includes(tipo.id);
@@ -537,6 +549,31 @@ export default function Personalizado() {
                   )}
                 </div>
               </>
+            )}
+
+            {/* Aviso mínimo 20 unidades e campos faltando */}
+            {form.categoria === "roupas" && form.tiposRoupa.length > 0 && (
+              <div style={{ backgroundColor: totalUnidadesGeral >= 20 ? "#f0fdf4" : "#fef9f0", border: "1px solid " + (totalUnidadesGeral >= 20 ? "#86efac" : "#fde68a"), padding: "14px" }}>
+                <p style={{ fontSize: "13px", fontWeight: "600", fontFamily: "system-ui", marginBottom: "6px",
+                  color: totalUnidadesGeral >= 20 ? "#16a34a" : "#92400e" }}>
+                  {totalUnidadesGeral >= 20 ? `✅ ${totalUnidadesGeral} unidades — mínimo atingido!` : `⚠️ Pedido mínimo: 20 unidades — você selecionou ${totalUnidadesGeral}`}
+                </p>
+                {(() => {
+                  const itens = [];
+                  for (const id of form.tiposRoupa) {
+                    const tipo = TIPOS_ROUPA.find(t => t.id === id);
+                    if ((form.cores[id] || []).length === 0) itens.push(`${tipo.label}: selecione a cor`);
+                    if ((id === "camisa-comum" || id === "polo") && !form.materiais[id]) itens.push(`${tipo.label}: selecione o material`);
+                    if (id === "calcas" && !form.materialCalca) itens.push("Calças: selecione o material (Jeans ou Brim)");
+                    if (totalTipo(id) === 0) itens.push(`${tipo.label}: informe os tamanhos`);
+                  }
+                  return itens.length > 0 ? (
+                    <ul style={{ fontSize: "12px", color: "#92400e", fontFamily: "system-ui", lineHeight: 1.8, paddingLeft: "16px", margin: 0 }}>
+                      {itens.map((item, i) => <li key={i}>{item}</li>)}
+                    </ul>
+                  ) : null;
+                })()}
+              </div>
             )}
 
             <button onClick={() => { if (etapa1Valida) setEtapa(2); }} disabled={!etapa1Valida} style={{ ...btnPrimary(etapa1Valida), width: "100%" }}>
