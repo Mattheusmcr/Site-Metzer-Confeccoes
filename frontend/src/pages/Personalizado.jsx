@@ -509,11 +509,6 @@ export default function Personalizado() {
                 </div>
                 {form.tipoComunicacao && (
                   <>
-                    <div style={{ padding: "10px 12px", backgroundColor: t.bgSecundario, border: "1px solid " + t.border }}>
-                      <p style={{ fontSize: "12px", color: t.textSecundario, fontFamily: "system-ui" }}>
-                        📦 <strong style={{ color: t.text }}>Quantidade mínima:</strong> consulte nossa equipe sobre quantidades mínimas — envie o pedido e entraremos em contato para alinhar detalhes.
-                      </p>
-                    </div>
                     <div>
                       <label style={labelStyle}>Dimensões / Tamanho *</label>
                       <input value={form.dimensoes} onChange={e => setForm(prev => ({ ...prev, dimensoes: e.target.value }))}
