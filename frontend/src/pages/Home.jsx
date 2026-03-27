@@ -14,7 +14,7 @@ const GALERIA_PADRAO = [
 const heroImages = [
   { src: "/ImagemPrincipal.jpg",  position: "center center" },
   { src: "/ImagemPrincipal2.jpg", position: "center center" },
-  { src: "/ImagemPrincipal3.jpg", position: "center center" }, 
+  { src: "/ImagemPrincipal3.jpg", position: "center center" }, // corrigido typo
   { src: "/ImagemPrincipal4.jpg", position: "center center" },
 ];
 
@@ -90,15 +90,15 @@ export default function Home() {
           <p className="mt-6" style={{ color: "rgba(255,255,255,0.65)", maxWidth: "480px", lineHeight: 1.8, fontFamily: "system-ui", fontSize: "15px" }}>
             Qualidade, consistência e identidade em cada entrega.
           </p>
-          <div className="flex gap-4 mt-10 flex-wrap">
+          <div className="flex gap-3 mt-8 flex-wrap">
             <Link to="/catalogo"
-              className="px-8 py-3 text-sm uppercase tracking-widest font-medium transition hover:opacity-80"
-              style={{ backgroundColor: "white", color: "#1a1a1a", letterSpacing: "0.15em", fontFamily: "system-ui" }}>
+              className="px-6 py-3 text-xs uppercase tracking-widest font-medium transition hover:opacity-80 whitespace-nowrap"
+              style={{ backgroundColor: "white", color: "#1a1a1a", letterSpacing: "0.12em", fontFamily: "system-ui" }}>
               Ver Portfólio
             </Link>
             <a href="https://wa.me/5527997878391" target="_blank" rel="noreferrer"
-              className="px-8 py-3 text-sm uppercase tracking-widest font-medium transition hover:bg-white hover:text-black"
-              style={{ border: "1px solid rgba(255,255,255,0.6)", color: "white", letterSpacing: "0.15em", fontFamily: "system-ui" }}>
+              className="px-6 py-3 text-xs uppercase tracking-widest font-medium transition hover:bg-white hover:text-black whitespace-nowrap"
+              style={{ border: "1px solid rgba(255,255,255,0.6)", color: "white", letterSpacing: "0.12em", fontFamily: "system-ui" }}>
               WhatsApp
             </a>
           </div>
