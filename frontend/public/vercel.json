@@ -1,5 +1,23 @@
 {
-  "routes": [
-    { "src": "/(.*)", "dest": "/" }
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "installCommand": "npm install --include=optional",
+  "buildCommand": "npm run build",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/sitemap.xml",
+      "headers": [
+        { "key": "Content-Type", "value": "application/xml" }
+      ]
+    },
+    {
+      "source": "/robots.txt",
+      "headers": [
+        { "key": "Content-Type", "value": "text/plain" }
+      ]
+    }
   ]
 }
