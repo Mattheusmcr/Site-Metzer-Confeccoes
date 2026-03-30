@@ -68,7 +68,7 @@ function CadastrarProduto({ mostrarToast, dark, estilos }) {
   }
 
   return (
-    <div style={{ maxWidth: "560px", margin: "0 auto" }}>
+    <div style={{ maxWidth: "560px" }}>
       <h2 className="text-xl font-semibold mb-6" style={{ color: text }}>Cadastrar Produto</h2>
       <div className="flex flex-col gap-4">
         <div><label style={labelStyle}>Nome *</label><input name="nome" value={form.nome} onChange={handleChange} placeholder="Ex: Camiseta Polo" style={inputStyle} /></div>
@@ -778,7 +778,7 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto w-full">
+    <div style={{ maxWidth: "640px" }}>
       <h2 className="text-xl font-semibold mb-6" style={{ color: text }}>Editar Informações</h2>
 
       {/* DADOS DE CONTATO */}
