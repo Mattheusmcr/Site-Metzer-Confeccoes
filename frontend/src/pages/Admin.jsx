@@ -904,7 +904,7 @@ export default function Admin() {
   return (
     <div style={{ backgroundColor: bg, color: text, minHeight: "100vh" }}>
       {toast && <Toast mensagem={toast.mensagem} tipo={toast.tipo} onClose={() => setToast(null)} />}
-      <div className="max-w-5xl mx-auto px-6 py-10">
+      <div className="flex gap-2 flex-wrap mb-8 pb-4 justify-center">
         <h1 className="text-3xl font-bold mb-8" style={{ color: text }}>Painel Administrativo</h1>
         <div className="flex gap-2 flex-wrap mb-8 pb-4" style={{ borderBottom: "1px solid " + border }}>
           {abas.map(aba => (
