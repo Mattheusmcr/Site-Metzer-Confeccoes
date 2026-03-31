@@ -18,6 +18,7 @@ function App() {
       <AuthProvider>
         <CartProvider>
           <BrowserRouter basename="/">
+            <div style={{ overflowX: "hidden", maxWidth: "100vw" }}>
             <Navbar />
             <Routes>
               <Route path="/" element={<Home />} />
@@ -35,6 +36,7 @@ function App() {
                 }
               />
             </Routes>
+            </div>
           </BrowserRouter>
         </CartProvider>
       </AuthProvider>
