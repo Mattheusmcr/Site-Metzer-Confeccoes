@@ -289,7 +289,7 @@ export default function Home() {
             <h2 style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.8rem)", fontWeight: "300", color: "white", lineHeight: 1.2 }}>
               Quer fazer um orçamento?
             </h2>
-            <p className="mt-3" style={{ color: "rgba(255,255,255,0.6)", fontFamily: "system-ui", fontSize: "14px", maxWidth: "380px", lineHeight: 1.7 }}>
+            <p className="mt-3" style={{ color: "rgba(255,255,255,0.6)", fontFamily: "system-ui", fontSize: "18px", maxWidth: "380px", lineHeight: 1.7 }}>
               Fale direto com a equipe e veja como podemos atender seu projeto.
             </p>
           </div>
