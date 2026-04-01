@@ -203,7 +203,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col md:flex-row gap-12 md:gap-20">
               <div style={{ maxWidth: "400px" }}>
-                <p style={{ fontSize: "clamp(1rem, 1.8vw, 1.3rem)", fontWeight: "300", color: t.text, lineHeight: 1.7, fontFamily: "system-ui" }}>
+                <p style={{ fontSize: "clamp(1rem, 1.8vw, 1.3rem)", fontWeight: "600", color: t.text, lineHeight: 1.7, fontFamily: "system-ui" }}>
                   Estamos há mais de 20 anos atendendo empresas em todo Sudeste, focados em entrega consistente e relacionamento de longo prazo.
                 </p>
                 <p className="mt-4" style={{ fontSize: "14px", color: t.textSecundario, lineHeight: 1.7, fontFamily: "system-ui" }}>
