@@ -534,14 +534,42 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                       <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
                         <p className="text-xs font-bold uppercase mb-3" style={{ color: subtext }}>🎨 Combinações / Detalhes</p>
                         {p.referencia.includes("#1") ? (
-                          p.referencia.split("\n").filter(l => l.trim()).map((linha, i, arr) => (
-                            <div key={i} className="mb-3 pb-3" style={{ borderBottom: i < arr.length - 1 ? "1px solid " + border : "none" }}>
-                              <p className="text-sm font-semibold" style={{ color: text }}>{linha.split("|")[0]?.trim()}</p>
-                              {linha.split("|").slice(1).map((parte, j) => (
-                                <p key={j} className="text-xs mt-1" style={{ color: subtext }}>{parte.trim()}</p>
-                              ))}
-                            </div>
-                          ))
+                          p.referencia.split("\n").filter(l => l.trim()).map((linha, i, arr) => {
+                            const partes = linha.split("|").map(s => s.trim()).filter(Boolean);
+                            const titulo = partes[0] || "";
+                            const detalhes = partes.slice(1);
+                            return (
+                              <div key={i} className="mb-4 pb-4" style={{ borderBottom: i < arr.length - 1 ? "1px solid " + border : "none" }}>
+                                <p className="text-sm font-bold mb-2" style={{ color: text }}>{titulo}</p>
+                                {detalhes.map((parte, j) => {
+                                  const [chave, ...resto] = parte.split(":");
+                                  const valor = resto.join(":").trim();
+                                  if (chave.trim() === "Total") {
+                                    return <p key={j} className="text-xs font-semibold mt-1" style={{ color: text }}>Total: {valor}</p>;
+                                  }
+                                  if (chave.trim().startsWith("Adulto") || chave.trim().startsWith("Baby") || chave.trim().startsWith("Infantil") || chave.trim().startsWith("Tamanhos")) {
+                                    const grupo = chave.trim().replace(/\[.*\]/, "");
+                                    const tamStr = parte.match(/\[([^\]]+)\]/)?.[1] || valor;
+                                    const tams = tamStr.split(" ").filter(Boolean).map(t => {
+                                      const [tam, qtd] = t.split(":");
+                                      return qtd ? `${tam}: ${qtd} peça${parseInt(qtd) !== 1 ? "s" : ""}` : t;
+                                    });
+                                    return (
+                                      <div key={j} className="mt-1">
+                                        {grupo && <p className="text-xs font-semibold" style={{ color: subtext }}>{grupo}:</p>}
+                                        <div className="flex flex-wrap gap-1 mt-1">
+                                          {tams.map((t, k) => (
+                                            <span key={k} className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: text }}>{t}</span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    );
+                                  }
+                                  return <p key={j} className="text-xs mt-1" style={{ color: subtext }}><strong>{chave.trim()}:</strong> {valor}</p>;
+                                })}
+                              </div>
+                            );
+                          })
                         ) : (
                           <p className="text-sm" style={{ color: subtext, whiteSpace: "pre-wrap" }}>{p.referencia}</p>
                         )}
@@ -549,11 +577,13 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                     )}
 
                     {/* DESCRIÇÃO */}
-                    {p.observacoes && p.observacoes.includes("Descrição:") && (
+                    {p.observacoes && (
                       <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
                         <p className="text-xs font-bold uppercase mb-2" style={{ color: subtext }}>📝 Descrição do cliente</p>
-                        <p className="text-sm" style={{ color: subtext }}>
-                          {p.observacoes.split("Descrição:")[1]?.trim() || "—"}
+                        <p className="text-sm" style={{ color: subtext, whiteSpace: "pre-wrap" }}>
+                          {p.observacoes.includes("Descrição:") 
+                            ? p.observacoes.split("Descrição:")[1]?.trim() || "—"
+                            : p.observacoes}
                         </p>
                       </div>
                     )}

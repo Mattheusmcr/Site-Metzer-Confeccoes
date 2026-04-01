@@ -2,19 +2,12 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 
 const GALERIA_KEY = "metzker_galeria_trabalhos";
+const GALERIA_PADRAO = ["/Galeria1.jpeg", "/Galeria2.jpeg", "/Galeria3.jpeg"];
 
-const GALERIA_PADRAO = [
-  "/Galeria1.jpeg",
-  "/Galeria2.jpeg",
-  "/Galeria3.jpeg",
-];
-
-// Cada imagem tem sua própria posição — ajuste o "position" conforme necessário
-// "center center" = padrão | "center top" = ancora topo | "center 30%" = 30% do topo
 const heroImages = [
   { src: "/ImagemPrincipal.jpg",  position: "center center" },
   { src: "/ImagemPrincipal2.jpg", position: "center center" },
-  { src: "/ImagemPrincipal3.jpg", position: "center center" }, // corrigido typo
+  { src: "/ImagemPrincipal3.jpg", position: "center center" },
   { src: "/ImagemPrincipal4.jpg", position: "center center" },
 ];
 
@@ -41,10 +34,14 @@ export default function Home() {
     try { const s = localStorage.getItem(GALERIA_KEY); return s ? JSON.parse(s) : GALERIA_PADRAO; }
     catch { return GALERIA_PADRAO; }
   });
+  const [galeriaIndex, setGaleriaIndex] = useState(0);
+  const FOTOS_POR_SLIDE = 3;
+  const totalSlides = Math.ceil(galeria.length / FOTOS_POR_SLIDE);
 
   const [heroRef, heroVisible] = useReveal(0.01);
   const [sobreRef, sobreVisible] = useReveal();
   const [missaoRef, missaoVisible] = useReveal();
+  const [porqueRef, porqueVisible] = useReveal();
   const [galeriaRef, galeriaVisible] = useReveal();
 
   useEffect(() => {
@@ -58,34 +55,46 @@ export default function Home() {
     return () => window.removeEventListener("storage", fn);
   }, []);
 
-  const [galeriaIndex, setGaleriaIndex] = useState(0);
-  const FOTOS_POR_SLIDE = 3;
-  const totalSlides = Math.ceil(galeria.length / FOTOS_POR_SLIDE);
+  const servicos = [
+    { titulo: "Uniformes corporativos", desc: "Produção e personalização para equipes, operações e eventos" },
+    { titulo: "Comunicação visual",     desc: "Fachadas, ambientação e materiais gráficos" },
+    { titulo: "Projetos para eventos",  desc: "Produção rápida, padronizada e com controle de qualidade" },
+  ];
+
+  const diferenciais = [
+    "Cumprimento de prazos curtos e emergenciais",
+    "Padronização entre pedidos",
+    "Controle de qualidade na produção",
+    "Atendimento direto, sem enrolação",
+  ];
+
+  const clientes = [
+    "Empresas com equipe operacional (uniformes recorrentes)",
+    "Empresas que participam e fazem eventos",
+    "Marcas que precisam padronizar comunicação física",
+    "Empresas com demandas de curto prazo",
+  ];
 
   return (
-    <div style={{ backgroundColor: t.bg, color: t.text, fontFamily: "Georgia, serif" }}>
+    <div style={{ backgroundColor: t.bg, color: t.text, fontFamily: "Georgia, serif", overflowX: "hidden" }}>
 
       {/* ══ HERO ══ */}
       <section ref={heroRef} className="relative overflow-hidden" style={{ height: "100vh", minHeight: "600px" }}>
         {heroImages.map((img, i) => (
           <div key={i} className="absolute inset-0 transition-opacity duration-1000"
-            style={{
-              opacity: heroAtual === i ? 1 : 0,
-              backgroundImage: `url(${img.src})`,
-              backgroundSize: "cover",
-              backgroundPosition: img.position,
-              backgroundRepeat: "no-repeat",
-            }} />
+            style={{ opacity: heroAtual === i ? 1 : 0, backgroundImage: `url(${img.src})`, backgroundSize: "cover", backgroundPosition: img.position }} />
         ))}
-        <div className="absolute inset-0" style={{ backgroundColor: "rgba(10,10,10,0.50)" }} />
+        <div className="absolute inset-0" style={{ backgroundColor: "rgba(10,10,10,0.6)" }} />
 
         <div className="relative z-10 h-full flex flex-col justify-center px-6 md:px-24"
           style={{ opacity: heroVisible ? 1 : 0, transform: heroVisible ? "translateY(0)" : "translateY(30px)", transition: "all 1s ease 0.2s" }}>
           <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.3em", color: "rgba(255,255,255,0.5)", marginBottom: "24px", fontFamily: "system-ui" }}>
             Metzker Soluções
           </p>
-          <h1 style={{ fontSize: "clamp(2.2rem, 6vw, 5.5rem)", fontWeight: "300", color: "white", lineHeight: 1.1, maxWidth: "700px", letterSpacing: "-0.01em" }}>
-            Produção têxtil e<br /><em style={{ fontStyle: "italic", fontWeight: "400" }}>comunicação visual</em><br />alinhadas para fortalecer marcas.
+          <h1 style={{ fontSize: "clamp(1.8rem, 5vw, 4.5rem)", fontWeight: "300", color: "white", lineHeight: 1.15, maxWidth: "750px", letterSpacing: "-0.01em" }}>
+            Uniformes e Comunicação Visual<br />
+            <em style={{ fontStyle: "italic", fontWeight: "400" }}>para empresas que precisam de</em><br />
+            padrão, escala e prazo.
           </h1>
           <p className="mt-6" style={{ color: "rgba(255,255,255,0.65)", maxWidth: "480px", lineHeight: 1.8, fontFamily: "system-ui", fontSize: "15px" }}>
             Produção em escala com consistência, rapidez e acabamento premium.
@@ -114,45 +123,57 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══ SOBRE — MISSÃO ══ */}
+      {/* ══ O QUE FAZEMOS ══ */}
       <section ref={sobreRef} style={{ backgroundColor: t.bg }}>
         <div className="px-6 md:px-24 py-16 border-b" style={{ borderColor: t.borderForte }}>
           <div style={{ opacity: sobreVisible ? 1 : 0, transform: sobreVisible ? "translateY(0)" : "translateY(40px)", transition: "all 0.9s ease" }}>
             <p className="uppercase mb-4" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
               O que fazemos
             </p>
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-              <h2 style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: "300", lineHeight: 1.05, color: t.text, letterSpacing: "-0.02em" }}>
-                Soluções com<br /><em style={{ fontStyle: "italic" }}>qualidade e atendimento</em><br />próximo e personalizado.
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
+              <h2 style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: "300", lineHeight: 1.1, color: t.text, letterSpacing: "-0.02em", flexShrink: 0 }}>
+                Produzimos e personalizamos<br />
+                <em style={{ fontStyle: "italic" }}>uniformes e comunicação</em><br />
+                visual para empresas.
               </h2>
-              <p style={{ maxWidth: "380px", color: t.textSecundario, lineHeight: 1.8, fontFamily: "system-ui", fontSize: "14px", flexShrink: 0 }}>
-                Cada projeto é desenvolvido para unir prazo, qualidade e satisfação — porque acreditamos que excelência deve ser acessível.
-              </p>
+              {/* Serviços em bloco */}
+              <div style={{ maxWidth: "420px", width: "100%" }}>
+                {servicos.map((s, i) => (
+                  <div key={i} style={{ padding: "16px 0", borderBottom: i < servicos.length - 1 ? "1px solid " + t.border : "none" }}>
+                    <p style={{ fontSize: "13px", fontWeight: "700", color: t.text, fontFamily: "system-ui", marginBottom: "4px" }}>
+                      • {s.titulo}
+                    </p>
+                    <p style={{ fontSize: "13px", color: t.textSecundario, fontFamily: "system-ui", lineHeight: 1.6 }}>
+                      {s.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Missão — texto + foto */}
+        {/* ══ COM QUEM TRABALHAMOS ══ */}
         <div ref={missaoRef} className="grid grid-cols-1 md:grid-cols-2" style={{ borderBottom: "2px solid " + t.borderForte }}>
           <div className="px-6 md:px-24 py-12 md:py-20 flex flex-col justify-center"
             style={{ opacity: missaoVisible ? 1 : 0, transform: missaoVisible ? "translateX(0)" : "translateX(-30px)", transition: "all 0.9s ease 0.1s" }}>
             <p className="uppercase mb-6" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
-              COM QUEM TRABALHAMOS
+              Com quem trabalhamos
             </p>
-            <p style={{ fontSize: "clamp(1.4rem, 2.5vw, 2.2rem)", fontWeight: "300", color: t.text, lineHeight: 1.3, marginBottom: "24px", letterSpacing: "-0.01em" }}>
-              Trabalhamos com dedicação para entregar o melhor produto e uma experiência que realmente faça a diferença.
+            <p style={{ fontSize: "clamp(1.1rem, 2vw, 1.5rem)", fontWeight: "300", color: t.text, lineHeight: 1.5, marginBottom: "28px", letterSpacing: "-0.01em" }}>
+              Atendemos empresas que precisam de fornecedor confiável, não de tentativa e erro. Somos a melhor opção para:
             </p>
-            <div className="flex gap-12 mt-4">
-              {[{ num: "+20", label: "Anos de mercado" }, { num: "Todo", label: "Sudeste Brasileiro" }].map(({ num, label }) => (
-                <div key={label}>
-                  <p style={{ fontSize: "2rem", fontWeight: "300", color: t.text, fontFamily: "Georgia, serif" }}>{num}</p>
-                  <p className="uppercase mt-1" style={{ fontSize: "10px", letterSpacing: "0.15em", color: t.textSecundario, fontFamily: "system-ui" }}>{label}</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {clientes.map((c, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
+                  <span style={{ color: t.text, fontWeight: "700", flexShrink: 0, fontFamily: "system-ui", fontSize: "14px" }}>→</span>
+                  <p style={{ fontSize: "14px", color: t.textSecundario, fontFamily: "system-ui", lineHeight: 1.5 }}>{c}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* FOTO */}
+          {/* Foto */}
           <div style={{
             height: "480px", overflow: "hidden", position: "relative",
             opacity: missaoVisible ? 1 : 0,
@@ -173,21 +194,53 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══ PORTFÓLIO ══ */}
-      <section ref={galeriaRef} style={{ backgroundColor: t.bgSecundario, borderBottom: "2px solid " + t.borderForte }}>
+      {/* ══ PORQUE NOS ESCOLHEM ══ */}
+      <section ref={porqueRef} style={{ backgroundColor: t.bgSecundario, borderBottom: "2px solid " + t.borderForte }}>
+        <div className="px-6 md:px-24 py-16 md:py-20">
+          <div style={{ opacity: porqueVisible ? 1 : 0, transform: porqueVisible ? "translateY(0)" : "translateY(30px)", transition: "all 0.8s ease" }}>
+            <p className="uppercase mb-6" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
+              Porque nossos clientes escolhem a Metzker
+            </p>
+            <div className="flex flex-col md:flex-row gap-12 md:gap-20">
+              <div style={{ maxWidth: "400px" }}>
+                <p style={{ fontSize: "clamp(1rem, 1.8vw, 1.3rem)", fontWeight: "300", color: t.text, lineHeight: 1.7, fontFamily: "system-ui" }}>
+                  Estamos há mais de 20 anos atendendo empresas em todo Sudeste, focados em entrega consistente e relacionamento de longo prazo.
+                </p>
+                <p className="mt-4" style={{ fontSize: "14px", color: t.textSecundario, lineHeight: 1.7, fontFamily: "system-ui" }}>
+                  Atendemos desde demandas pontuais até operações recorrentes.
+                </p>
+              </div>
+              <div style={{ flex: 1 }}>
+                {diferenciais.map((d, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "12px", padding: "14px 0", borderBottom: i < diferenciais.length - 1 ? "1px solid " + t.border : "none" }}>
+                    <span style={{ color: "#16a34a", fontWeight: "700", flexShrink: 0, fontSize: "16px" }}>✓</span>
+                    <p style={{ fontSize: "14px", color: t.text, fontFamily: "system-ui", lineHeight: 1.5 }}>{d}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══ PROJETOS ENTREGUES ══ */}
+      <section ref={galeriaRef} style={{ backgroundColor: t.bg, borderBottom: "2px solid " + t.borderForte }}>
         <div className="px-6 md:px-24 py-12 md:py-20">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 md:mb-16 gap-4"
             style={{ opacity: galeriaVisible ? 1 : 0, transform: galeriaVisible ? "translateY(0)" : "translateY(20px)", transition: "all 0.8s ease" }}>
             <div>
               <p className="uppercase mb-4" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
-                PROJETOS ENTREGUES
+                Projetos entregues
               </p>
               <h2 style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: "300", color: t.text, letterSpacing: "-0.02em" }}>
-                Nossos<br /><em style={{ fontStyle: "italic" }}>Trabalhos</em>
+                Alguns dos trabalhos<br /><em style={{ fontStyle: "italic" }}>que já entregamos</em>
               </h2>
+              <p className="mt-3" style={{ fontSize: "14px", color: t.textSecundario, fontFamily: "system-ui", maxWidth: "380px", lineHeight: 1.6 }}>
+                Para empresas e eventos que precisavam de padrão e prazo.
+              </p>
             </div>
             <Link to="/catalogo"
-              className="text-sm uppercase tracking-widest transition hover:opacity-50"
+              className="text-sm uppercase tracking-widest transition hover:opacity-50 whitespace-nowrap"
               style={{ color: t.text, fontFamily: "system-ui", letterSpacing: "0.2em", borderBottom: "1px solid " + t.text, paddingBottom: "4px" }}>
               Ver portfólio completo →
             </Link>
@@ -199,7 +252,7 @@ export default function Home() {
                 style={{ height: "350px", borderRight: i < 2 ? "2px solid " + t.borderForte : "none",
                   opacity: galeriaVisible ? 1 : 0, transform: galeriaVisible ? "translateY(0)" : "translateY(20px)",
                   transition: `all 0.7s ease ${i * 0.1}s` }}>
-                <img src={url} alt={`Trabalho ${i + 1}`}
+                <img src={url} alt={`Projeto ${i + 1}`}
                   className="w-full h-full object-cover transition duration-700 group-hover:scale-105" />
               </div>
             ))}
@@ -226,22 +279,22 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══ CTA PERSONALIZADO ══ */}
+      {/* ══ CTA ══ */}
       <section style={{ backgroundColor: t.text }}>
         <div className="px-6 md:px-24 py-16 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
           <div>
             <p className="uppercase mb-4" style={{ fontSize: "10px", letterSpacing: "0.25em", color: "rgba(255,255,255,0.4)", fontFamily: "system-ui" }}>
-              PORQUE NOSSOS CLIENTES ESCOLHEM A METZKER
+              Comunicação Visual & Uniformes
             </p>
             <h2 style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.8rem)", fontWeight: "300", color: "white", lineHeight: 1.2 }}>
-              Tenha as soluções que sua empresa<br /><em style={{ fontStyle: "italic" }}>e seus eventos precisam.</em>
+              Quer fazer um orçamento?
             </h2>
-            <p className="mt-3" style={{ color: "rgba(255,255,255,0.6)", fontFamily: "system-ui", fontSize: "14px", maxWidth: "480px", lineHeight: 1.7 }}>
-              Impressões digitais e personalização de logos para fachadas e ambientes internos.
+            <p className="mt-3" style={{ color: "rgba(255,255,255,0.6)", fontFamily: "system-ui", fontSize: "14px", maxWidth: "380px", lineHeight: 1.7 }}>
+              Fale direto com a equipe e veja como podemos atender seu projeto.
             </p>
           </div>
           <Link to="/personalizado"
-            className="px-10 py-4 text-sm uppercase tracking-widest font-medium transition hover:opacity-80 shrink-0"
+            className="px-10 py-4 text-sm uppercase tracking-widest font-medium transition hover:opacity-80 shrink-0 whitespace-nowrap"
             style={{ backgroundColor: "white", color: "#1a1a1a", letterSpacing: "0.15em", fontFamily: "system-ui" }}>
             QUER FAZER UM ORÇAMENTO? →
           </Link>
@@ -291,13 +344,6 @@ export default function Home() {
         style={{ backgroundColor: "#22c55e", fontFamily: "system-ui, sans-serif" }}>
         WhatsApp
       </a>
-
-      <style>{`
-        @keyframes scrollLine {
-          0% { transform: translateY(0); opacity: 1; }
-          100% { transform: translateY(20px); opacity: 0; }
-        }
-      `}</style>
     </div>
   );
 }
