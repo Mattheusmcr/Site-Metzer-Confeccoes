@@ -504,36 +504,59 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                 {expandido && (
                   <div className="px-5 pb-5 space-y-4" style={{ borderTop: "1px solid " + border }}>
                     <div className="grid md:grid-cols-2 gap-4 pt-4">
-                      <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
-                        <p className="text-xs font-bold uppercase mb-2" style={{ color: subtext }}>🏢 Empresa</p>
-                        <p className="font-semibold text-sm" style={{ color: text }}>{p.nome_empresa}</p>
-                        {p.slogan && <p className="text-xs italic" style={{ color: subtext }}>"{p.slogan}"</p>}
-                        <p className="text-sm" style={{ color: subtext }}>Ramo: {p.ramo}</p>
-                        <p className="text-sm" style={{ color: subtext }}>Quantidade: {p.quantidade} arte(s)</p>
-                      </div>
+
+                      {/* CONTATO */}
                       <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
                         <p className="text-xs font-bold uppercase mb-2" style={{ color: subtext }}>👤 Contato</p>
                         <p className="font-semibold text-sm" style={{ color: text }}>{p.nome_cliente}</p>
                         {p.telefone && <p className="text-sm" style={{ color: subtext }}>📱 {p.telefone}</p>}
                         {p.email && <p className="text-sm" style={{ color: subtext }}>📧 {p.email}</p>}
-                      </div>
-                      <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
-                        <p className="text-xs font-bold uppercase mb-2" style={{ color: subtext }}>🎨 Design</p>
-                        <p className="text-sm" style={{ color: text }}>Estilo: <strong>{ESTILOS_MAP[p.estilo] || p.estilo}</strong></p>
-                        <p className="text-sm" style={{ color: text }}>Paleta: <strong>{PALETAS_MAP[p.paleta] || p.paleta}</strong></p>
-                        {p.aplicacoes?.length > 0 && (
-                          <p className="text-sm" style={{ color: text }}>
-                            Aplicações: <strong>{p.aplicacoes.map(a => APLICACOES_MAP[a] || a).join(", ")}</strong>
+                        {p.observacoes && p.observacoes.includes("CEP") && (
+                          <p className="text-sm" style={{ color: subtext }}>
+                            📍 {p.observacoes.split("Descrição:")[0].replace("Obs:","").trim()}
                           </p>
                         )}
                       </div>
+
+                      {/* CATEGORIA E TIPO */}
                       <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
-                        <p className="text-xs font-bold uppercase mb-2" style={{ color: subtext }}>📝 Detalhes</p>
-                        {p.referencia && <p className="text-sm" style={{ color: subtext }}>Ref: {p.referencia}</p>}
-                        {p.observacoes && <p className="text-sm" style={{ color: subtext }}>Obs: {p.observacoes}</p>}
-                        {!p.referencia && !p.observacoes && <p className="text-sm" style={{ color: subtext }}>Sem observações</p>}
+                        <p className="text-xs font-bold uppercase mb-2" style={{ color: subtext }}>📦 Pedido</p>
+                        <p className="text-sm font-semibold" style={{ color: text }}>
+                          {p.estilo === "roupas" ? "👕 Item de Roupa" : p.estilo === "comunicacao" ? "🖨️ Comunicação Visual" : p.ramo}
+                        </p>
+                        <p className="text-sm" style={{ color: subtext }}>Total: <strong style={{ color: text }}>{p.quantidade} unidades</strong></p>
+                        {p.slogan && <p className="text-sm" style={{ color: subtext }}>Dimensões: {p.slogan}</p>}
                       </div>
                     </div>
+
+                    {/* COMBINAÇÕES — exibe o campo referencia formatado */}
+                    {p.referencia && (
+                      <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
+                        <p className="text-xs font-bold uppercase mb-3" style={{ color: subtext }}>🎨 Combinações / Detalhes</p>
+                        {p.referencia.includes("#1") ? (
+                          p.referencia.split("\n").filter(l => l.trim()).map((linha, i, arr) => (
+                            <div key={i} className="mb-3 pb-3" style={{ borderBottom: i < arr.length - 1 ? "1px solid " + border : "none" }}>
+                              <p className="text-sm font-semibold" style={{ color: text }}>{linha.split("|")[0]?.trim()}</p>
+                              {linha.split("|").slice(1).map((parte, j) => (
+                                <p key={j} className="text-xs mt-1" style={{ color: subtext }}>{parte.trim()}</p>
+                              ))}
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-sm" style={{ color: subtext, whiteSpace: "pre-wrap" }}>{p.referencia}</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* DESCRIÇÃO */}
+                    {p.observacoes && p.observacoes.includes("Descrição:") && (
+                      <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
+                        <p className="text-xs font-bold uppercase mb-2" style={{ color: subtext }}>📝 Descrição do cliente</p>
+                        <p className="text-sm" style={{ color: subtext }}>
+                          {p.observacoes.split("Descrição:")[1]?.trim() || "—"}
+                        </p>
+                      </div>
+                    )}
 
                     {/* ATUALIZAR STATUS */}
                     <div>
