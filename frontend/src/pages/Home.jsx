@@ -232,8 +232,8 @@ export default function Home() {
               <p className="uppercase mb-4" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
                 Projetos entregues
               </p>
-              <h2 style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: "300", color: t.text, letterSpacing: "-0.02em" }}>
-                Alguns dos trabalhos<br /><em style={{ fontStyle: "italic" }}>que já entregamos</em>
+              <h2 style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: "300", color: t.text, letterSpacing: "-0.02em",  }}>
+                Alguns dos trabalhos <em style={{ fontStyle: "italic" }}>que já entregamos</em>
               </h2>
               <p className="mt-3" style={{ fontSize: "14px", color: t.textSecundario, fontFamily: "system-ui", maxWidth: "380px", lineHeight: 1.6 }}>
                 Para empresas e eventos que precisavam de padrão e prazo.
@@ -289,14 +289,14 @@ export default function Home() {
             <h2 style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.8rem)", fontWeight: "300", color: "white", lineHeight: 1.2 }}>
               Quer fazer um orçamento?
             </h2>
-            <p className="mt-3" style={{ marginTop: "10px",marginLeft: "40px", color: "rgba(255,255,255,0.6)", fontFamily: "system-ui", fontSize: "14px", maxWidth: "380px", lineHeight: 1.7 }}>
+            <p className="mt-3" style={{ color: "rgba(255,255,255,0.6)", fontFamily: "system-ui", fontSize: "14px", maxWidth: "380px", lineHeight: 1.7 }}>
               Fale direto com a equipe e veja como podemos atender seu projeto.
             </p>
           </div>
           <Link to="/personalizado"
             className="px-10 py-4 text-sm uppercase tracking-widest font-medium transition hover:opacity-80 shrink-0 whitespace-nowrap"
             style={{ backgroundColor: "white", color: "#1a1a1a", letterSpacing: "0.15em", fontFamily: "system-ui" }}>
-            QUER FAZER UM ORÇAMENTO? →
+            ORCE SEU PEDIDO →
           </Link>
         </div>
       </section>
