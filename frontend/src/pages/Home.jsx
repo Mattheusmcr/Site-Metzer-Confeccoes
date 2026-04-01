@@ -88,7 +88,7 @@ export default function Home() {
             Produção têxtil e<br /><em style={{ fontStyle: "italic", fontWeight: "400" }}>comunicação visual</em><br />alinhadas para fortalecer marcas.
           </h1>
           <p className="mt-6" style={{ color: "rgba(255,255,255,0.65)", maxWidth: "480px", lineHeight: 1.8, fontFamily: "system-ui", fontSize: "15px" }}>
-            Qualidade, consistência e identidade em cada entrega.
+            Produção em escala com consistência, rapidez e acabamento premium.
           </p>
           <div className="flex gap-3 mt-8 flex-wrap">
             <Link to="/catalogo"
@@ -119,7 +119,7 @@ export default function Home() {
         <div className="px-6 md:px-24 py-16 border-b" style={{ borderColor: t.borderForte }}>
           <div style={{ opacity: sobreVisible ? 1 : 0, transform: sobreVisible ? "translateY(0)" : "translateY(40px)", transition: "all 0.9s ease" }}>
             <p className="uppercase mb-4" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
-              Quem somos
+              O que fazemos
             </p>
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <h2 style={{ fontSize: "clamp(2.5rem, 5vw, 4.5rem)", fontWeight: "300", lineHeight: 1.05, color: t.text, letterSpacing: "-0.02em" }}>
@@ -137,7 +137,7 @@ export default function Home() {
           <div className="px-6 md:px-24 py-12 md:py-20 flex flex-col justify-center"
             style={{ opacity: missaoVisible ? 1 : 0, transform: missaoVisible ? "translateX(0)" : "translateX(-30px)", transition: "all 0.9s ease 0.1s" }}>
             <p className="uppercase mb-6" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
-              Nossa Missão
+              COM QUEM TRABALHAMOS
             </p>
             <p style={{ fontSize: "clamp(1.4rem, 2.5vw, 2.2rem)", fontWeight: "300", color: t.text, lineHeight: 1.3, marginBottom: "24px", letterSpacing: "-0.01em" }}>
               Trabalhamos com dedicação para entregar o melhor produto e uma experiência que realmente faça a diferença.
@@ -180,7 +180,7 @@ export default function Home() {
             style={{ opacity: galeriaVisible ? 1 : 0, transform: galeriaVisible ? "translateY(0)" : "translateY(20px)", transition: "all 0.8s ease" }}>
             <div>
               <p className="uppercase mb-4" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
-                Portfólio
+                PROJETOS ENTREGUES
               </p>
               <h2 style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: "300", color: t.text, letterSpacing: "-0.02em" }}>
                 Nossos<br /><em style={{ fontStyle: "italic" }}>Trabalhos</em>
@@ -231,7 +231,7 @@ export default function Home() {
         <div className="px-6 md:px-24 py-16 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
           <div>
             <p className="uppercase mb-4" style={{ fontSize: "10px", letterSpacing: "0.25em", color: "rgba(255,255,255,0.4)", fontFamily: "system-ui" }}>
-              Comunicação Visual
+              PORQUE NOSSOS CLIENTES ESCOLHEM A METZKER
             </p>
             <h2 style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.8rem)", fontWeight: "300", color: "white", lineHeight: 1.2 }}>
               Tenha as soluções que sua empresa<br /><em style={{ fontStyle: "italic" }}>e seus eventos precisam.</em>
@@ -243,7 +243,7 @@ export default function Home() {
           <Link to="/personalizado"
             className="px-10 py-4 text-sm uppercase tracking-widest font-medium transition hover:opacity-80 shrink-0"
             style={{ backgroundColor: "white", color: "#1a1a1a", letterSpacing: "0.15em", fontFamily: "system-ui" }}>
-            Quero orçar minha ideia →
+            QUER FAZER UM ORÇAMENTO? →
           </Link>
         </div>
       </section>
