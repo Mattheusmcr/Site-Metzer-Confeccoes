@@ -232,7 +232,7 @@ export default function Home() {
               <p className="uppercase mb-4" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
                 Projetos entregues
               </p>
-              <h2 style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: "300", color: t.text, letterSpacing: "-0.02em",  }}>
+              <h2 style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: "300", color: t.text, letterSpacing: "-0.02em", whiteSpace: "nowrap"  }}>
                 Alguns dos trabalhos <em style={{ fontStyle: "italic" }}>que já entregamos</em>
               </h2>
               <p className="mt-3" style={{ fontSize: "14px", color: t.textSecundario, fontFamily: "system-ui", maxWidth: "380px", lineHeight: 1.6 }}>
