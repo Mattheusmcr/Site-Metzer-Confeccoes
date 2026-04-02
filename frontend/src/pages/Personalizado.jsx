@@ -89,6 +89,7 @@ export default function Personalizado(){
   const [modalTamanhos, setModalTamanhos] = useState(null); // combId
   const [modalCores, setModalCores] = useState(null);       // combId
   const [modalMaterial, setModalMaterial] = useState(null); // combId
+  const [tabelaAberta, setTabelaAberta] = useState(false);
 
   const inputStyle = { width:"100%", padding:"12px 14px", outline:"none", border:"1px solid "+t.border, backgroundColor:t.bgCard, color:t.text, fontSize:"14px", boxSizing:"border-box", fontFamily:"system-ui" };
   const labelStyle = { display:"block", fontSize:"11px", fontWeight:"600", color:t.textSecundario, marginBottom:"6px", textTransform:"uppercase", letterSpacing:"0.1em", fontFamily:"system-ui" };
@@ -387,6 +388,12 @@ export default function Personalizado(){
                     ))}
                   </div>
                 </div>
+
+                {/* Link tabela de medidas */}
+                <button onClick={() => setTabelaAberta(true)}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: t.textSecundario, fontSize: "12px", fontFamily: "system-ui", textDecoration: "underline", padding: 0, textAlign: "left" }}>
+                  📏 Ver tabela de medidas
+                </button>
 
                 {/* Contador e checklist */}
                 {form.combinacoes.length>0 && (
@@ -716,6 +723,86 @@ export default function Personalizado(){
                   </button>
                 );
               })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ MODAL TABELA DE MEDIDAS ══ */}
+      {tabelaAberta && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          onClick={e => { if (e.target === e.currentTarget) setTabelaAberta(false); }}>
+          <div style={{ backgroundColor: t.bgCard, width: "100%", maxWidth: "520px", maxHeight: "90vh", overflowY: "auto", borderTop: "2px solid " + t.borderForte }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 20px 16px", borderBottom: "1px solid " + t.border }}>
+              <h3 style={{ fontSize: "16px", fontWeight: "600", color: t.text, fontFamily: "Georgia, serif" }}>📏 Tabela de Medidas</h3>
+              <button onClick={() => setTabelaAberta(false)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", color: t.text }}>✕</button>
+            </div>
+            <div style={{ padding: "20px" }}>
+              <p style={{ fontSize: "12px", color: t.textSecundario, fontFamily: "system-ui", marginBottom: "16px" }}>Medidas em centímetros (cm) da peça plana.</p>
+
+              {/* Tradicional */}
+              <p style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.1em", color: t.text, fontFamily: "system-ui", marginBottom: "8px" }}>Tradicional</p>
+              <div style={{ overflowX: "auto", marginBottom: "20px", border: "1px solid " + t.border }}>
+                <table style={{ minWidth: "380px", width: "100%", fontSize: "12px", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ backgroundColor: t.bgSecundario }}>
+                      {["TAM","Comprimento","Manga","Largura"].map(h => (
+                        <th key={h} style={{ padding: "8px", textAlign: "center", fontWeight: "700", color: t.text, borderRight: "1px solid " + t.border, fontFamily: "system-ui" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      ["PP","64 cm","19 cm","44 cm"],
+                      ["P", "68 cm","21 cm","50 cm"],
+                      ["M", "71 cm","22 cm","52 cm"],
+                      ["G", "73 cm","23 cm","55 cm"],
+                      ["GG","75 cm","24.5 cm","58 cm"],
+                      ["EXG","77 cm","26 cm","61 cm"],
+                      ["EXGG","79 cm","27 cm","64 cm"],
+                    ].map(([tam,...vals], i) => (
+                      <tr key={tam} style={{ backgroundColor: i%2===0?t.bgCard:t.bgSecundario }}>
+                        <td style={{ padding: "7px 8px", textAlign: "center", fontWeight: "700", color: t.text, borderRight: "1px solid " + t.border, fontFamily: "system-ui" }}>{tam}</td>
+                        {vals.map((v,j) => <td key={j} style={{ padding: "7px 8px", textAlign: "center", color: t.textSecundario, borderRight: j<2?"1px solid "+t.border:"none", fontFamily: "system-ui" }}>{v}</td>)}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Baby Look */}
+              <p style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.1em", color: t.text, fontFamily: "system-ui", marginBottom: "8px" }}>Baby Look</p>
+              <div style={{ overflowX: "auto", marginBottom: "20px", border: "1px solid " + t.border }}>
+                <table style={{ minWidth: "280px", width: "100%", fontSize: "12px", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ backgroundColor: t.bgSecundario }}>
+                      {["TAM","Larg. Peito","Altura"].map(h => (
+                        <th key={h} style={{ padding: "8px", textAlign: "center", fontWeight: "700", color: t.text, borderRight: "1px solid " + t.border, fontFamily: "system-ui" }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      ["PP","45 cm","61 cm"],
+                      ["P", "47 cm","62 cm"],
+                      ["M", "49 cm","64 cm"],
+                      ["G", "51 cm","66 cm"],
+                      ["GG","53.5 cm","67 cm"],
+                      ["EXG","55.5 cm","69 cm"],
+                    ].map(([tam,...vals], i) => (
+                      <tr key={tam} style={{ backgroundColor: i%2===0?t.bgCard:t.bgSecundario }}>
+                        <td style={{ padding: "7px 8px", textAlign: "center", fontWeight: "700", color: t.text, borderRight: "1px solid " + t.border, fontFamily: "system-ui" }}>{tam}</td>
+                        {vals.map((v,j) => <td key={j} style={{ padding: "7px 8px", textAlign: "center", color: t.textSecundario, borderRight: j<1?"1px solid "+t.border:"none", fontFamily: "system-ui" }}>{v}</td>)}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <p style={{ fontSize: "11px", color: t.textSecundario, fontFamily: "system-ui", marginTop: "8px" }}>
+                As medidas podem variar ±2 cm dependendo do processo de fabricação.
+              </p>
             </div>
           </div>
         </div>

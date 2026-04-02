@@ -298,45 +298,67 @@ export default function ProdutoDetalhe() {
                 <button onClick={() => setDrawerAberto(false)} className="text-xl hover:opacity-60 transition" style={{ color: t.text }}>✕</button>
               </div>
               <p className="text-sm mb-6" style={{ color: t.textSecundario }}>Medidas em centímetros (cm) da peça plana.</p>
-              <div className="overflow-hidden mb-6" style={{ border: "1px solid " + t.border }}>
-                <table className="w-full text-sm">
+              {/* ── TABELA TRADICIONAL ── */}
+              <p className="text-sm font-bold uppercase mb-2" style={{ color: t.text }}>Tradicional</p>
+              <div className="overflow-x-auto mb-6" style={{ border: "1px solid " + t.border }}>
+                <table className="text-sm" style={{ minWidth: "400px", width: "100%" }}>
                   <thead>
                     <tr style={{ backgroundColor: t.bgSecundario }}>
-                      <th className="p-3 text-left font-semibold" style={{ color: t.text }}>Medida</th>
-                      {["P","M","G","GG"].map(tam => (
-                        <th key={tam} className="p-3 text-center font-semibold"
-                          style={{ color: tamanhoSelecionado === tam ? "#ffffff" : t.text,
-                            backgroundColor: tamanhoSelecionado === tam ? t.text : "transparent" }}>
-                          {tam}
-                        </th>
+                      {["TAM","Comprimento","Manga","Largura"].map(h => (
+                        <th key={h} className="p-2 text-center font-bold text-xs" style={{ color: t.text, borderRight: "1px solid " + t.border }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
-                    {[{ label: "Comprimento", key: "comprimento" }, { label: "Largura", key: "largura" }, { label: "Manga", key: "manga" }]
-                      .map((linha, i) => (
-                        <tr key={linha.key} style={{ backgroundColor: i % 2 === 0 ? t.bgCard : t.bgSecundario }}>
-                          <td className="p-3 font-medium" style={{ color: t.text }}>{linha.label}</td>
-                          {["P","M","G","GG"].map(tam => (
-                            <td key={tam} className="p-3 text-center"
-                              style={{ color: tamanhoSelecionado === tam ? "#2563eb" : t.textSecundario,
-                                fontWeight: tamanhoSelecionado === tam ? "600" : "400" }}>
-                              {medidas[tam][linha.key]}
-                            </td>
-                          ))}
-                        </tr>
+                    {[
+                      { tam:"PP",  comp:"64", manga:"19", larg:"44" },
+                      { tam:"P",   comp:"68", manga:"21", larg:"50" },
+                      { tam:"M",   comp:"71", manga:"22", larg:"52" },
+                      { tam:"G",   comp:"73", manga:"23", larg:"55" },
+                      { tam:"GG",  comp:"75", manga:"24.5", larg:"58" },
+                      { tam:"EXG", comp:"77", manga:"26", larg:"61" },
+                      { tam:"EXGG",comp:"79", manga:"27", larg:"64" },
+                    ].map((row, i) => (
+                      <tr key={row.tam} style={{ backgroundColor: i % 2 === 0 ? t.bgCard : t.bgSecundario }}>
+                        <td className="p-2 text-center font-bold text-xs" style={{ color: t.text, borderRight: "1px solid " + t.border }}>{row.tam}</td>
+                        <td className="p-2 text-center text-xs" style={{ color: t.textSecundario, borderRight: "1px solid " + t.border }}>{row.comp} cm</td>
+                        <td className="p-2 text-center text-xs" style={{ color: t.textSecundario, borderRight: "1px solid " + t.border }}>{row.manga} cm</td>
+                        <td className="p-2 text-center text-xs" style={{ color: t.textSecundario }}>{row.larg} cm</td>
+                      </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              {tamanhoSelecionado && medidas[tamanhoSelecionado] && (
-                <div className="p-4 mb-6" style={{ backgroundColor: "#eff6ff", border: "1px solid #bfdbfe" }}>
-                  <p className="text-sm font-semibold mb-2" style={{ color: "#2563eb" }}>Tamanho selecionado: {tamanhoSelecionado}</p>
-                  {Object.entries({ Comprimento: "comprimento", Largura: "largura", Manga: "manga" }).map(([label, key]) => (
-                    <p key={key} className="text-sm" style={{ color: t.text }}>{label}: <strong>{medidas[tamanhoSelecionado][key]}</strong></p>
-                  ))}
-                </div>
-              )}
+
+              {/* ── TABELA BABY LOOK ── */}
+              <p className="text-sm font-bold uppercase mb-2" style={{ color: t.text }}>Baby Look</p>
+              <div className="overflow-x-auto mb-6" style={{ border: "1px solid " + t.border }}>
+                <table className="text-sm" style={{ minWidth: "300px", width: "100%" }}>
+                  <thead>
+                    <tr style={{ backgroundColor: t.bgSecundario }}>
+                      {["TAM","Larg. Peito","Altura"].map(h => (
+                        <th key={h} className="p-2 text-center font-bold text-xs" style={{ color: t.text, borderRight: "1px solid " + t.border }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { tam:"PP",  larg:"45", alt:"61" },
+                      { tam:"P",   larg:"47", alt:"62" },
+                      { tam:"M",   larg:"49", alt:"64" },
+                      { tam:"G",   larg:"51", alt:"66" },
+                      { tam:"GG",  larg:"53.5", alt:"67" },
+                      { tam:"EXG", larg:"55.5", alt:"69" },
+                    ].map((row, i) => (
+                      <tr key={row.tam} style={{ backgroundColor: i % 2 === 0 ? t.bgCard : t.bgSecundario }}>
+                        <td className="p-2 text-center font-bold text-xs" style={{ color: t.text, borderRight: "1px solid " + t.border }}>{row.tam}</td>
+                        <td className="p-2 text-center text-xs" style={{ color: t.textSecundario, borderRight: "1px solid " + t.border }}>{row.larg} cm</td>
+                        <td className="p-2 text-center text-xs" style={{ color: t.textSecundario }}>{row.alt} cm</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               <p className="text-sm font-semibold mb-3" style={{ color: t.text }}>Como medir:</p>
               <img src="https://hering.myvtex.com/api/dataentities/ET/documents/127a694a-63e5-11f0-b37f-f86067021982/image/attachments/3M9P-1ASN-T.jpg"
                 alt="Guia de medidas" className="w-full mb-4" />

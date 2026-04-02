@@ -221,8 +221,7 @@ function Catalogo() {
                   <Link to={`/produto/${produto.id}`}>
                     <div className="relative overflow-hidden" style={{ backgroundColor: t.bgSecundario }}>
                       {imagemAtual
-                        ? <img src={imagemAtual} alt={produto.nome} className="w-full object-contain transition duration-500"
-                            style={{ height: "280px" }} />
+                        ? <img src={imagemAtual} alt={produto.nome} className="w-full object-cover transition duration-500" style={{ height: "280px" }}/>
                         : <div className="w-full flex items-center justify-center text-5xl"
                             style={{ height: "360px" }}>
                             {isComunicacao ? "🖼️" : "👕"}
@@ -258,13 +257,9 @@ function Catalogo() {
                       </div>
                     )}
 
-                    {/* Comunicação visual — mostra descrição */}
+                    {/* Tamanhos/formatos */}
                     {isComunicacao ? (
-                      produto.descricao && (
-                        <p className="text-xs uppercase tracking-wide" style={{ color: t.textSecundario }}>
-                          {produto.descricao}
-                        </p>
-                      )
+                      <div>{/* sem descrição no card */}</div>
                     ) : (
                       // Roupas — botões de tamanho
                       <div className="flex gap-1.5 flex-wrap">

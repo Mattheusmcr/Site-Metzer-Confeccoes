@@ -73,7 +73,7 @@ function CadastrarProduto({ mostrarToast, dark, estilos }) {
       <div className="flex flex-col gap-4">
         <div><label style={labelStyle}>Nome *</label><input name="nome" value={form.nome} onChange={handleChange} placeholder="Ex: Camiseta Polo" style={inputStyle} /></div>
         <div><label style={labelStyle}>Descrição {form.categoria === "comunicacao" ? "(ex: Banner 1,5m x 80cm)" : ""}</label>
-          <textarea name="descricao" value={form.descricao} onChange={handleChange} rows={2} placeholder={form.categoria === "comunicacao" ? "Banner 1,5m x 80cm" : "Descreva o produto..."} style={{ ...inputStyle, resize: "none" }} /></div>
+          <textarea name="descricao" value={form.descricao} onChange={handleChange} rows={4} placeholder={form.categoria === "comunicacao" ? "Banner 1,5m x 80cm" : "Descreva o produto..."} style={{ ...inputStyle, textAlign: "justify", resize: "none" }} /></div>
         <div><label style={labelStyle}>Preço *</label><input type="number" name="preco" value={form.preco} onChange={handleChange} placeholder="129.90" style={inputStyle} /></div>
         <div>
           <label style={labelStyle}>Categoria</label>
@@ -705,11 +705,16 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
   async function salvarEstoque(prodId) {
     setSalvando(prev => ({ ...prev, [prodId]: true }));
     try {
-      await Promise.all(Object.entries(valores[prodId] || {}).map(([tamanho, quantidade]) =>
-        api.post("estoques/atualizar/", { produto: prodId, tamanho, quantidade: parseInt(quantidade) || 0 })
+      const entradas = Object.entries(valores[prodId] || {}).filter(([tamanho]) => tamanho && tamanho.trim());
+      if (entradas.length === 0) { mostrarToast("Adicione ao menos um tamanho/formato.", "erro"); return; }
+      await Promise.all(entradas.map(([tamanho, quantidade]) =>
+        api.post("estoques/atualizar/", { produto: prodId, tamanho: tamanho.trim(), quantidade: parseInt(quantidade) || 0 })
       ));
       mostrarToast("Estoque salvo!", "sucesso"); await carregar();
-    } catch { mostrarToast("Erro ao salvar estoque.", "erro"); }
+    } catch (e) {
+      console.error(e.response?.data);
+      mostrarToast("Erro ao salvar estoque. Verifique os dados.", "erro");
+    }
     finally { setSalvando(prev => ({ ...prev, [prodId]: false })); }
   }
 
