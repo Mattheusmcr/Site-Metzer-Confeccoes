@@ -123,68 +123,72 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══ O QUE FAZEMOS + FOTO ══ */}
-      <section ref={sobreRef} style={{ backgroundColor: t.bg, borderBottom: "2px solid " + t.borderForte }}>
-        {/* Título + serviços em grid com foto */}
-        <div ref={missaoRef} className="grid grid-cols-1 md:grid-cols-2" style={{ borderBottom: "1px solid " + t.borderForte }}>
-          {/* Esquerda: título + serviços */}
-          <div className="px-6 md:px-16 py-12 md:py-16"
-            style={{ opacity: sobreVisible ? 1 : 0, transform: sobreVisible ? "translateX(0)" : "translateX(-30px)", transition: "all 0.9s ease" }}>
+      {/* ══ O QUE FAZEMOS ══ */}
+      <section ref={sobreRef} style={{ backgroundColor: t.bg }}>
+        <div className="px-6 md:px-24 py-16 border-b" style={{ borderColor: t.borderForte }}>
+          <div style={{ opacity: sobreVisible ? 1 : 0, transform: sobreVisible ? "translateY(0)" : "translateY(40px)", transition: "all 0.9s ease" }}>
             <p className="uppercase mb-4" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
               O que fazemos
             </p>
-            <h2 style={{ fontSize: "clamp(1.6rem, 3vw, 2.8rem)", fontWeight: "300", lineHeight: 1.15, color: t.text, letterSpacing: "-0.02em", marginBottom: "28px" }}>
-              Produzimos e personalizamos<br />
-              <em style={{ fontStyle: "italic" }}>uniformes e comunicação</em><br />
-              visual para empresas.
-            </h2>
-            <div>
-              {servicos.map((s, i) => (
-                <div key={i} style={{ padding: "14px 0", borderBottom: i < servicos.length - 1 ? "1px solid " + t.border : "none" }}>
-                  <p style={{ fontSize: "13px", fontWeight: "700", color: t.text, fontFamily: "system-ui", marginBottom: "3px" }}>
-                    • {s.titulo}
-                  </p>
-                  <p style={{ fontSize: "13px", color: t.textSecundario, fontFamily: "system-ui", lineHeight: 1.6 }}>
-                    {s.desc}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Direita: foto */}
-          <div style={{
-            minHeight: "400px", overflow: "hidden", position: "relative",
-            opacity: missaoVisible ? 1 : 0,
-            transform: missaoVisible ? "translateX(0)" : "translateX(30px)",
-            transition: "all 0.9s ease 0.2s",
-          }}>
-            <img src="/FotoMetkzerepai.jpg" alt="Metzker"
-              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%", minHeight: "400px" }} />
-            <div style={{ position: "absolute", bottom: "32px", left: "32px", padding: "16px 24px", backgroundColor: "rgba(26,26,26,0.9)", color: "white" }}>
-              <p style={{ fontSize: "9px", letterSpacing: "0.2em", color: "rgba(255,255,255,0.5)", fontFamily: "system-ui", textTransform: "uppercase" }}>Localização</p>
-              <p style={{ fontSize: "1rem", fontWeight: "300", fontFamily: "Georgia, serif", marginTop: "4px" }}>Polo Têxtil Santa Inês</p>
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
+              <h2 style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: "300", lineHeight: 1.1, color: t.text, letterSpacing: "-0.02em", flexShrink: 0 }}>
+                Produzimos e personalizamos<br />
+                <em style={{ fontStyle: "italic" }}>uniformes e comunicação</em><br />
+                visual para empresas.
+              </h2>
+              {/* Serviços em bloco */}
+              <div style={{ maxWidth: "420px", width: "100%" }}>
+                {servicos.map((s, i) => (
+                  <div key={i} style={{ padding: "16px 0", borderBottom: i < servicos.length - 1 ? "1px solid " + t.border : "none" }}>
+                    <p style={{ fontSize: "13px", fontWeight: "700", color: t.text, fontFamily: "system-ui", marginBottom: "4px" }}>
+                      • {s.titulo}
+                    </p>
+                    <p style={{ fontSize: "13px", color: t.textSecundario, fontFamily: "system-ui", lineHeight: 1.6 }}>
+                      {s.desc}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
 
         {/* ══ COM QUEM TRABALHAMOS ══ */}
-        <div className="px-6 md:px-24 py-12 md:py-16"
-          style={{ opacity: missaoVisible ? 1 : 0, transition: "all 0.9s ease 0.3s" }}>
-          <p className="uppercase mb-4" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
-            Com quem trabalhamos
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
-            <p style={{ fontSize: "clamp(1rem, 2vw, 1.3rem)", fontWeight: "300", color: t.text, lineHeight: 1.6, letterSpacing: "-0.01em" }}>
+        <div ref={missaoRef} className="grid grid-cols-1 md:grid-cols-2" style={{ borderBottom: "2px solid " + t.borderForte }}>
+          <div className="px-6 md:px-24 py-12 md:py-20 flex flex-col justify-center"
+            style={{ opacity: missaoVisible ? 1 : 0, transform: missaoVisible ? "translateX(0)" : "translateX(-30px)", transition: "all 0.9s ease 0.1s" }}>
+            <p className="uppercase mb-6" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
+              Com quem trabalhamos
+            </p>
+            <p style={{ fontSize: "clamp(1.1rem, 2vw, 1.5rem)", fontWeight: "300", color: t.text, lineHeight: 1.5, marginBottom: "28px", letterSpacing: "-0.01em" }}>
               Atendemos empresas que precisam de fornecedor confiável, não de tentativa e erro. Somos a melhor opção para:
             </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {clientes.map((c, i) => (
                 <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
                   <span style={{ color: t.text, fontWeight: "700", flexShrink: 0, fontFamily: "system-ui", fontSize: "14px" }}>→</span>
                   <p style={{ fontSize: "14px", color: t.textSecundario, fontFamily: "system-ui", lineHeight: 1.5 }}>{c}</p>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Foto */}
+          <div style={{
+            height: "480px", overflow: "hidden", position: "relative",
+            opacity: missaoVisible ? 1 : 0,
+            transform: missaoVisible ? "translateX(0)" : "translateX(30px)",
+            transition: "all 0.9s ease 0.25s",
+          }}>
+            <img src="/FotoMetkzerepai.jpg" alt="Metzker"
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 40%" }} />
+            <div style={{ position: "absolute", bottom: "32px", left: "32px", padding: "16px 24px", backgroundColor: "rgba(26,26,26,0.9)", color: "white" }}>
+              <p style={{ fontSize: "9px", letterSpacing: "0.2em", color: "rgba(255,255,255,0.5)", fontFamily: "system-ui", textTransform: "uppercase" }}>
+                Localização
+              </p>
+              <p style={{ fontSize: "1rem", fontWeight: "300", fontFamily: "Georgia, serif", marginTop: "4px" }}>
+                Polo Têxtil Santa Inês
+              </p>
             </div>
           </div>
         </div>
@@ -199,7 +203,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col md:flex-row gap-12 md:gap-20">
               <div style={{ maxWidth: "400px" }}>
-                <p style={{ fontSize: "clamp(1rem, 1.8vw, 1.3rem)", fontWeight: "300", color: t.text, lineHeight: 1.7, fontFamily: "system-ui" }}>
+                <p style={{ fontSize: "clamp(1rem, 1.8vw, 1.3rem)", fontWeight: "600", color: t.text, lineHeight: 1.7, fontFamily: "system-ui" }}>
                   Estamos há mais de 20 anos atendendo empresas em todo Sudeste, focados em entrega consistente e relacionamento de longo prazo.
                 </p>
                 <p className="mt-4" style={{ fontSize: "14px", color: t.textSecundario, lineHeight: 1.7, fontFamily: "system-ui" }}>
@@ -228,8 +232,8 @@ export default function Home() {
               <p className="uppercase mb-4" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
                 Projetos entregues
               </p>
-              <h2 style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: "300", color: t.text, letterSpacing: "-0.02em" }}>
-                Alguns dos trabalhos<br /><em style={{ fontStyle: "italic" }}>que já entregamos</em>
+              <h2 style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: "300", color: t.text, letterSpacing: "-0.02em", whiteSpace: "nowrap"  }}>
+                Alguns dos trabalhos <em style={{ fontStyle: "italic" }}>que já entregamos</em>
               </h2>
               <p className="mt-3" style={{ fontSize: "14px", color: t.textSecundario, fontFamily: "system-ui", maxWidth: "380px", lineHeight: 1.6 }}>
                 Para empresas e eventos que precisavam de padrão e prazo.
@@ -285,14 +289,14 @@ export default function Home() {
             <h2 style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.8rem)", fontWeight: "300", color: "white", lineHeight: 1.2 }}>
               Quer fazer um orçamento?
             </h2>
-            <p className="mt-3" style={{ color: "rgba(255,255,255,0.6)", fontFamily: "system-ui", fontSize: "14px", maxWidth: "380px", lineHeight: 1.7 }}>
+            <p className="mt-3" style={{ color: "rgba(255,255,255,0.6)", fontFamily: "system-ui", fontSize: "18px", maxWidth: "380px", lineHeight: 1.7 }}>
               Fale direto com a equipe e veja como podemos atender seu projeto.
             </p>
           </div>
           <Link to="/personalizado"
             className="px-10 py-4 text-sm uppercase tracking-widest font-medium transition hover:opacity-80 shrink-0 whitespace-nowrap"
             style={{ backgroundColor: "white", color: "#1a1a1a", letterSpacing: "0.15em", fontFamily: "system-ui" }}>
-            QUER FAZER UM ORÇAMENTO? →
+            ORCE SEU PEDIDO →
           </Link>
         </div>
       </section>
