@@ -54,6 +54,8 @@ function Pedidos() {
   const [erros, setErros] = useState({});
   const [tentouEnviar, setTentouEnviar] = useState(false);
   const [mensagemEstoque, setMensagemEstoque] = useState("");
+  const [erroPedido, setErroPedido] = useState("");
+  const [pedidoConcluido, setPedidoConcluido] = useState(false);
 
   const camposObrigatorios = ["nome", "telefone", "cep", "rua", "numero", "bairro", "cidade", "estado", "formaPagamento"];
   const total = cart.reduce((acc, item) => acc + (parseFloat(item.produto?.preco) || 0) * item.quantidade, 0);
@@ -131,6 +133,7 @@ function Pedidos() {
 
     if (!validar()) return;
 
+    setErroPedido("");
     try {
       await api.post("pedidos/", {
         nome_cliente: cliente.nome, telefone: cliente.telefone,
@@ -142,7 +145,15 @@ function Pedidos() {
       });
       window.open(`https://wa.me/5527997878391?text=${montarMensagem()}`, "_blank");
       setCart([]);
-    } catch { alert("Erro ao finalizar pedido. Tente novamente."); }
+      setPedidoConcluido(true);
+    } catch (e) {
+      console.error(e.response?.data);
+      const msg = e.response?.data?.detail || e.response?.status === 400
+        ? "Verifique se todos os campos estão corretos e tente novamente."
+        : "Não foi possível registrar o pedido. Mas você pode enviar pelo WhatsApp!";
+      setErroPedido(msg);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   }
 
   const inputStyle = (campo) => ({
@@ -164,7 +175,25 @@ function Pedidos() {
       <div className="max-w-4xl mx-auto px-4 md:p-6 py-8">
         <h1 className="text-3xl font-bold mb-8" style={{ color: t.text }}>Finalizar Pedido</h1>
 
-        {cart.length === 0 && <p style={{ color: t.textSecundario }}>Carrinho vazio.</p>}
+        {pedidoConcluido && (
+          <div className="rounded-xl p-8 text-center" style={{ backgroundColor: t.bgCard, border: "1px solid " + t.border }}>
+            <div style={{ fontSize: "56px", marginBottom: "16px" }}>🎉</div>
+            <h2 className="text-2xl font-bold mb-3" style={{ color: t.text }}>Pedido confirmado!</h2>
+            <p className="text-sm mb-6" style={{ color: t.textSecundario, lineHeight: 1.8 }}>
+              Seu pedido foi registrado com sucesso. Em breve nossa equipe entrará em contato pelo WhatsApp para confirmar os detalhes.
+            </p>
+            <p className="text-xs mb-6" style={{ color: t.textSecundario }}>
+              📱 WhatsApp: (27) 99787-8391
+            </p>
+            <button onClick={() => { setPedidoConcluido(false); }}
+              className="px-8 py-3 font-semibold text-sm"
+              style={{ backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText }}>
+              Voltar ao início
+            </button>
+          </div>
+        )}
+
+        {!pedidoConcluido && cart.length === 0 && <p style={{ color: t.textSecundario }}>Carrinho vazio.</p>}
 
         {/* ALERTA DE ESTOQUE — aparece ao tentar enviar/confirmar */}
         {mensagemEstoque && (
@@ -174,6 +203,20 @@ function Pedidos() {
             <div>
               <p className="font-semibold" style={{ color: "#dc2626" }}>Pedido bloqueado — estoque insuficiente</p>
               <p className="text-sm mt-1" style={{ color: "#7f1d1d" }}>{mensagemEstoque}</p>
+            </div>
+          </div>
+        )}
+
+        {erroPedido && (
+          <div className="rounded-xl p-4 mb-6 flex items-start gap-3"
+            style={{ backgroundColor: "#fef2f2", border: "2px solid #fecaca" }}>
+            <span style={{ fontSize: "20px" }}>⚠️</span>
+            <div>
+              <p className="font-semibold mb-1" style={{ color: "#dc2626" }}>Não foi possível registrar o pedido</p>
+              <p className="text-sm" style={{ color: "#7f1d1d" }}>{erroPedido}</p>
+              <p className="text-sm mt-2" style={{ color: t.textSecundario }}>
+                Você pode enviar o pedido pelo WhatsApp abaixo — funciona mesmo sem internet!
+              </p>
             </div>
           </div>
         )}
@@ -190,7 +233,7 @@ function Pedidos() {
         )}
 
         {/* ITENS */}
-        {cart.length > 0 && (
+        {!pedidoConcluido && cart.length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4" style={{ color: t.text }}>🛍️ Seus Itens</h2>
             <div className="space-y-3">
@@ -233,7 +276,7 @@ function Pedidos() {
           </div>
         )}
 
-        {cart.length > 0 && (
+        {!pedidoConcluido && cart.length > 0 && (
           <div className="space-y-6">
             {/* DADOS PESSOAIS */}
             <div style={cardStyle}>

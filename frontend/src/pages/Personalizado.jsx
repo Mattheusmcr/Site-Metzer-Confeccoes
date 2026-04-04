@@ -181,8 +181,14 @@ export default function Personalizado(){
         email: form.email,
       });
       setEnviado(true);
-    }catch{ setErro("Erro ao salvar. Tente novamente ou use o WhatsApp."); }
-    finally{ setSalvando(false); }
+    } catch(e) {
+      console.error("Erro pedido personalizado:", e.response?.data, e.response?.status);
+      const msg = e.response?.status === 400
+        ? "Dados inválidos. Verifique os campos e tente novamente."
+        : "Não foi possível registrar. Use o WhatsApp para enviar seu pedido!";
+      setErro(msg);
+    }
+    finally { setSalvando(false); }
   }
 
   function montarMsgWpp(){
