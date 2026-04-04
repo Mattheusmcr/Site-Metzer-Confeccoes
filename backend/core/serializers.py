@@ -73,4 +73,9 @@ class PedidoPersonalizadoSerializer(serializers.ModelSerializer):
             'slogan':       {'required': False, 'allow_blank': True},
             'referencia':   {'required': False, 'allow_blank': True},
             'observacoes':  {'required': False, 'allow_blank': True},
+            'imagem1':      {'required': False, 'allow_null': True},
+            'imagem2':      {'required': False, 'allow_null': True},
+            'imagem3':      {'required': False, 'allow_null': True},
+            'imagem4':      {'required': False, 'allow_null': True},
+            'imagem5':      {'required': False, 'allow_null': True},
         }

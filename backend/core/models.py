@@ -127,6 +127,13 @@ class PedidoPersonalizado(models.Model):
     telefone        = models.CharField(max_length=30, blank=True, default="")
     email           = models.CharField(max_length=200, blank=True, default="")
 
+    # Imagens de referência
+    imagem1 = models.ImageField(upload_to='pedidos_personalizados/', blank=True, null=True)
+    imagem2 = models.ImageField(upload_to='pedidos_personalizados/', blank=True, null=True)
+    imagem3 = models.ImageField(upload_to='pedidos_personalizados/', blank=True, null=True)
+    imagem4 = models.ImageField(upload_to='pedidos_personalizados/', blank=True, null=True)
+    imagem5 = models.ImageField(upload_to='pedidos_personalizados/', blank=True, null=True)
+
     # Status e data
     data_pedido     = models.DateTimeField(auto_now_add=True)
     status          = models.CharField(max_length=30, default="novo",

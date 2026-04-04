@@ -149,7 +149,6 @@ export default function Personalizado(){
   async function salvarNoBanco(){
     setSalvando(true); setErro("");
     try{
-      // Monta JSON estruturado das combinações para salvar no campo referencia
       const detalhesCombinacoes = form.combinacoes.map((c,i)=>{
         const tipo = TIPOS_ROUPA.find(t=>t.id===c.tipoId);
         const cor = CORES_OPCOES.find(x=>x.id===c.cor)?.label||c.cor;
@@ -164,21 +163,29 @@ export default function Personalizado(){
         return `#${i+1} ${tipo?.label} | Cor:${cor} | Material:${mat} | ${grupos} | Total:${totalComb(c)}un`;
       }).join("\n");
 
-      await api.post("pedidos-personalizados/",{
-        nome_empresa: form.nomeCliente,
-        slogan: form.dimensoes||"",
-        ramo: form.categoria==="roupas"
-          ? form.combinacoes.map(c=>TIPOS_ROUPA.find(t=>t.id===c.tipoId)?.label).join(", ")
-          : TIPOS_COMUNICACAO.find(t=>t.id===form.tipoComunicacao)?.label||"",
-        quantidade: totalGeral||1,
-        estilo: form.categoria,
-        paleta: JSON.stringify(form.combinacoes.map(c=>c.cor)),
-        aplicacoes: form.categoria==="roupas"?[...new Set(form.combinacoes.map(c=>c.tipoId))]:[form.tipoComunicacao],
-        referencia: detalhesCombinacoes||form.descricao,
-        observacoes: form.observacoes+"\n\nDescrição: "+form.descricao,
-        nome_cliente: form.nomeCliente,
-        telefone: form.telefone,
-        email: form.email,
+      // Usa FormData para enviar imagens junto com o pedido
+      const fd = new FormData();
+      fd.append("nome_empresa", form.nomeCliente);
+      fd.append("slogan", form.dimensoes||"");
+      fd.append("ramo", form.categoria==="roupas"
+        ? form.combinacoes.map(c=>TIPOS_ROUPA.find(t=>t.id===c.tipoId)?.label).join(", ")
+        : TIPOS_COMUNICACAO.find(t=>t.id===form.tipoComunicacao)?.label||"");
+      fd.append("quantidade", String(totalGeral||1));
+      fd.append("estilo", form.categoria);
+      fd.append("paleta", JSON.stringify(form.combinacoes.map(c=>c.cor)));
+      fd.append("aplicacoes", JSON.stringify(form.categoria==="roupas"?[...new Set(form.combinacoes.map(c=>c.tipoId))]:[form.tipoComunicacao]));
+      fd.append("referencia", detalhesCombinacoes||form.descricao||"");
+      fd.append("observacoes", (form.observacoes||"")+"\n\nDescrição: "+(form.descricao||""));
+      fd.append("nome_cliente", form.nomeCliente);
+      fd.append("telefone", form.telefone);
+      fd.append("email", form.email);
+      // Imagens (máx 5)
+      form.fotos.forEach((foto, i) => {
+        if(foto.file && i < 5) fd.append(`imagem${i+1}`, foto.file);
+      });
+
+      await api.post("pedidos-personalizados/", fd, {
+        headers: { "Content-Type": "multipart/form-data" }
       });
       setEnviado(true);
     } catch(e) {

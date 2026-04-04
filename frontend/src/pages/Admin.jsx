@@ -441,20 +441,30 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                       <table className="w-full text-sm">
                         <thead><tr style={{ backgroundColor: dark ? "#374151" : "#f3f4f6" }}>
                           <th className="text-left p-3 font-semibold" style={{ color: text }}>Produto</th>
-                          <th className="text-center p-3 font-semibold" style={{ color: text }}>Tam.</th>
+                          <th className="text-center p-3 font-semibold" style={{ color: text }}>Tamanho</th>
                           <th className="text-center p-3 font-semibold" style={{ color: text }}>Qtd.</th>
+                          <th className="text-right p-3 font-semibold" style={{ color: text }}>Preço Unit.</th>
                           <th className="text-right p-3 font-semibold" style={{ color: text }}>Subtotal</th>
                         </tr></thead>
                         <tbody>
                           {(p.itens || []).map((item, i) => (
                             <tr key={i} style={{ backgroundColor: i % 2 === 0 ? (dark ? "#1f2937" : "#fff") : (dark ? "#111827" : "#f9fafb") }}>
-                              <td className="p-3" style={{ color: text }}>{item.produto_nome}</td>
+                              <td className="p-3 font-medium" style={{ color: text }}>{item.produto_nome}</td>
                               <td className="p-3 text-center" style={{ color: subtext }}>{item.tamanho}</td>
                               <td className="p-3 text-center" style={{ color: subtext }}>{item.quantidade}</td>
-                              <td className="p-3 text-right font-medium" style={{ color: text }}>R$ {(parseFloat(item.produto_preco) * item.quantidade).toFixed(2)}</td>
+                              <td className="p-3 text-right" style={{ color: subtext }}>R$ {parseFloat(item.produto_preco).toFixed(2)}</td>
+                              <td className="p-3 text-right font-semibold" style={{ color: text }}>R$ {(parseFloat(item.produto_preco) * item.quantidade).toFixed(2)}</td>
                             </tr>
                           ))}
                         </tbody>
+                        <tfoot>
+                          <tr style={{ backgroundColor: dark ? "#374151" : "#f3f4f6", borderTop: "2px solid " + border }}>
+                            <td colSpan={4} className="p-3 text-right font-bold" style={{ color: text }}>Total do Pedido</td>
+                            <td className="p-3 text-right font-bold text-base" style={{ color: text }}>
+                              R$ {((p.itens || []).reduce((acc, i) => acc + parseFloat(i.produto_preco) * i.quantidade, 0)).toFixed(2)}
+                            </td>
+                          </tr>
+                        </tfoot>
                       </table>
                     </div>
                     <div className="flex items-center gap-3">
@@ -585,6 +595,22 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                             ? p.observacoes.split("Descrição:")[1]?.trim() || "—"
                             : p.observacoes}
                         </p>
+                      </div>
+                    )}
+
+                    {/* IMAGENS DE REFERÊNCIA */}
+                    {(p.imagem1 || p.imagem2 || p.imagem3 || p.imagem4 || p.imagem5) && (
+                      <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
+                        <p className="text-xs font-bold uppercase mb-3" style={{ color: subtext }}>🖼️ Imagens de referência</p>
+                        <div className="flex gap-3 flex-wrap">
+                          {[p.imagem1, p.imagem2, p.imagem3, p.imagem4, p.imagem5].filter(Boolean).map((url, i) => (
+                            <a key={i} href={url} target="_blank" rel="noreferrer">
+                              <img src={url} alt={`Referência ${i+1}`}
+                                className="rounded object-cover hover:opacity-80 transition"
+                                style={{ width: "90px", height: "90px", border: "2px solid " + border }} />
+                            </a>
+                          ))}
+                        </div>
                       </div>
                     )}
 

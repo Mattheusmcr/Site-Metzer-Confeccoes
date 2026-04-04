@@ -4,7 +4,7 @@ import threading
 from django.core.mail import send_mail
 from django.conf import settings
 
-OWNER_EMAIL = "matheustricolor23.mc@gmail.com"
+OWNER_EMAIL = "andremetzkrr@gmail.com"
 OWNER_PHONE = "5527997878391"  # com DDI
 
 def _send_async(func, *args, **kwargs):

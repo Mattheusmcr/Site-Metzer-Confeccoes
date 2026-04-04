@@ -3,6 +3,19 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, AllowAny
 import threading
 
+# Import email notifications (fails gracefully if not configured)
+NOTIFICACOES_OK = False
+notificar_pedido_catalogo = None
+notificar_pedido_personalizado = None
+try:
+    from .notificacoes import notificar_pedido_catalogo as _npc, notificar_pedido_personalizado as _npp
+    notificar_pedido_catalogo = _npc
+    notificar_pedido_personalizado = _npp
+    NOTIFICACOES_OK = True
+    print("✅ Sistema de notificações por email ativo")
+except Exception as _e:
+    print(f"⚠️ Notificações por email desativadas: {_e}")
+
 def enviar_notificacoes(pedido_data, tipo="catalogo"):
     """Envia notificação via WhatsApp (wa.me link) logando para o admin ver nos logs."""
     try:
@@ -179,9 +192,22 @@ class PedidoPersonalizadoViewSet(viewsets.ModelViewSet):
             return [AllowAny()]
         return [IsAdminUser()]
 
-    def perform_create(self, serializer):
-        pedido = serializer.save()
-        if NOTIFICACOES_OK:
+    def create(self, request, *args, **kwargs):
+        # Salva imagens separadamente (campos imagem1..5)
+        data = request.data.copy() if hasattr(request.data, 'copy') else dict(request.data)
+        files = request.FILES
+        serializer = self.get_serializer(data=data)
+        if not serializer.is_valid():
+            print("Erros PedidoPersonalizado:", serializer.errors)
+            return Response(serializer.errors, status=400)
+        pedido = serializer.save(
+            imagem1=files.get('imagem1'),
+            imagem2=files.get('imagem2'),
+            imagem3=files.get('imagem3'),
+            imagem4=files.get('imagem4'),
+            imagem5=files.get('imagem5'),
+        )
+        if NOTIFICACOES_OK and notificar_pedido_personalizado:
             try:
                 pedido_dict = {
                     "nome_cliente": pedido.nome_cliente,
@@ -195,3 +221,4 @@ class PedidoPersonalizadoViewSet(viewsets.ModelViewSet):
                 notificar_pedido_personalizado(pedido_dict)
             except Exception as e:
                 print(f"Notificação personalizado erro: {e}")
+        return Response(serializer.data, status=201)
