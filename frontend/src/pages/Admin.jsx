@@ -273,7 +273,7 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
                       style={{ border: "1px dashed " + inputBorder, color: subtext, display: "inline-flex" }}>
                       📸 Selecionar novas imagens
                       <input type="file" multiple accept="image/*" className="hidden"
-                        onChange={e => { const f = Array.from(e.target.files); setNovasImagens(f); setPreviews(f.map(x => URL.createObjectURL(x))); }} />
+                        onChange={e => { const novos = Array.from(e.target.files); setNovasImagens(prev => [...prev, ...novos].slice(0, 5)); setPreviews(prev => [...prev, ...novos.map(x => URL.createObjectURL(x))].slice(0, 5)); e.target.value = ""; }} />
                     </label>
                     {previews.length > 0 && (
                       <div className="flex gap-2 mt-2 flex-wrap">

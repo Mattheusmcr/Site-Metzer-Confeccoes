@@ -363,8 +363,15 @@ export default function Personalizado(){
                                 if(!qtds.length) return null;
                                 return (
                                   <div key={g.id} style={{display:"flex",alignItems:"center",gap:"6px",flexWrap:"wrap"}}>
-                                    {g.label&&<span style={{fontSize:"10px",color:t.textSecundario,fontFamily:"system-ui",textTransform:"uppercase",minWidth:"56px"}}>{g.label}:</span>}
-                                    {qtds.map(([tam,qtd])=>(<span key={tam} style={{fontSize:"11px",padding:"2px 7px",backgroundColor:t.bgSecundario,border:"1px solid "+t.border,fontFamily:"system-ui"}}>{tam}: {qtd}</span>))}
+                                    {g.label&&<p style={{fontSize:"10px",fontWeight:"700",color:t.textSecundario,fontFamily:"system-ui",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"4px"}}>{g.label}</p>}
+                                    <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
+                                    {qtds.map(([tam,qtd])=>(
+                                      <div key={tam} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"4px 10px",backgroundColor:t.bgCard,border:"1px solid "+t.borderForte,minWidth:"44px"}}>
+                                        <span style={{fontSize:"12px",fontWeight:"700",color:t.text,fontFamily:"system-ui"}}>{tam}</span>
+                                        <span style={{fontSize:"10px",color:t.textSecundario,fontFamily:"system-ui"}}>{qtd} {parseInt(qtd)===1?"pç":"pçs"}</span>
+                                      </div>
+                                    ))}
+                                    </div>
                                   </div>
                                 );
                               })}
