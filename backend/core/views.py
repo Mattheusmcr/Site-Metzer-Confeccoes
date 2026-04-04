@@ -1,6 +1,24 @@
 from rest_framework import viewsets, serializers
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, AllowAny
+import threading
+
+def enviar_notificacoes(pedido_data, tipo="catalogo"):
+    """Envia notificação via WhatsApp (wa.me link) logando para o admin ver nos logs."""
+    try:
+        if tipo == "catalogo":
+            nome = pedido_data.get("nome_cliente", "Cliente")
+            tel = pedido_data.get("telefone", "")
+            msg = f"Novo pedido recebido! Cliente: {nome} | Tel: {tel}"
+        else:
+            nome = pedido_data.get("nome_cliente", "Cliente")
+            tel = pedido_data.get("telefone", "")
+            ramo = pedido_data.get("ramo", "")
+            qtd = pedido_data.get("quantidade", 0)
+            msg = f"Novo pedido personalizado! Cliente: {nome} | Tel: {tel} | Produto: {ramo} | Qtd: {qtd}"
+        print(f"🔔 NOTIFICAÇÃO NOVO PEDIDO: {msg}")
+    except Exception as e:
+        print(f"Erro ao enviar notificação: {e}")
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import action
@@ -63,6 +81,24 @@ class PedidoViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         pedido = serializer.save()
+        # Notificar dono e cliente por email
+        if NOTIFICACOES_OK:
+            try:
+                pedido_dict = {
+                    "nome_cliente": pedido.nome_cliente,
+                    "telefone": pedido.telefone,
+                    "email": getattr(pedido, "email", ""),
+                    "rua": getattr(pedido, "rua", ""),
+                    "numero": getattr(pedido, "numero", ""),
+                    "bairro": getattr(pedido, "bairro", ""),
+                    "cidade": getattr(pedido, "cidade", ""),
+                    "estado": getattr(pedido, "estado", ""),
+                    "forma_pagamento": getattr(pedido, "forma_pagamento", ""),
+                    "itens_resumo": [{"produto_nome": str(i.produto), "tamanho": i.tamanho, "quantidade": i.quantidade} for i in pedido.itens.all()],
+                }
+                notificar_pedido_catalogo(pedido_dict)
+            except Exception as e:
+                print(f"Notificação erro: {e}")
         for item in pedido.itens.all():
             try:
                 estoque = Estoque.objects.get(produto=item.produto, tamanho=item.tamanho)
@@ -142,3 +178,20 @@ class PedidoPersonalizadoViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return [AllowAny()]
         return [IsAdminUser()]
+
+    def perform_create(self, serializer):
+        pedido = serializer.save()
+        if NOTIFICACOES_OK:
+            try:
+                pedido_dict = {
+                    "nome_cliente": pedido.nome_cliente,
+                    "telefone": pedido.telefone,
+                    "email": pedido.email,
+                    "ramo": pedido.ramo,
+                    "quantidade": pedido.quantidade,
+                    "referencia": pedido.referencia,
+                    "observacoes": pedido.observacoes,
+                }
+                notificar_pedido_personalizado(pedido_dict)
+            except Exception as e:
+                print(f"Notificação personalizado erro: {e}")
