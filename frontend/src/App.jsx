@@ -1,4 +1,13 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [pathname]);
+  return null;
+}
 import Personalizado from "./pages/Personalizado";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
@@ -19,6 +28,7 @@ function App() {
         <CartProvider>
           <BrowserRouter basename="/">
             <div style={{ overflowX: "hidden", maxWidth: "100vw" }}>
+            <ScrollToTop />
             <Navbar />
             <Routes>
               <Route path="/" element={<Home />} />

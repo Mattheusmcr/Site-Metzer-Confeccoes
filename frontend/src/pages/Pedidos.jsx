@@ -9,45 +9,40 @@ const t = {
   btnPrimarioBg: "#1a1a1a", btnPrimarioText: "#FAF8F5",
 };
 
-// Formata telefone: (27) 99999-9999
 function formatTelefone(valor) {
   const n = valor.replace(/\D/g, "").slice(0, 11);
-  if (n.length <= 2)  return n;
-  if (n.length <= 6)  return `(${n.slice(0,2)}) ${n.slice(2)}`;
+  if (n.length <= 2) return n;
+  if (n.length <= 6) return `(${n.slice(0,2)}) ${n.slice(2)}`;
   if (n.length <= 10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
   return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
 }
-
-// Formata CEP: 29000-000
 function formatCEP(valor) {
   const n = valor.replace(/\D/g, "").slice(0, 8);
-  if (n.length <= 5) return n;
-  return `${n.slice(0,5)}-${n.slice(5)}`;
+  return n.length > 5 ? `${n.slice(0,5)}-${n.slice(5)}` : n;
 }
-
-// Busca CEP na ViaCEP e preenche endereço
 async function buscarCEP(cep, setCliente) {
-  const numeros = cep.replace(/\D/g, "");
-  if (numeros.length !== 8) return;
+  const n = cep.replace(/\D/g, "");
+  if (n.length !== 8) return;
   try {
-    const res = await fetch(`https://viacep.com.br/ws/${numeros}/json/`);
+    const res = await fetch(`https://viacep.com.br/ws/${n}/json/`);
     const data = await res.json();
     if (!data.erro) {
       setCliente(prev => ({
         ...prev,
-        rua:    data.logradouro || prev.rua,
-        bairro: data.bairro     || prev.bairro,
+        rua: data.logradouro || prev.rua,
+        bairro: data.bairro || prev.bairro,
         cidade: data.localidade || prev.cidade,
-        estado: data.uf         || prev.estado,
+        estado: data.uf || prev.estado,
       }));
     }
   } catch {}
 }
+function emailValido(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
 
 function Pedidos() {
   const { cart, increase, decrease, removeFromCart, setCart } = useContext(CartContext);
   const [cliente, setCliente] = useState({
-    nome: "", telefone: "", cep: "", rua: "", numero: "",
+    nome: "", telefone: "", email: "", cep: "", rua: "", numero: "",
     complemento: "", bairro: "", cidade: "", estado: "",
     formaPagamento: "", observacao: "",
   });
@@ -57,10 +52,9 @@ function Pedidos() {
   const [erroPedido, setErroPedido] = useState("");
   const [pedidoConcluido, setPedidoConcluido] = useState(false);
 
-  const camposObrigatorios = ["nome", "telefone", "cep", "rua", "numero", "bairro", "cidade", "estado", "formaPagamento"];
+  const camposObrigatorios = ["nome", "telefone", "email", "cep", "rua", "numero", "bairro", "cidade", "estado", "formaPagamento"];
   const total = cart.reduce((acc, item) => acc + (parseFloat(item.produto?.preco) || 0) * item.quantidade, 0);
 
-  // Verifica estoque item a item
   const itensComProblema = cart.filter(item => {
     const est = item.produto.estoques?.find(e => e.tamanho === item.tamanho);
     return !est || item.quantidade > est.quantidade;
@@ -72,25 +66,28 @@ function Pedidos() {
     setCliente(prev => ({ ...prev, [name]: value }));
     if (tentouEnviar) setErros(prev => ({ ...prev, [name]: !value.trim() }));
   }
-
   function handleTelefone(e) {
-    const formatted = formatTelefone(e.target.value);
-    setCliente(prev => ({ ...prev, telefone: formatted }));
-    if (tentouEnviar) setErros(prev => ({ ...prev, telefone: !formatted.trim() }));
+    const f = formatTelefone(e.target.value);
+    setCliente(prev => ({ ...prev, telefone: f }));
+    if (tentouEnviar) setErros(prev => ({ ...prev, telefone: !f.trim() }));
   }
-
+  function handleEmail(e) {
+    setCliente(prev => ({ ...prev, email: e.target.value }));
+    if (tentouEnviar) setErros(prev => ({ ...prev, email: !emailValido(e.target.value) }));
+  }
   function handleCEP(e) {
-    const formatted = formatCEP(e.target.value);
-    setCliente(prev => ({ ...prev, cep: formatted }));
-    if (formatted.replace(/\D/g, "").length === 8) {
-      buscarCEP(formatted, setCliente);
-    }
-    if (tentouEnviar) setErros(prev => ({ ...prev, cep: !formatted.trim() }));
+    const f = formatCEP(e.target.value);
+    setCliente(prev => ({ ...prev, cep: f }));
+    if (f.replace(/\D/g, "").length === 8) buscarCEP(f, setCliente);
+    if (tentouEnviar) setErros(prev => ({ ...prev, cep: !f.trim() }));
   }
 
   function validar() {
     const novosErros = {};
-    camposObrigatorios.forEach(c => { if (!cliente[c]?.trim()) novosErros[c] = true; });
+    camposObrigatorios.forEach(c => {
+      if (c === "email") { if (!emailValido(cliente.email)) novosErros.email = true; }
+      else if (!cliente[c]?.trim()) novosErros[c] = true;
+    });
     setErros(novosErros);
     return Object.keys(novosErros).length === 0;
   }
@@ -99,59 +96,63 @@ function Pedidos() {
     const itens = cart.map(item =>
       `• ${item.produto.nome} | Tam: ${item.tamanho} | ${item.quantidade}x | R$ ${(parseFloat(item.produto.preco) * item.quantidade).toFixed(2)}`
     ).join("%0A");
-    const obs = cliente.observacao ? `%0A%0A📝 *Observações:* ${cliente.observacao}` : "";
-    return `Olá! Gostaria de fazer um pedido:%0A%0A👤 *Nome:* ${cliente.nome}%0A📱 *Telefone:* ${cliente.telefone}%0A%0A🛍️ *Itens:*%0A${itens}%0A%0A💰 *Total: R$ ${total.toFixed(2)}*%0A%0A📍 *Endereço:*%0A${cliente.rua}, ${cliente.numero}${cliente.complemento ? " - " + cliente.complemento : ""}%0A${cliente.bairro} - ${cliente.cidade}/${cliente.estado}%0ACEP: ${cliente.cep}%0A%0A💳 *Pagamento:* ${cliente.formaPagamento}${obs}`;
+    const obs = cliente.observacao ? `%0A%0A📝 *Obs:* ${cliente.observacao}` : "";
+    return `Olá! Gostaria de fazer um pedido:%0A%0A👤 *Nome:* ${cliente.nome}%0A📱 *Tel:* ${cliente.telefone}%0A📧 *Email:* ${cliente.email}%0A%0A🛍️ *Itens:*%0A${itens}%0A%0A💰 *Total: R$ ${total.toFixed(2)}*%0A%0A📍 *Endereço:*%0A${cliente.rua}, ${cliente.numero}${cliente.complemento ? " - " + cliente.complemento : ""}%0A${cliente.bairro} - ${cliente.cidade}/${cliente.estado} | CEP: ${cliente.cep}%0A%0A💳 *Pagamento:* ${cliente.formaPagamento}${obs}`;
   }
 
+  function verificarEstoque() {
+    if (estoqueInsuficiente) {
+      const nomes = itensComProblema.map(i => i.produto.nome).join(", ");
+      setMensagemEstoque(`⚠️ Itens sem estoque suficiente: ${nomes}. Ajuste as quantidades ou remova os itens.`);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return false;
+    }
+    return true;
+  }
+
+  // Apenas WhatsApp — não salva no banco
   function enviarWhatsApp() {
     setTentouEnviar(true);
     setMensagemEstoque("");
-
-    // Bloqueia se tiver estoque insuficiente
-    if (estoqueInsuficiente) {
-      const nomes = itensComProblema.map(i => i.produto.nome).join(", ");
-      setMensagemEstoque(`⚠️ Não é possível enviar o pedido pois os seguintes itens estão sem estoque suficiente: ${nomes}. Ajuste as quantidades ou remova os itens para continuar.`);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-
+    if (!verificarEstoque()) return;
     if (!validar() || cart.length === 0) return;
     window.open(`https://wa.me/5527997878391?text=${montarMensagem()}`, "_blank");
   }
 
+  // Salva no banco + desconta estoque — NÃO abre WhatsApp
   async function finalizarPedido() {
     setTentouEnviar(true);
     setMensagemEstoque("");
-
-    // Mostra mensagem de estoque mesmo ao clicar em confirmar
-    if (estoqueInsuficiente) {
-      const nomes = itensComProblema.map(i => i.produto.nome).join(", ");
-      setMensagemEstoque(`⚠️ Não é possível confirmar o pedido pois os seguintes itens estão sem estoque suficiente: ${nomes}. Ajuste as quantidades ou remova os itens para continuar.`);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-
+    setErroPedido("");
+    if (!verificarEstoque()) return;
     if (!validar()) return;
 
-    setErroPedido("");
     try {
       await api.post("pedidos/", {
-        nome_cliente: cliente.nome, telefone: cliente.telefone,
-        cep: cliente.cep, rua: cliente.rua, numero: cliente.numero,
-        complemento: cliente.complemento, bairro: cliente.bairro,
-        cidade: cliente.cidade, estado: cliente.estado,
-        forma_pagamento: cliente.formaPagamento, observacao: cliente.observacao,
-        itens: cart.map(item => ({ produto: item.produto.id, tamanho: item.tamanho, quantidade: item.quantidade })),
+        nome_cliente: cliente.nome,
+        telefone: cliente.telefone,
+        email: cliente.email,
+        cep: cliente.cep,
+        rua: cliente.rua,
+        numero: cliente.numero,
+        complemento: cliente.complemento,
+        bairro: cliente.bairro,
+        cidade: cliente.cidade,
+        estado: cliente.estado,
+        forma_pagamento: cliente.formaPagamento,
+        observacao: cliente.observacao,
+        itens: cart.map(item => ({
+          produto: item.produto.id,
+          tamanho: item.tamanho,
+          quantidade: item.quantidade,
+        })),
       });
-      window.open(`https://wa.me/5527997878391?text=${montarMensagem()}`, "_blank");
       setCart([]);
       setPedidoConcluido(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
-      console.error(e.response?.data);
-      const msg = e.response?.data?.detail || e.response?.status === 400
-        ? "Verifique se todos os campos estão corretos e tente novamente."
-        : "Não foi possível registrar o pedido. Mas você pode enviar pelo WhatsApp!";
-      setErroPedido(msg);
+      console.error("Erro pedido:", e.response?.data, e.response?.status);
+      setErroPedido("Não foi possível registrar o pedido. Tente novamente ou envie pelo WhatsApp.");
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }
@@ -164,38 +165,48 @@ function Pedidos() {
   });
   const labelStyle = (campo) => ({
     display: "block", fontSize: "11px", fontWeight: "600", marginBottom: "4px",
-    textTransform: "uppercase", letterSpacing: "0.05em",
-    color: erros[campo] ? "#ef4444" : t.textSecundario, fontFamily: "system-ui",
+    textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: "system-ui",
+    color: erros[campo] ? "#ef4444" : t.textSecundario,
   });
   const cardStyle = { backgroundColor: t.bgCard, border: "1px solid " + t.border, borderRadius: "12px", padding: "24px" };
   const qtdErros = Object.keys(erros).filter(k => erros[k]).length;
+
+  // ── SUCESSO ──
+  if (pedidoConcluido) return (
+    <div style={{ backgroundColor: t.bg, minHeight: "100vh" }}>
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+        <div style={{ fontSize: "64px", marginBottom: "20px" }}>🎉</div>
+        <h1 className="text-3xl font-bold mb-4" style={{ color: t.text }}>Pedido confirmado!</h1>
+        <p className="mb-2" style={{ color: t.textSecundario, lineHeight: 1.8 }}>
+          Seu pedido foi registrado com sucesso e o estoque foi atualizado.
+        </p>
+        <p className="mb-8" style={{ color: t.textSecundario, lineHeight: 1.8 }}>
+          Nossa equipe entrará em contato pelo WhatsApp <strong style={{ color: t.text }}>{cliente.telefone}</strong> para confirmar os detalhes e combinações de entrega.
+        </p>
+        <div className="flex gap-3 justify-center flex-wrap">
+          <a href={`https://wa.me/5527997878391?text=${montarMensagem()}`} target="_blank" rel="noreferrer"
+            className="px-6 py-3 font-semibold text-white rounded-lg"
+            style={{ backgroundColor: "#22c55e", fontFamily: "system-ui" }}>
+            💬 Enviar detalhes pelo WhatsApp
+          </a>
+          <button onClick={() => { setPedidoConcluido(false); }}
+            className="px-6 py-3 font-semibold rounded-lg"
+            style={{ backgroundColor: t.bgSecundario, color: t.text, fontFamily: "system-ui" }}>
+            Voltar ao início
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div style={{ backgroundColor: t.bg, color: t.text, minHeight: "100vh" }}>
       <div className="max-w-4xl mx-auto px-4 md:p-6 py-8">
         <h1 className="text-3xl font-bold mb-8" style={{ color: t.text }}>Finalizar Pedido</h1>
 
-        {pedidoConcluido && (
-          <div className="rounded-xl p-8 text-center" style={{ backgroundColor: t.bgCard, border: "1px solid " + t.border }}>
-            <div style={{ fontSize: "56px", marginBottom: "16px" }}>🎉</div>
-            <h2 className="text-2xl font-bold mb-3" style={{ color: t.text }}>Pedido confirmado!</h2>
-            <p className="text-sm mb-6" style={{ color: t.textSecundario, lineHeight: 1.8 }}>
-              Seu pedido foi registrado com sucesso. Em breve nossa equipe entrará em contato pelo WhatsApp para confirmar os detalhes.
-            </p>
-            <p className="text-xs mb-6" style={{ color: t.textSecundario }}>
-              📱 WhatsApp: (27) 99787-8391
-            </p>
-            <button onClick={() => { setPedidoConcluido(false); }}
-              className="px-8 py-3 font-semibold text-sm"
-              style={{ backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText }}>
-              Voltar ao início
-            </button>
-          </div>
-        )}
+        {cart.length === 0 && <p style={{ color: t.textSecundario }}>Carrinho vazio.</p>}
 
-        {!pedidoConcluido && cart.length === 0 && <p style={{ color: t.textSecundario }}>Carrinho vazio.</p>}
-
-        {/* ALERTA DE ESTOQUE — aparece ao tentar enviar/confirmar */}
+        {/* ERROS */}
         {mensagemEstoque && (
           <div className="rounded-xl p-4 mb-6 flex items-start gap-3"
             style={{ backgroundColor: "#fef2f2", border: "2px solid #fecaca" }}>
@@ -206,21 +217,19 @@ function Pedidos() {
             </div>
           </div>
         )}
-
         {erroPedido && (
           <div className="rounded-xl p-4 mb-6 flex items-start gap-3"
             style={{ backgroundColor: "#fef2f2", border: "2px solid #fecaca" }}>
             <span style={{ fontSize: "20px" }}>⚠️</span>
             <div>
-              <p className="font-semibold mb-1" style={{ color: "#dc2626" }}>Não foi possível registrar o pedido</p>
-              <p className="text-sm" style={{ color: "#7f1d1d" }}>{erroPedido}</p>
+              <p className="font-semibold" style={{ color: "#dc2626" }}>Não foi possível registrar o pedido</p>
+              <p className="text-sm mt-1" style={{ color: "#7f1d1d" }}>{erroPedido}</p>
               <p className="text-sm mt-2" style={{ color: t.textSecundario }}>
-                Você pode enviar o pedido pelo WhatsApp abaixo — funciona mesmo sem internet!
+                Você pode enviar pelo WhatsApp abaixo para não perder seu pedido.
               </p>
             </div>
           </div>
         )}
-
         {tentouEnviar && qtdErros > 0 && !mensagemEstoque && (
           <div className="rounded-xl p-4 mb-6 flex items-start gap-3"
             style={{ backgroundColor: "#fff5f5", border: "1px solid #fecaca" }}>
@@ -233,7 +242,7 @@ function Pedidos() {
         )}
 
         {/* ITENS */}
-        {!pedidoConcluido && cart.length > 0 && (
+        {cart.length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4" style={{ color: t.text }}>🛍️ Seus Itens</h2>
             <div className="space-y-3">
@@ -276,7 +285,7 @@ function Pedidos() {
           </div>
         )}
 
-        {!pedidoConcluido && cart.length > 0 && (
+        {cart.length > 0 && (
           <div className="space-y-6">
             {/* DADOS PESSOAIS */}
             <div style={cardStyle}>
@@ -290,12 +299,19 @@ function Pedidos() {
                 </div>
                 <div>
                   <label style={labelStyle("telefone")}>Telefone / WhatsApp *</label>
-                  <input name="telefone" value={cliente.telefone}
-                    onChange={handleTelefone}
-                    placeholder="(27) 99999-9999"
-                    inputMode="tel" maxLength={15}
-                    style={inputStyle("telefone")} />
+                  <input name="telefone" value={cliente.telefone} onChange={handleTelefone}
+                    placeholder="(27) 99999-9999" inputMode="tel" maxLength={15} style={inputStyle("telefone")} />
                   {erros.telefone && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
+                </div>
+                <div className="md:col-span-2">
+                  <label style={labelStyle("email")}>E-mail *</label>
+                  <input name="email" value={cliente.email} onChange={handleEmail}
+                    type="email" placeholder="seu@email.com"
+                    style={{ ...inputStyle("email"), borderColor: erros.email ? "#ef4444" : t.inputBorder }} />
+                  {erros.email && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>E-mail inválido</p>}
+                  {cliente.email && emailValido(cliente.email) && (
+                    <p className="text-xs mt-1" style={{ color: "#16a34a" }}>✅ E-mail válido</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -305,60 +321,45 @@ function Pedidos() {
               <h2 className="text-lg font-semibold mb-1" style={{ color: t.text }}>📍 Endereço de Entrega</h2>
               <p className="text-sm mb-4" style={{ color: t.textSecundario }}>Digite o CEP para preencher automaticamente.</p>
               <div className="grid md:grid-cols-3 gap-4">
-                {/* CEP com auto-preenchimento */}
                 <div>
                   <label style={labelStyle("cep")}>CEP *</label>
-                  <input name="cep" value={cliente.cep}
-                    onChange={handleCEP}
-                    placeholder="29000-000"
-                    inputMode="numeric" maxLength={9}
+                  <input name="cep" value={cliente.cep} onChange={handleCEP}
+                    placeholder="29000-000" inputMode="numeric" maxLength={9}
                     style={inputStyle("cep")} />
                   {erros.cep && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
                   {cliente.cep.replace(/\D/g, "").length === 8 && cliente.cidade && (
                     <p className="text-xs mt-1" style={{ color: "#16a34a" }}>✅ {cliente.cidade}/{cliente.estado}</p>
                   )}
                 </div>
-
-                {/* Rua */}
                 <div className="md:col-span-2">
                   <label style={labelStyle("rua")}>Rua / Avenida *</label>
                   <input name="rua" value={cliente.rua} onChange={handleChange}
                     placeholder="Rua das Flores" style={inputStyle("rua")} />
                   {erros.rua && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
                 </div>
-
-                {/* Número */}
                 <div>
                   <label style={labelStyle("numero")}>Número *</label>
                   <input name="numero" value={cliente.numero} onChange={handleChange}
                     placeholder="123" style={inputStyle("numero")} />
                   {erros.numero && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
                 </div>
-
-                {/* Complemento */}
                 <div>
                   <label style={labelStyle("complemento")}>Complemento</label>
                   <input name="complemento" value={cliente.complemento} onChange={handleChange}
                     placeholder="Apto 2, Bloco B" style={inputStyle("complemento")} />
                 </div>
-
-                {/* Bairro */}
                 <div>
                   <label style={labelStyle("bairro")}>Bairro *</label>
                   <input name="bairro" value={cliente.bairro} onChange={handleChange}
                     placeholder="Centro" style={inputStyle("bairro")} />
                   {erros.bairro && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
                 </div>
-
-                {/* Cidade */}
                 <div>
                   <label style={labelStyle("cidade")}>Cidade *</label>
                   <input name="cidade" value={cliente.cidade} onChange={handleChange}
                     placeholder="Vila Velha" style={inputStyle("cidade")} />
                   {erros.cidade && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
                 </div>
-
-                {/* Estado */}
                 <div>
                   <label style={labelStyle("estado")}>Estado *</label>
                   <input name="estado" value={cliente.estado} onChange={handleChange}
@@ -398,18 +399,25 @@ function Pedidos() {
                 style={{ ...inputStyle("observacao"), resize: "none" }} />
             </div>
 
-            {/* BOTÕES */}
-            <div className="grid md:grid-cols-2 gap-4 pb-8">
-              <button onClick={enviarWhatsApp}
-                className="py-4 rounded-xl font-semibold text-white flex items-center justify-center gap-2 hover:opacity-90 transition"
-                style={{ backgroundColor: "#22c55e" }}>
-                💬 Enviar pelo WhatsApp
-              </button>
-              <button onClick={finalizarPedido}
-                className="py-4 rounded-xl font-semibold hover:opacity-90 transition"
-                style={{ backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText, cursor: "pointer" }}>
-                ✅ Confirmar Pedido
-              </button>
+            {/* BOTÕES — separados e claros */}
+            <div style={{ backgroundColor: t.bgSecundario, border: "1px solid " + t.border, borderRadius: "12px", padding: "20px" }}>
+              <p className="text-sm font-semibold mb-1" style={{ color: t.text }}>Como deseja finalizar?</p>
+              <p className="text-xs mb-4" style={{ color: t.textSecundario }}>
+                <strong>Confirmar Pedido</strong> registra no sistema e desconta o estoque.
+                <strong> Enviar pelo WhatsApp</strong> abre o WhatsApp com os dados do pedido sem registrar.
+              </p>
+              <div className="grid md:grid-cols-2 gap-4">
+                <button onClick={enviarWhatsApp}
+                  className="py-4 rounded-xl font-semibold text-white flex items-center justify-center gap-2 hover:opacity-90 transition"
+                  style={{ backgroundColor: "#22c55e", fontFamily: "system-ui" }}>
+                  💬 Enviar pelo WhatsApp
+                </button>
+                <button onClick={finalizarPedido}
+                  className="py-4 rounded-xl font-semibold hover:opacity-90 transition"
+                  style={{ backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText, cursor: "pointer", fontFamily: "system-ui" }}>
+                  ✅ Confirmar Pedido
+                </button>
+              </div>
             </div>
           </div>
         )}

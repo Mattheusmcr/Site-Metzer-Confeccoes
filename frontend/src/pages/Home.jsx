@@ -287,7 +287,7 @@ export default function Home() {
           <Link to="/personalizado"
             className="px-10 py-4 text-sm uppercase tracking-widest font-medium transition hover:opacity-80 shrink-0 whitespace-nowrap"
             style={{ backgroundColor: "white", color: "#1a1a1a", letterSpacing: "0.15em", fontFamily: "system-ui" }}>
-            FAÇA UMA COTAÇÃO? →
+            FAÇA UMA COTAÇÃO →
           </Link>
         </div>
       </section>
