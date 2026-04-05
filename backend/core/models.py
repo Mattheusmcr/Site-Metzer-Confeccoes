@@ -71,6 +71,7 @@ class Estoque(models.Model):
 class Pedido(models.Model):
     nome_cliente = models.CharField(max_length=200)
     telefone = models.CharField(max_length=20)
+    email = models.EmailField(blank=True, default="")
     cep = models.CharField(max_length=10, blank=True, default="")
     rua = models.CharField(max_length=200, blank=True, default="")
     numero = models.CharField(max_length=20, blank=True, default="")
