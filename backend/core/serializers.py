@@ -43,17 +43,48 @@ class ItemPedidoSerializer(serializers.ModelSerializer):
 class PedidoSerializer(serializers.ModelSerializer):
     itens = ItemPedidoSerializer(many=True, read_only=True)
     total = serializers.SerializerMethodField()
+    # Write-only field to receive itens on creation
+    itens_input = serializers.ListField(child=serializers.DictField(), write_only=True, required=False)
 
     class Meta:
         model = Pedido
         fields = [
-            'id', 'nome_cliente', 'telefone',
+            'id', 'nome_cliente', 'telefone', 'email',
             'cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'estado',
-            'forma_pagamento', 'observacao', 'data_pedido', 'itens', 'total',
+            'forma_pagamento', 'observacao', 'data_pedido', 'itens', 'itens_input', 'total',
         ]
+        extra_kwargs = {
+            'email': {'required': False, 'allow_blank': True},
+        }
 
     def get_total(self, obj):
         return sum(i.quantidade * i.produto.preco for i in obj.itens.all())
+
+    def create(self, validated_data):
+        from .models import Produto, ItemPedido, Estoque
+        itens_data = validated_data.pop('itens_input', [])
+        pedido = Pedido.objects.create(**validated_data)
+        for item_data in itens_data:
+            try:
+                produto = Produto.objects.get(id=item_data['produto'])
+                qtd = int(item_data.get('quantidade', 1))
+                tamanho = item_data.get('tamanho', 'Único')
+                ItemPedido.objects.create(
+                    pedido=pedido,
+                    produto=produto,
+                    tamanho=tamanho,
+                    quantidade=qtd,
+                )
+                # Desconta estoque
+                try:
+                    est = Estoque.objects.get(produto=produto, tamanho=tamanho)
+                    est.quantidade = max(0, est.quantidade - qtd)
+                    est.save()
+                except Estoque.DoesNotExist:
+                    pass
+            except Exception as e:
+                print(f"Erro ao criar item pedido: {e}")
+        return pedido
 
 
 class InstitucionalSerializer(serializers.ModelSerializer):

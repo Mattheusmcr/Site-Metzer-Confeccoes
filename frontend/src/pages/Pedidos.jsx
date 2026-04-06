@@ -141,7 +141,7 @@ function Pedidos() {
         estado: cliente.estado,
         forma_pagamento: cliente.formaPagamento,
         observacao: cliente.observacao,
-        itens: cart.map(item => ({
+        itens_input: cart.map(item => ({
           produto: item.produto.id,
           tamanho: item.tamanho,
           quantidade: item.quantidade,
@@ -191,7 +191,7 @@ function Pedidos() {
           </a>
           <button onClick={() => { setPedidoConcluido(false); }}
             className="px-6 py-3 font-semibold rounded-lg"
-            style={{ backgroundColor: t.bgSecundario, color: t.text, fontFamily: "system-ui" }}>
+            style={{ backgroundColor: t.bgSecundario, color: t.text, fontFamily: "system-ui", cursor: "pointer" }}>
             Voltar ao início
           </button>
         </div>

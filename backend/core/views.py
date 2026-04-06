@@ -94,8 +94,8 @@ class PedidoViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         pedido = serializer.save()
-        # Notificar dono e cliente por email
-        if NOTIFICACOES_OK:
+        # Notificar dono e cliente por email (estoque já descontado pelo serializer)
+        if NOTIFICACOES_OK and notificar_pedido_catalogo:
             try:
                 pedido_dict = {
                     "nome_cliente": pedido.nome_cliente,
@@ -112,7 +112,9 @@ class PedidoViewSet(viewsets.ModelViewSet):
                 notificar_pedido_catalogo(pedido_dict)
             except Exception as e:
                 print(f"Notificação erro: {e}")
-        for item in pedido.itens.all():
+
+    def _old_stock_deduction(self):
+        for item in []:
             try:
                 estoque = Estoque.objects.get(produto=item.produto, tamanho=item.tamanho)
             except Estoque.DoesNotExist:
