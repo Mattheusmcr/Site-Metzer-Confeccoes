@@ -186,36 +186,36 @@ export default function Home() {
       </section>
 
       {/* ══ PORQUE NOS ESCOLHEM ══ */}
-      <section ref={porqueRef} style={{ backgroundColor: t.bgSecundario, borderBottom: "2px solid " + t.borderForte }}>
-        <div className="px-6 md:px-24 py-16 md:py-20">
-          <div style={{ opacity: porqueVisible ? 1 : 0, transform: porqueVisible ? "translateY(0)" : "translateY(30px)", transition: "all 0.8s ease" }}>
-            <p className="uppercase mb-10" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
-              Porque nossos clientes escolhem a Metzker
-            </p>
-            {/* Duas colunas separadas por divisória */}
-            <div className="grid grid-cols-1 md:grid-cols-2" style={{ borderTop: "2px solid " + t.borderForte }}>
-              {/* Esquerda — texto institucional */}
-              <div className="py-10 md:pr-16" style={{ borderRight: "1px solid " + t.borderForte }}>
-                <p style={{ fontSize: "clamp(1.1rem, 2vw, 1.4rem)", fontWeight: "300", color: t.text, lineHeight: 1.75, fontFamily: "system-ui" }}>
-                  Estamos há mais de 20 anos atendendo empresas em todo Sudeste, focados em entrega consistente e relacionamento de longo prazo.
-                </p>
-                <p className="mt-5" style={{ fontSize: "14px", color: t.textSecundario, lineHeight: 1.8, fontFamily: "system-ui" }}>
-                  Atendemos desde demandas pontuais até operações recorrentes.
-                </p>
-              </div>
-              {/* Direita — diferenciais alinhados com foto acima */}
-              <div className="py-10 md:pl-16">
-                {diferenciais.map((d, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "14px", padding: "14px 0", borderBottom: i < diferenciais.length - 1 ? "1px solid " + t.border : "none" }}>
-                    <span style={{ color: "#16a34a", fontWeight: "700", flexShrink: 0, fontSize: "18px", lineHeight: 1.4 }}>✓</span>
-                    <p style={{ fontSize: "14px", color: t.text, fontFamily: "system-ui", lineHeight: 1.6 }}>{d}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+<section ref={porqueRef} style={{ backgroundColor: t.bgSecundario, borderBottom: "2px solid " + t.borderForte }}>
+  <div className="px-6 md:px-24 py-16 md:py-20">
+    <div style={{ opacity: porqueVisible ? 1 : 0, transform: porqueVisible ? "translateY(0)" : "translateY(30px)", transition: "all 0.8s ease" }}>
+      <p className="uppercase mb-10" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
+        Porque nossos clientes escolhem a Metzker
+      </p>
+      {/* Duas colunas — sem borderTop e sem borderRight */}
+      <div className="grid grid-cols-1 md:grid-cols-2">
+        {/* Esquerda — texto institucional */}
+        <div className="py-10 md:pr-16">
+          <p style={{ fontSize: "clamp(1.1rem, 2vw, 1.4rem)", fontWeight: "300", color: t.text, lineHeight: 1.75, fontFamily: "system-ui" }}>
+            Estamos há mais de 20 anos atendendo empresas em todo Sudeste, focados em entrega consistente e relacionamento de longo prazo.
+          </p>
+          <p className="mt-5" style={{ fontSize: "14px", color: t.textSecundario, lineHeight: 1.8, fontFamily: "system-ui" }}>
+            Atendemos desde demandas pontuais até operações recorrentes.
+          </p>
         </div>
-      </section>
+        {/* Direita — diferenciais sem ícone verde */}
+        <div className="py-10 md:pl-16">
+          {diferenciais.map((d, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "14px", padding: "14px 0", borderBottom: i < diferenciais.length - 1 ? "1px solid " + t.border : "none" }}>
+              <span style={{ color: t.textSecundario, fontWeight: "700", flexShrink: 0, fontSize: "14px", lineHeight: 1.6, fontFamily: "system-ui" }}>→</span>
+              <p style={{ fontSize: "14px", color: t.text, fontFamily: "system-ui", lineHeight: 1.6 }}>{d}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* ══ PROJETOS ENTREGUES ══ */}
       <section ref={galeriaRef} style={{ backgroundColor: t.bg, borderBottom: "2px solid " + t.borderForte }}>
