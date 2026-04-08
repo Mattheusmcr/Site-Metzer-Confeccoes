@@ -433,7 +433,7 @@ function Dashboard({ dark, estilos }) {
           </div>
         </div>
       </div>
-    </div>
+      </div>
   );
 }
 

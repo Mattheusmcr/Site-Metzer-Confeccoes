@@ -186,15 +186,16 @@ export default function Home() {
       </section>
 
       {/* ══ PORQUE NOS ESCOLHEM ══ */}
-      <section ref={porqueRef} style={{ backgroundColor: t.bgSecundario }}>
+      <section ref={porqueRef} style={{ backgroundColor: t.bgSecundario, borderBottom: "2px solid " + t.borderForte }}>
         <div className="px-6 md:px-24 py-16 md:py-20">
           <div style={{ opacity: porqueVisible ? 1 : 0, transform: porqueVisible ? "translateY(0)" : "translateY(30px)", transition: "all 0.8s ease" }}>
             <p className="uppercase mb-10" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
               Porque nossos clientes escolhem a Metzker
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20">
+            {/* Duas colunas separadas por divisória */}
+            <div className="grid grid-cols-1 md:grid-cols-2" style={{ borderTop: "2px solid " + t.borderForte }}>
               {/* Esquerda — texto institucional */}
-              <div>
+              <div className="py-10 md:pr-16" style={{ borderRight: "1px solid " + t.borderForte }}>
                 <p style={{ fontSize: "clamp(1.1rem, 2vw, 1.4rem)", fontWeight: "300", color: t.text, lineHeight: 1.75, fontFamily: "system-ui" }}>
                   Estamos há mais de 20 anos atendendo empresas em todo Sudeste, focados em entrega consistente e relacionamento de longo prazo.
                 </p>
@@ -202,10 +203,13 @@ export default function Home() {
                   Atendemos desde demandas pontuais até operações recorrentes.
                 </p>
               </div>
-              {/* Direita — diferenciais sem divisórias e sem ícone verde */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {/* Direita — diferenciais alinhados com foto acima */}
+              <div className="py-10 md:pl-16">
                 {diferenciais.map((d, i) => (
-                  <p key={i} style={{ fontSize: "14px", color: t.text, fontFamily: "system-ui", lineHeight: 1.6 }}>{d}</p>
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "14px", padding: "14px 0", borderBottom: i < diferenciais.length - 1 ? "1px solid " + t.border : "none" }}>
+                    <span style={{ color: "#16a34a", fontWeight: "700", flexShrink: 0, fontSize: "18px", lineHeight: 1.4 }}>✓</span>
+                    <p style={{ fontSize: "14px", color: t.text, fontFamily: "system-ui", lineHeight: 1.6 }}>{d}</p>
+                  </div>
                 ))}
               </div>
             </div>
@@ -223,7 +227,7 @@ export default function Home() {
                 Projetos entregues
               </p>
               <h2 style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: "300", color: t.text, letterSpacing: "-0.02em" }}>
-                Alguns dos trabalhos<br /><em style={{ fontStyle: "italic" }}>que já entregamos</em>
+                Alguns dos trabalhos <em style={{ fontStyle: "italic" }}>que já entregamos</em>
               </h2>
               <p className="mt-3" style={{ fontSize: "14px", color: t.textSecundario, fontFamily: "system-ui", maxWidth: "380px", lineHeight: 1.6 }}>
                 Para empresas e eventos que precisavam de padrão e prazo.
@@ -286,7 +290,7 @@ export default function Home() {
           <Link to="/personalizado"
             className="px-10 py-4 text-sm uppercase tracking-widest font-medium transition hover:opacity-80 shrink-0 whitespace-nowrap"
             style={{ backgroundColor: "white", color: "#1a1a1a", letterSpacing: "0.15em", fontFamily: "system-ui" }}>
-            QUER FAZER UM ORÇAMENTO? →
+            FAÇA SUA COTAÇÃO →
           </Link>
         </div>
       </section>
