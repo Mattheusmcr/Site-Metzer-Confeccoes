@@ -243,11 +243,11 @@ export default function ProdutoDetalhe() {
               <div className="flex items-center" style={{ border: "1px solid " + t.border }}>
                 <button onClick={() => setQuantidade(q => q > 1 ? q - 1 : 1)}
                   className="px-4 py-2 font-bold transition hover:opacity-70"
-                  style={{ backgroundColor: t.bgSecundario, color: t.text }}>−</button>
+                  style={{ backgroundColor: t.bgSecundario, color: t.text, cursor: "pointer" }}>−</button>
                 <span className="px-4 py-2 font-semibold min-w-10 text-center" style={{ color: t.text }}>{quantidade}</span>
                 <button onClick={() => setQuantidade(q => q + 1)}
                   className="px-4 py-2 font-bold transition hover:opacity-70"
-                  style={{ backgroundColor: t.bgSecundario, color: t.text }}>+</button>
+                  style={{ backgroundColor: t.bgSecundario, color: t.text, cursor: "pointer" }}>+</button>
               </div>
             </div>
 
@@ -255,10 +255,10 @@ export default function ProdutoDetalhe() {
             <div className="flex flex-col gap-3 mb-6">
               <button onClick={handleComprar}
                 className="w-full py-4 font-semibold text-white transition hover:opacity-90"
-                style={{ backgroundColor: t.text }}>Comprar agora</button>
+                style={{ backgroundColor: t.text, cursor: "pointer" }}>Comprar agora</button>
               <button onClick={handleAdicionar}
                 className="w-full py-4 font-semibold transition hover:opacity-80"
-                style={{ backgroundColor: t.bgSecundario, color: t.text, border: "1px solid " + t.border }}>
+                style={{ backgroundColor: t.bgSecundario, color: t.text, border: "1px solid " + t.border, cursor: "pointer" }}>
                 Adicionar ao carrinho
               </button>
             </div>

@@ -82,6 +82,8 @@ class Pedido(models.Model):
     forma_pagamento = models.CharField(max_length=50, blank=True, default="")
     observacao = models.TextField(blank=True, default="")
     data_pedido = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=30, default="novo",
+        choices=[("novo","Novo"),("em_andamento","Em andamento"),("concluido","Concluído"),("cancelado","Cancelado")])
 
     def __str__(self):
         return f"Pedido #{self.id} - {self.nome_cliente}"

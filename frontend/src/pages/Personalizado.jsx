@@ -458,8 +458,17 @@ export default function Personalizado(){
                 </div>
                 {form.tipoComunicacao && (
                   <div>
-                    <label style={labelStyle}>Dimensões / Tamanho *</label>
-                    <input value={form.dimensoes} onChange={e=>setForm(p=>({...p,dimensoes:e.target.value}))} placeholder="Ex: 1,2m x 0,8m ou A4, A3..." style={inputStyle}/>
+                    <label style={labelStyle}>Dimensões do material *</label>
+                    <p style={{ fontSize:"12px", color:t.textSecundario, fontFamily:"system-ui", marginBottom:"8px", lineHeight:1.5 }}>
+                      Informe a largura × altura desejada. Ex: <strong style={{color:t.text}}>1,2m × 0,8m</strong> ou <strong style={{color:t.text}}>A4</strong> ou <strong style={{color:t.text}}>80cm × 60cm</strong>
+                    </p>
+                    <input value={form.dimensoes} onChange={e=>setForm(p=>({...p,dimensoes:e.target.value}))}
+                      placeholder="Ex: 1,2m × 0,8m — largura × altura" style={inputStyle}/>
+                    {form.dimensoes && (
+                      <p style={{ fontSize:"11px", color:"#16a34a", fontFamily:"system-ui", marginTop:"4px" }}>
+                        ✅ Dimensões: {form.dimensoes}
+                      </p>
+                    )}
                   </div>
                 )}
               </>
@@ -545,7 +554,7 @@ export default function Personalizado(){
               {form.categoria==="comunicacao"&&(
                 <div style={{padding:"10px 0",borderBottom:"1px solid "+t.border}}>
                   <p style={{fontSize:"13px",fontWeight:"600",color:t.text,fontFamily:"system-ui"}}>{TIPOS_COMUNICACAO.find(t=>t.id===form.tipoComunicacao)?.label}</p>
-                  {form.dimensoes&&<p style={{fontSize:"12px",color:t.textSecundario,fontFamily:"system-ui"}}>Dimensões: {form.dimensoes}</p>}
+                  {form.dimensoes&&<p style={{fontSize:"12px",color:t.textSecundario,fontFamily:"system-ui"}}>📐 Dimensões: <strong style={{color:t.text}}>{form.dimensoes}</strong></p>}
                 </div>
               )}
 
@@ -596,9 +605,8 @@ export default function Personalizado(){
 
             <div style={{backgroundColor:t.bgSecundario,border:"1px solid "+t.border,padding:"14px"}}>
               <p style={{fontSize:"13px",color:t.textSecundario,lineHeight:1.7,fontFamily:"system-ui"}}>
-                ℹ️ <strong style={{color:t.text}}>Finalizar pelo site</strong> registra o pedido no painel.
-                <strong style={{color:t.text}}> Enviar pelo WhatsApp</strong> salva e abre o WhatsApp com tudo preenchido.
-                {form.fotos.length>0&&" Envie os arquivos na conversa do WhatsApp."}
+                ℹ️ Ao confirmar o pedido, nossa equipe entrará em contato pelo WhatsApp para confirmar detalhes, prazo e orçamento.
+                {form.fotos.length>0&&" As imagens de referência enviadas serão salvas junto ao pedido."}
               </p>
             </div>
 
@@ -624,10 +632,10 @@ export default function Personalizado(){
             <div style={{display:"flex",gap:"12px"}}>
               <button onClick={()=>setEtapa(1)} style={{flex:1,padding:"14px",border:"1px solid "+t.border,color:t.text,backgroundColor:t.bg,cursor:"pointer",fontFamily:"system-ui",fontWeight:"600"}}>← Voltar</button>
             </div>
-            <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
-              <button onClick={salvarNoBanco} disabled={salvando||!finalizacaoValida} style={{...btnP(!salvando&&finalizacaoValida),width:"100%",padding:"16px"}}>{salvando?"Salvando...":"✅ Finalizar pedido pelo site"}</button>
-              <button onClick={finalizarComWhatsApp} disabled={salvando||!finalizacaoValida} style={{width:"100%",padding:"16px",fontWeight:"600",fontSize:"14px",fontFamily:"system-ui",cursor:salvando||!finalizacaoValida?"not-allowed":"pointer",backgroundColor:salvando||!finalizacaoValida?"#86efac":"#22c55e",color:"white",border:"none"}}>💬 Enviar pelo WhatsApp</button>
-            </div>
+            <button onClick={salvarNoBanco} disabled={salvando||!finalizacaoValida}
+              style={{...btnP(!salvando&&finalizacaoValida),width:"100%",padding:"18px",fontSize:"16px"}}>
+              {salvando?"Salvando...":"✅ Confirmar Pedido"}
+            </button>
           </div>
         )}
       </div>

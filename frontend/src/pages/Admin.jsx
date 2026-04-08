@@ -467,6 +467,27 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                         </tfoot>
                       </table>
                     </div>
+                    {/* Status pedido catálogo */}
+                    <div className="mt-2 mb-3">
+                      <p className="text-xs uppercase tracking-wider mb-2" style={{ color: subtext }}>Status do pedido</p>
+                      <div className="flex gap-2 flex-wrap">
+                        {[
+                          { id: "novo",         label: "Novo",         cor: "#2563eb" },
+                          { id: "em_andamento", label: "Em andamento", cor: "#d97706" },
+                          { id: "concluido",    label: "Concluído",    cor: "#16a34a" },
+                          { id: "cancelado",    label: "Cancelado",    cor: "#dc2626" },
+                        ].map(s => (
+                          <button key={s.id} onClick={() => atualizarStatusCatalogo(p.id, s.id)}
+                            style={{
+                              padding: "5px 12px", fontSize: "12px", fontWeight: "600",
+                              cursor: "pointer", border: "none", borderRadius: "6px", fontFamily: "system-ui",
+                              backgroundColor: (p.status || "novo") === s.id ? s.cor : (dark ? "#374151" : "#e5e7eb"),
+                              color: (p.status || "novo") === s.id ? "white" : text,
+                            }}>{s.label}</button>
+                        ))}
+                      </div>
+                    </div>
+
                     <div className="flex items-center gap-3">
                       <a href={`https://wa.me/55${p.telefone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white"

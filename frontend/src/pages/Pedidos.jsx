@@ -9,190 +9,183 @@ const t = {
   btnPrimarioBg: "#1a1a1a", btnPrimarioText: "#FAF8F5",
 };
 
-function formatTelefone(valor) {
-  const n = valor.replace(/\D/g, "").slice(0, 11);
-  if (n.length <= 2) return n;
-  if (n.length <= 6) return `(${n.slice(0,2)}) ${n.slice(2)}`;
-  if (n.length <= 10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
+function formatTelefone(v) {
+  const n = v.replace(/\D/g,"").slice(0,11);
+  if (n.length<=2) return n;
+  if (n.length<=6) return `(${n.slice(0,2)}) ${n.slice(2)}`;
+  if (n.length<=10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
   return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
 }
-function formatCEP(valor) {
-  const n = valor.replace(/\D/g, "").slice(0, 8);
-  return n.length > 5 ? `${n.slice(0,5)}-${n.slice(5)}` : n;
+function formatCEP(v) {
+  const n = v.replace(/\D/g,"").slice(0,8);
+  return n.length>5 ? `${n.slice(0,5)}-${n.slice(5)}` : n;
 }
 async function buscarCEP(cep, setCliente) {
-  const n = cep.replace(/\D/g, "");
-  if (n.length !== 8) return;
+  const n = cep.replace(/\D/g,"");
+  if (n.length!==8) return;
   try {
     const res = await fetch(`https://viacep.com.br/ws/${n}/json/`);
     const data = await res.json();
-    if (!data.erro) {
-      setCliente(prev => ({
-        ...prev,
-        rua: data.logradouro || prev.rua,
-        bairro: data.bairro || prev.bairro,
-        cidade: data.localidade || prev.cidade,
-        estado: data.uf || prev.estado,
-      }));
-    }
+    if (!data.erro) setCliente(p => ({...p,
+      rua: data.logradouro||p.rua, bairro: data.bairro||p.bairro,
+      cidade: data.localidade||p.cidade, estado: data.uf||p.estado,
+    }));
   } catch {}
 }
 function emailValido(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
 
-function Pedidos() {
+export default function Pedidos() {
   const { cart, increase, decrease, removeFromCart, setCart } = useContext(CartContext);
   const [cliente, setCliente] = useState({
-    nome: "", telefone: "", email: "", cep: "", rua: "", numero: "",
-    complemento: "", bairro: "", cidade: "", estado: "",
-    formaPagamento: "", observacao: "",
+    nome:"", telefone:"", email:"", cep:"", rua:"", numero:"",
+    complemento:"", bairro:"", cidade:"", estado:"", formaPagamento:"", observacao:"",
   });
   const [erros, setErros] = useState({});
   const [tentouEnviar, setTentouEnviar] = useState(false);
   const [mensagemEstoque, setMensagemEstoque] = useState("");
   const [erroPedido, setErroPedido] = useState("");
   const [pedidoConcluido, setPedidoConcluido] = useState(false);
+  const [pedidoSalvo, setPedidoSalvo] = useState(null); // dados salvos antes de limpar carrinho
 
-  const camposObrigatorios = ["nome", "telefone", "email", "cep", "rua", "numero", "bairro", "cidade", "estado", "formaPagamento"];
-  const total = cart.reduce((acc, item) => acc + (parseFloat(item.produto?.preco) || 0) * item.quantidade, 0);
-
+  const total = cart.reduce((a,i) => a + (parseFloat(i.produto?.preco)||0)*i.quantidade, 0);
   const itensComProblema = cart.filter(item => {
-    const est = item.produto.estoques?.find(e => e.tamanho === item.tamanho);
-    return !est || item.quantidade > est.quantidade;
+    const est = item.produto.estoques?.find(e => e.tamanho===item.tamanho);
+    return !est || item.quantidade>est.quantidade;
   });
-  const estoqueInsuficiente = itensComProblema.length > 0;
+  const estoqueInsuficiente = itensComProblema.length>0;
 
   function handleChange(e) {
-    const { name, value } = e.target;
-    setCliente(prev => ({ ...prev, [name]: value }));
-    if (tentouEnviar) setErros(prev => ({ ...prev, [name]: !value.trim() }));
+    const {name,value} = e.target;
+    setCliente(p => ({...p,[name]:value}));
+    if (tentouEnviar) setErros(p => ({...p,[name]:!value.trim()}));
   }
   function handleTelefone(e) {
     const f = formatTelefone(e.target.value);
-    setCliente(prev => ({ ...prev, telefone: f }));
-    if (tentouEnviar) setErros(prev => ({ ...prev, telefone: !f.trim() }));
+    setCliente(p => ({...p,telefone:f}));
+    if (tentouEnviar) setErros(p => ({...p,telefone:!f.trim()}));
   }
   function handleEmail(e) {
-    setCliente(prev => ({ ...prev, email: e.target.value }));
-    if (tentouEnviar) setErros(prev => ({ ...prev, email: !emailValido(e.target.value) }));
+    setCliente(p => ({...p,email:e.target.value}));
+    if (tentouEnviar) setErros(p => ({...p,email:!emailValido(e.target.value)}));
   }
   function handleCEP(e) {
     const f = formatCEP(e.target.value);
-    setCliente(prev => ({ ...prev, cep: f }));
-    if (f.replace(/\D/g, "").length === 8) buscarCEP(f, setCliente);
-    if (tentouEnviar) setErros(prev => ({ ...prev, cep: !f.trim() }));
+    setCliente(p => ({...p,cep:f}));
+    if (f.replace(/\D/g,"").length===8) buscarCEP(f,setCliente);
+    if (tentouEnviar) setErros(p => ({...p,cep:!f.trim()}));
   }
 
   function validar() {
-    const novosErros = {};
-    camposObrigatorios.forEach(c => {
-      if (c === "email") { if (!emailValido(cliente.email)) novosErros.email = true; }
-      else if (!cliente[c]?.trim()) novosErros[c] = true;
+    const novos = {};
+    ["nome","telefone","cep","rua","numero","bairro","cidade","estado","formaPagamento"].forEach(c => {
+      if (!cliente[c]?.trim()) novos[c]=true;
     });
-    setErros(novosErros);
-    return Object.keys(novosErros).length === 0;
+    if (!emailValido(cliente.email)) novos.email=true;
+    setErros(novos);
+    return Object.keys(novos).length===0;
   }
 
-  function montarMensagem() {
-    const itens = cart.map(item =>
-      `• ${item.produto.nome} | Tam: ${item.tamanho} | ${item.quantidade}x | R$ ${(parseFloat(item.produto.preco) * item.quantidade).toFixed(2)}`
+  function montarMsgWA(dados) {
+    const {itens,totalSalvo,c} = dados;
+    const itensStr = itens.map(i =>
+      `• ${i.nome} | ${i.tamanho} | ${i.qtd}x | R$ ${(i.preco*i.qtd).toFixed(2)}`
     ).join("%0A");
-    const obs = cliente.observacao ? `%0A%0A📝 *Obs:* ${cliente.observacao}` : "";
-    return `Olá! Gostaria de fazer um pedido:%0A%0A👤 *Nome:* ${cliente.nome}%0A📱 *Tel:* ${cliente.telefone}%0A📧 *Email:* ${cliente.email}%0A%0A🛍️ *Itens:*%0A${itens}%0A%0A💰 *Total: R$ ${total.toFixed(2)}*%0A%0A📍 *Endereço:*%0A${cliente.rua}, ${cliente.numero}${cliente.complemento ? " - " + cliente.complemento : ""}%0A${cliente.bairro} - ${cliente.cidade}/${cliente.estado} | CEP: ${cliente.cep}%0A%0A💳 *Pagamento:* ${cliente.formaPagamento}${obs}`;
+    const obs = c.observacao ? `%0A%0A📝 *Obs:* ${c.observacao}` : "";
+    return `https://wa.me/5527997878391?text=Olá! Fiz um pedido no site:%0A%0A👤 *Nome:* ${c.nome}%0A📱 *Tel:* ${c.telefone}%0A📧 *Email:* ${c.email}%0A%0A🛍️ *Itens:*%0A${itensStr}%0A%0A💰 *Total: R$ ${totalSalvo.toFixed(2)}*%0A%0A📍 *Endereço:*%0A${c.rua}, ${c.numero}${c.complemento?" - "+c.complemento:""}%0A${c.bairro} - ${c.cidade}/${c.estado} | CEP: ${c.cep}%0A%0A💳 *Pagamento:* ${c.formaPagamento}${obs}`;
   }
 
-  function verificarEstoque() {
-    if (estoqueInsuficiente) {
-      const nomes = itensComProblema.map(i => i.produto.nome).join(", ");
-      setMensagemEstoque(`⚠️ Itens sem estoque suficiente: ${nomes}. Ajuste as quantidades ou remova os itens.`);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return false;
-    }
-    return true;
-  }
-
-  // Apenas WhatsApp — não salva no banco
-  function enviarWhatsApp() {
-    setTentouEnviar(true);
-    setMensagemEstoque("");
-    if (!verificarEstoque()) return;
-    if (!validar() || cart.length === 0) return;
-    window.open(`https://wa.me/5527997878391?text=${montarMensagem()}`, "_blank");
-  }
-
-  // Salva no banco + desconta estoque — NÃO abre WhatsApp
   async function finalizarPedido() {
     setTentouEnviar(true);
     setMensagemEstoque("");
     setErroPedido("");
-    if (!verificarEstoque()) return;
-    if (!validar()) return;
+
+    if (estoqueInsuficiente) {
+      const nomes = itensComProblema.map(i=>i.produto.nome).join(", ");
+      setMensagemEstoque(`⚠️ Estoque insuficiente: ${nomes}. Ajuste as quantidades.`);
+      window.scrollTo({top:0,behavior:"smooth"});
+      return;
+    }
+    if (!validar()) { window.scrollTo({top:0,behavior:"smooth"}); return; }
+
+    // Salvar snapshot antes de limpar carrinho
+    const snapshot = {
+      itens: cart.map(i => ({nome:i.produto.nome, tamanho:i.tamanho, qtd:i.quantidade, preco:parseFloat(i.produto.preco)})),
+      totalSalvo: total,
+      c: {...cliente},
+    };
 
     try {
       await api.post("pedidos/", {
-        nome_cliente: cliente.nome,
-        telefone: cliente.telefone,
-        email: cliente.email,
-        cep: cliente.cep,
-        rua: cliente.rua,
-        numero: cliente.numero,
-        complemento: cliente.complemento,
-        bairro: cliente.bairro,
-        cidade: cliente.cidade,
-        estado: cliente.estado,
-        forma_pagamento: cliente.formaPagamento,
-        observacao: cliente.observacao,
-        itens_input: cart.map(item => ({
-          produto: item.produto.id,
-          tamanho: item.tamanho,
-          quantidade: item.quantidade,
-        })),
+        nome_cliente: cliente.nome, telefone: cliente.telefone, email: cliente.email,
+        cep: cliente.cep, rua: cliente.rua, numero: cliente.numero,
+        complemento: cliente.complemento, bairro: cliente.bairro,
+        cidade: cliente.cidade, estado: cliente.estado,
+        forma_pagamento: cliente.formaPagamento, observacao: cliente.observacao,
+        itens_input: cart.map(i => ({produto:i.produto.id, tamanho:i.tamanho, quantidade:i.quantidade})),
       });
+      setPedidoSalvo(snapshot);
       setCart([]);
       setPedidoConcluido(true);
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (e) {
+      window.scrollTo({top:0,behavior:"smooth"});
+    } catch(e) {
       console.error("Erro pedido:", e.response?.data, e.response?.status);
-      setErroPedido("Não foi possível registrar o pedido. Tente novamente ou envie pelo WhatsApp.");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      setErroPedido("Não foi possível registrar o pedido. Tente novamente.");
+      window.scrollTo({top:0,behavior:"smooth"});
     }
   }
 
   const inputStyle = (campo) => ({
-    width: "100%", padding: "10px 12px", borderRadius: "6px", boxSizing: "border-box",
-    border: "1px solid " + (erros[campo] ? "#ef4444" : t.inputBorder),
-    backgroundColor: erros[campo] ? "#fff5f5" : t.inputBg,
-    color: t.text, fontSize: "14px", outline: "none", fontFamily: "system-ui",
+    width:"100%", padding:"10px 12px", borderRadius:"6px", boxSizing:"border-box",
+    border:"1px solid "+(erros[campo]?"#ef4444":t.inputBorder),
+    backgroundColor: erros[campo]?"#fff5f5":t.inputBg,
+    color:t.text, fontSize:"14px", outline:"none", fontFamily:"system-ui",
   });
   const labelStyle = (campo) => ({
-    display: "block", fontSize: "11px", fontWeight: "600", marginBottom: "4px",
-    textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: "system-ui",
-    color: erros[campo] ? "#ef4444" : t.textSecundario,
+    display:"block", fontSize:"11px", fontWeight:"600", marginBottom:"4px",
+    textTransform:"uppercase", letterSpacing:"0.05em", fontFamily:"system-ui",
+    color: erros[campo]?"#ef4444":t.textSecundario,
   });
-  const cardStyle = { backgroundColor: t.bgCard, border: "1px solid " + t.border, borderRadius: "12px", padding: "24px" };
-  const qtdErros = Object.keys(erros).filter(k => erros[k]).length;
+  const cardStyle = {backgroundColor:t.bgCard, border:"1px solid "+t.border, borderRadius:"12px", padding:"24px"};
+  const qtdErros = Object.keys(erros).filter(k=>erros[k]).length;
 
-  // ── SUCESSO ──
-  if (pedidoConcluido) return (
-    <div style={{ backgroundColor: t.bg, minHeight: "100vh" }}>
+  // ── TELA DE SUCESSO ──
+  if (pedidoConcluido && pedidoSalvo) return (
+    <div style={{backgroundColor:t.bg, minHeight:"100vh"}}>
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <div style={{ fontSize: "64px", marginBottom: "20px" }}>🎉</div>
-        <h1 className="text-3xl font-bold mb-4" style={{ color: t.text }}>Pedido confirmado!</h1>
-        <p className="mb-2" style={{ color: t.textSecundario, lineHeight: 1.8 }}>
-          Seu pedido foi registrado com sucesso e o estoque foi atualizado.
+        <div style={{fontSize:"64px",marginBottom:"20px"}}>🎉</div>
+        <h1 className="text-3xl font-bold mb-4" style={{color:t.text}}>Pedido confirmado!</h1>
+        <p className="mb-2" style={{color:t.textSecundario, lineHeight:1.8}}>
+          Seu pedido foi registrado e o estoque atualizado.
         </p>
-        <p className="mb-8" style={{ color: t.textSecundario, lineHeight: 1.8 }}>
-          Nossa equipe entrará em contato pelo WhatsApp <strong style={{ color: t.text }}>{cliente.telefone}</strong> para confirmar os detalhes e combinações de entrega.
+        <p className="mb-6" style={{color:t.textSecundario, lineHeight:1.8}}>
+          Nossa equipe entrará em contato pelo WhatsApp <strong style={{color:t.text}}>{pedidoSalvo.c.telefone}</strong> para confirmar os detalhes.
         </p>
+
+        {/* Resumo do pedido */}
+        <div className="text-left mb-8 rounded-xl p-5" style={{backgroundColor:t.bgCard, border:"1px solid "+t.border}}>
+          <p className="text-xs uppercase font-bold mb-3" style={{color:t.textSecundario, letterSpacing:"0.1em"}}>Resumo do pedido</p>
+          {pedidoSalvo.itens.map((item,i) => (
+            <div key={i} className="flex justify-between py-2" style={{borderBottom:"1px solid "+t.border}}>
+              <span className="text-sm" style={{color:t.text}}>{item.nome} — {item.tamanho} × {item.qtd}</span>
+              <span className="text-sm font-semibold" style={{color:t.text}}>R$ {(item.preco*item.qtd).toFixed(2)}</span>
+            </div>
+          ))}
+          <div className="flex justify-between pt-3 font-bold">
+            <span style={{color:t.text}}>Total</span>
+            <span style={{color:t.text}}>R$ {pedidoSalvo.totalSalvo.toFixed(2)}</span>
+          </div>
+        </div>
+
         <div className="flex gap-3 justify-center flex-wrap">
-          <a href={`https://wa.me/5527997878391?text=${montarMensagem()}`} target="_blank" rel="noreferrer"
+          <a href={montarMsgWA(pedidoSalvo)} target="_blank" rel="noreferrer"
             className="px-6 py-3 font-semibold text-white rounded-lg"
-            style={{ backgroundColor: "#22c55e", fontFamily: "system-ui" }}>
+            style={{backgroundColor:"#22c55e", fontFamily:"system-ui", cursor:"pointer"}}>
             💬 Enviar detalhes pelo WhatsApp
           </a>
-          <button onClick={() => { setPedidoConcluido(false); }}
+          <button onClick={() => { setPedidoConcluido(false); setPedidoSalvo(null); }}
             className="px-6 py-3 font-semibold rounded-lg"
-            style={{ backgroundColor: t.bgSecundario, color: t.text, fontFamily: "system-ui", cursor: "pointer" }}>
-            Voltar ao início
+            style={{backgroundColor:t.bgSecundario, color:t.text, fontFamily:"system-ui", cursor:"pointer", border:"1px solid "+t.border}}>
+            Voltar ao carrinho
           </button>
         </div>
       </div>
@@ -200,230 +193,197 @@ function Pedidos() {
   );
 
   return (
-    <div style={{ backgroundColor: t.bg, color: t.text, minHeight: "100vh" }}>
-      <div className="max-w-4xl mx-auto px-4 md:p-6 py-8">
-        <h1 className="text-3xl font-bold mb-8" style={{ color: t.text }}>Finalizar Pedido</h1>
+    <div style={{backgroundColor:t.bg, color:t.text, minHeight:"100vh"}}>
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-8" style={{color:t.text}}>Finalizar Pedido</h1>
 
-        {cart.length === 0 && <p style={{ color: t.textSecundario }}>Carrinho vazio.</p>}
+        {cart.length===0 && <p style={{color:t.textSecundario}}>Carrinho vazio.</p>}
 
-        {/* ERROS */}
+        {/* ALERTAS */}
         {mensagemEstoque && (
-          <div className="rounded-xl p-4 mb-6 flex items-start gap-3"
-            style={{ backgroundColor: "#fef2f2", border: "2px solid #fecaca" }}>
-            <span style={{ fontSize: "20px" }}>🚫</span>
+          <div className="rounded-xl p-4 mb-6 flex gap-3" style={{backgroundColor:"#fef2f2",border:"2px solid #fecaca"}}>
+            <span style={{fontSize:"20px"}}>🚫</span>
             <div>
-              <p className="font-semibold" style={{ color: "#dc2626" }}>Pedido bloqueado — estoque insuficiente</p>
-              <p className="text-sm mt-1" style={{ color: "#7f1d1d" }}>{mensagemEstoque}</p>
+              <p className="font-semibold" style={{color:"#dc2626"}}>Estoque insuficiente</p>
+              <p className="text-sm mt-1" style={{color:"#7f1d1d"}}>{mensagemEstoque}</p>
             </div>
           </div>
         )}
         {erroPedido && (
-          <div className="rounded-xl p-4 mb-6 flex items-start gap-3"
-            style={{ backgroundColor: "#fef2f2", border: "2px solid #fecaca" }}>
-            <span style={{ fontSize: "20px" }}>⚠️</span>
+          <div className="rounded-xl p-4 mb-6 flex gap-3" style={{backgroundColor:"#fef2f2",border:"2px solid #fecaca"}}>
+            <span style={{fontSize:"20px"}}>⚠️</span>
             <div>
-              <p className="font-semibold" style={{ color: "#dc2626" }}>Não foi possível registrar o pedido</p>
-              <p className="text-sm mt-1" style={{ color: "#7f1d1d" }}>{erroPedido}</p>
-              <p className="text-sm mt-2" style={{ color: t.textSecundario }}>
-                Você pode enviar pelo WhatsApp abaixo para não perder seu pedido.
-              </p>
+              <p className="font-semibold" style={{color:"#dc2626"}}>Erro ao registrar pedido</p>
+              <p className="text-sm mt-1" style={{color:"#7f1d1d"}}>{erroPedido}</p>
             </div>
           </div>
         )}
-        {tentouEnviar && qtdErros > 0 && !mensagemEstoque && (
-          <div className="rounded-xl p-4 mb-6 flex items-start gap-3"
-            style={{ backgroundColor: "#fff5f5", border: "1px solid #fecaca" }}>
+        {tentouEnviar && qtdErros>0 && !mensagemEstoque && (
+          <div className="rounded-xl p-4 mb-6 flex gap-3" style={{backgroundColor:"#fff5f5",border:"1px solid #fecaca"}}>
             <span>⚠️</span>
             <div>
-              <p className="font-semibold" style={{ color: "#dc2626" }}>Preencha todos os campos obrigatórios</p>
-              <p className="text-sm" style={{ color: t.textSecundario }}>{qtdErros} campo{qtdErros > 1 ? "s" : ""} precisam ser preenchidos.</p>
+              <p className="font-semibold" style={{color:"#dc2626"}}>Campos obrigatórios</p>
+              <p className="text-sm" style={{color:t.textSecundario}}>{qtdErros} campo{qtdErros>1?"s":""} precisam ser preenchidos.</p>
             </div>
           </div>
         )}
 
         {/* ITENS */}
-        {cart.length > 0 && (
+        {cart.length>0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4" style={{ color: t.text }}>🛍️ Seus Itens</h2>
+            <h2 className="text-xl font-semibold mb-4" style={{color:t.text}}>🛍️ Seus Itens</h2>
             <div className="space-y-3">
-              {cart.map((item, i) => {
-                const est = item.produto?.estoques?.find(e => e.tamanho === item.tamanho);
-                const semEstoque = !est || item.quantidade > est.quantidade;
+              {cart.map((item,i) => {
+                const est = item.produto?.estoques?.find(e=>e.tamanho===item.tamanho);
+                const semEst = !est || item.quantidade>est.quantidade;
                 return (
                   <div key={i} className="rounded-xl p-4 flex justify-between items-center"
-                    style={{ backgroundColor: t.bgCard, border: "1px solid " + (semEstoque ? "#fecaca" : t.border) }}>
+                    style={{backgroundColor:t.bgCard,border:"1px solid "+(semEst?"#fecaca":t.border)}}>
                     <div>
-                      <p className="font-semibold" style={{ color: t.text }}>{item.produto.nome}</p>
-                      <p className="text-sm" style={{ color: t.textSecundario }}>Tamanho: {item.tamanho}</p>
-                      <p className="text-sm font-medium" style={{ color: t.text }}>
-                        R$ {(parseFloat(item.produto?.preco || 0) * item.quantidade).toFixed(2)}
+                      <p className="font-semibold" style={{color:t.text}}>{item.produto.nome}</p>
+                      <p className="text-sm" style={{color:t.textSecundario}}>Tamanho: {item.tamanho}</p>
+                      <p className="text-sm font-medium" style={{color:t.text}}>
+                        R$ {(parseFloat(item.produto?.preco||0)*item.quantidade).toFixed(2)}
                       </p>
-                      {semEstoque && (
-                        <p className="text-sm font-semibold mt-1" style={{ color: "#dc2626" }}>
-                          🚫 Estoque insuficiente — remova ou reduza a quantidade
-                        </p>
-                      )}
+                      {semEst && <p className="text-sm font-semibold mt-1" style={{color:"#dc2626"}}>🚫 Estoque insuficiente</p>}
                     </div>
                     <div className="flex items-center gap-2">
                       <button onClick={() => decrease(item.produto.id, item.tamanho)}
                         className="w-8 h-8 rounded-lg flex items-center justify-center font-bold"
-                        style={{ backgroundColor: t.bgSecundario, color: t.text }}>-</button>
-                      <span className="w-6 text-center font-medium" style={{ color: t.text }}>{item.quantidade}</span>
+                        style={{backgroundColor:t.bgSecundario, color:t.text, cursor:"pointer"}}>-</button>
+                      <span className="w-6 text-center font-medium" style={{color:t.text}}>{item.quantidade}</span>
                       <button onClick={() => increase(item.produto.id, item.tamanho)}
                         className="w-8 h-8 rounded-lg flex items-center justify-center font-bold"
-                        style={{ backgroundColor: t.bgSecundario, color: t.text }}>+</button>
+                        style={{backgroundColor:t.bgSecundario, color:t.text, cursor:"pointer"}}>+</button>
                       <button onClick={() => removeFromCart(item.produto.id, item.tamanho)}
-                        className="ml-3 text-sm" style={{ color: "#dc2626" }}>Remover</button>
+                        className="ml-3 text-sm" style={{color:"#dc2626", cursor:"pointer"}}>Remover</button>
                     </div>
                   </div>
                 );
               })}
             </div>
-            <div className="mt-4 text-xl font-bold text-right" style={{ color: t.text }}>
+            <div className="mt-4 text-xl font-bold text-right" style={{color:t.text}}>
               Total: R$ {total.toFixed(2)}
             </div>
           </div>
         )}
 
-        {cart.length > 0 && (
+        {cart.length>0 && (
           <div className="space-y-6">
             {/* DADOS PESSOAIS */}
             <div style={cardStyle}>
-              <h2 className="text-lg font-semibold mb-4" style={{ color: t.text }}>📋 Dados Pessoais</h2>
+              <h2 className="text-lg font-semibold mb-4" style={{color:t.text}}>📋 Dados Pessoais</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label style={labelStyle("nome")}>Nome completo *</label>
                   <input name="nome" value={cliente.nome} onChange={handleChange}
                     placeholder="Seu nome completo" style={inputStyle("nome")} />
-                  {erros.nome && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
+                  {erros.nome && <p className="text-xs mt-1" style={{color:"#dc2626"}}>Obrigatório</p>}
                 </div>
                 <div>
                   <label style={labelStyle("telefone")}>Telefone / WhatsApp *</label>
                   <input name="telefone" value={cliente.telefone} onChange={handleTelefone}
                     placeholder="(27) 99999-9999" inputMode="tel" maxLength={15} style={inputStyle("telefone")} />
-                  {erros.telefone && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
+                  {erros.telefone && <p className="text-xs mt-1" style={{color:"#dc2626"}}>Obrigatório</p>}
                 </div>
                 <div className="md:col-span-2">
                   <label style={labelStyle("email")}>E-mail *</label>
                   <input name="email" value={cliente.email} onChange={handleEmail}
-                    type="email" placeholder="seu@email.com"
-                    style={{ ...inputStyle("email"), borderColor: erros.email ? "#ef4444" : t.inputBorder }} />
-                  {erros.email && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>E-mail inválido</p>}
-                  {cliente.email && emailValido(cliente.email) && (
-                    <p className="text-xs mt-1" style={{ color: "#16a34a" }}>✅ E-mail válido</p>
-                  )}
+                    type="email" placeholder="seu@email.com" style={inputStyle("email")} />
+                  {erros.email && <p className="text-xs mt-1" style={{color:"#dc2626"}}>E-mail inválido</p>}
+                  {cliente.email && emailValido(cliente.email) && <p className="text-xs mt-1" style={{color:"#16a34a"}}>✅ E-mail válido</p>}
                 </div>
               </div>
             </div>
 
             {/* ENDEREÇO */}
             <div style={cardStyle}>
-              <h2 className="text-lg font-semibold mb-1" style={{ color: t.text }}>📍 Endereço de Entrega</h2>
-              <p className="text-sm mb-4" style={{ color: t.textSecundario }}>Digite o CEP para preencher automaticamente.</p>
+              <h2 className="text-lg font-semibold mb-1" style={{color:t.text}}>📍 Endereço de Entrega</h2>
+              <p className="text-sm mb-4" style={{color:t.textSecundario}}>CEP preenche o endereço automaticamente.</p>
               <div className="grid md:grid-cols-3 gap-4">
                 <div>
                   <label style={labelStyle("cep")}>CEP *</label>
                   <input name="cep" value={cliente.cep} onChange={handleCEP}
-                    placeholder="29000-000" inputMode="numeric" maxLength={9}
-                    style={inputStyle("cep")} />
-                  {erros.cep && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
-                  {cliente.cep.replace(/\D/g, "").length === 8 && cliente.cidade && (
-                    <p className="text-xs mt-1" style={{ color: "#16a34a" }}>✅ {cliente.cidade}/{cliente.estado}</p>
+                    placeholder="29000-000" inputMode="numeric" maxLength={9} style={inputStyle("cep")} />
+                  {erros.cep && <p className="text-xs mt-1" style={{color:"#dc2626"}}>Obrigatório</p>}
+                  {cliente.cep.replace(/\D/g,"").length===8 && cliente.cidade && (
+                    <p className="text-xs mt-1" style={{color:"#16a34a"}}>✅ {cliente.cidade}/{cliente.estado}</p>
                   )}
                 </div>
                 <div className="md:col-span-2">
                   <label style={labelStyle("rua")}>Rua / Avenida *</label>
-                  <input name="rua" value={cliente.rua} onChange={handleChange}
-                    placeholder="Rua das Flores" style={inputStyle("rua")} />
-                  {erros.rua && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
+                  <input name="rua" value={cliente.rua} onChange={handleChange} placeholder="Rua das Flores" style={inputStyle("rua")} />
+                  {erros.rua && <p className="text-xs mt-1" style={{color:"#dc2626"}}>Obrigatório</p>}
                 </div>
                 <div>
                   <label style={labelStyle("numero")}>Número *</label>
-                  <input name="numero" value={cliente.numero} onChange={handleChange}
-                    placeholder="123" style={inputStyle("numero")} />
-                  {erros.numero && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
+                  <input name="numero" value={cliente.numero} onChange={handleChange} placeholder="123" style={inputStyle("numero")} />
+                  {erros.numero && <p className="text-xs mt-1" style={{color:"#dc2626"}}>Obrigatório</p>}
                 </div>
                 <div>
                   <label style={labelStyle("complemento")}>Complemento</label>
-                  <input name="complemento" value={cliente.complemento} onChange={handleChange}
-                    placeholder="Apto 2, Bloco B" style={inputStyle("complemento")} />
+                  <input name="complemento" value={cliente.complemento} onChange={handleChange} placeholder="Apto 2" style={inputStyle("complemento")} />
                 </div>
                 <div>
                   <label style={labelStyle("bairro")}>Bairro *</label>
-                  <input name="bairro" value={cliente.bairro} onChange={handleChange}
-                    placeholder="Centro" style={inputStyle("bairro")} />
-                  {erros.bairro && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
+                  <input name="bairro" value={cliente.bairro} onChange={handleChange} placeholder="Centro" style={inputStyle("bairro")} />
+                  {erros.bairro && <p className="text-xs mt-1" style={{color:"#dc2626"}}>Obrigatório</p>}
                 </div>
                 <div>
                   <label style={labelStyle("cidade")}>Cidade *</label>
-                  <input name="cidade" value={cliente.cidade} onChange={handleChange}
-                    placeholder="Vila Velha" style={inputStyle("cidade")} />
-                  {erros.cidade && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
+                  <input name="cidade" value={cliente.cidade} onChange={handleChange} placeholder="Vila Velha" style={inputStyle("cidade")} />
+                  {erros.cidade && <p className="text-xs mt-1" style={{color:"#dc2626"}}>Obrigatório</p>}
                 </div>
                 <div>
                   <label style={labelStyle("estado")}>Estado *</label>
                   <input name="estado" value={cliente.estado} onChange={handleChange}
                     placeholder="ES" maxLength={2}
-                    style={{ ...inputStyle("estado"), textTransform: "uppercase" }}
-                    onInput={e => { e.target.value = e.target.value.toUpperCase(); }} />
-                  {erros.estado && <p className="text-xs mt-1" style={{ color: "#dc2626" }}>Campo obrigatório</p>}
+                    style={{...inputStyle("estado"), textTransform:"uppercase"}}
+                    onInput={e => e.target.value=e.target.value.toUpperCase()} />
+                  {erros.estado && <p className="text-xs mt-1" style={{color:"#dc2626"}}>Obrigatório</p>}
                 </div>
               </div>
             </div>
 
             {/* PAGAMENTO */}
-            <div style={{ ...cardStyle, borderColor: erros.formaPagamento ? "#fecaca" : t.border }}>
-              <h2 className="text-lg font-semibold mb-1" style={{ color: t.text }}>💳 Forma de Pagamento *</h2>
-              {erros.formaPagamento && <p className="text-sm mb-3" style={{ color: "#dc2626" }}>⚠️ Selecione uma forma de pagamento</p>}
+            <div style={{...cardStyle, borderColor:erros.formaPagamento?"#fecaca":t.border}}>
+              <h2 className="text-lg font-semibold mb-1" style={{color:t.text}}>💳 Forma de Pagamento *</h2>
+              {erros.formaPagamento && <p className="text-sm mb-3" style={{color:"#dc2626"}}>⚠️ Selecione uma forma de pagamento</p>}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
-                {["PIX", "Cartão de Crédito", "Cartão de Débito", "Dinheiro"].map(forma => (
+                {["PIX","Cartão de Crédito","Cartão de Débito","Dinheiro"].map(forma => (
                   <button key={forma}
-                    onClick={() => { setCliente(prev => ({ ...prev, formaPagamento: forma })); setErros(prev => ({ ...prev, formaPagamento: false })); }}
-                    className="py-3 px-4 rounded-lg text-sm font-medium transition"
+                    onClick={() => {setCliente(p=>({...p,formaPagamento:forma})); setErros(p=>({...p,formaPagamento:false}));}}
                     style={{
-                      backgroundColor: cliente.formaPagamento === forma ? t.btnPrimarioBg : t.bgSecundario,
-                      color: cliente.formaPagamento === forma ? t.btnPrimarioText : t.text,
-                      border: "1px solid " + (cliente.formaPagamento === forma ? t.btnPrimarioBg : t.border),
+                      padding:"12px 8px", borderRadius:"8px", fontSize:"13px", fontWeight:"500",
+                      cursor:"pointer", fontFamily:"system-ui",
+                      backgroundColor: cliente.formaPagamento===forma ? t.btnPrimarioBg : t.bgSecundario,
+                      color: cliente.formaPagamento===forma ? t.btnPrimarioText : t.text,
+                      border:"1px solid "+(cliente.formaPagamento===forma ? t.btnPrimarioBg : t.border),
                     }}>{forma}</button>
                 ))}
               </div>
             </div>
 
-            {/* OBSERVAÇÕES */}
+            {/* OBS */}
             <div style={cardStyle}>
-              <h2 className="text-lg font-semibold mb-4" style={{ color: t.text }}>
-                📝 Observações <span style={{ color: t.textSecundario, fontWeight: 400, fontSize: "14px" }}>(opcional)</span>
+              <h2 className="text-lg font-semibold mb-4" style={{color:t.text}}>
+                📝 Observações <span style={{color:t.textSecundario, fontWeight:400, fontSize:"14px"}}>(opcional)</span>
               </h2>
               <textarea name="observacao" value={cliente.observacao} onChange={handleChange}
                 placeholder="Alguma informação adicional?" rows={3}
-                style={{ ...inputStyle("observacao"), resize: "none" }} />
+                style={{...inputStyle("observacao"), resize:"none"}} />
             </div>
 
-            {/* BOTÕES — separados e claros */}
-            <div style={{ backgroundColor: t.bgSecundario, border: "1px solid " + t.border, borderRadius: "12px", padding: "20px" }}>
-              <p className="text-sm font-semibold mb-1" style={{ color: t.text }}>Como deseja finalizar?</p>
-              <p className="text-xs mb-4" style={{ color: t.textSecundario }}>
-                <strong>Confirmar Pedido</strong> registra no sistema e desconta o estoque.
-                <strong> Enviar pelo WhatsApp</strong> abre o WhatsApp com os dados do pedido sem registrar.
-              </p>
-              <div className="grid md:grid-cols-2 gap-4">
-                <button onClick={enviarWhatsApp}
-                  className="py-4 rounded-xl font-semibold text-white flex items-center justify-center gap-2 hover:opacity-90 transition"
-                  style={{ backgroundColor: "#22c55e", fontFamily: "system-ui" }}>
-                  💬 Enviar pelo WhatsApp
-                </button>
-                <button onClick={finalizarPedido}
-                  className="py-4 rounded-xl font-semibold hover:opacity-90 transition"
-                  style={{ backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText, cursor: "pointer", fontFamily: "system-ui" }}>
-                  ✅ Confirmar Pedido
-                </button>
-              </div>
-            </div>
+            {/* BOTÃO */}
+            <button onClick={finalizarPedido}
+              className="w-full py-5 font-bold text-lg hover:opacity-90 transition"
+              style={{backgroundColor:t.btnPrimarioBg, color:t.btnPrimarioText, cursor:"pointer",
+                fontFamily:"system-ui", borderRadius:"12px"}}>
+              ✅ Confirmar Pedido
+            </button>
           </div>
         )}
       </div>
     </div>
   );
 }
-
-export default Pedidos;
