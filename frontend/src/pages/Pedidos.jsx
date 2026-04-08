@@ -85,6 +85,84 @@ export default function Pedidos() {
     return Object.keys(novos).length===0;
   }
 
+  function gerarPDF(dados) {
+    const { itens, totalSalvo, c } = dados;
+    const itensHTML = itens.map(i =>
+      `<tr style="border-bottom:1px solid #eee">
+        <td style="padding:8px 4px">${i.nome}</td>
+        <td style="padding:8px 4px;text-align:center">${i.tamanho}</td>
+        <td style="padding:8px 4px;text-align:center">${i.qtd}</td>
+        <td style="padding:8px 4px;text-align:right">R$ ${(i.preco*i.qtd).toFixed(2)}</td>
+      </tr>`
+    ).join("");
+
+    const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+    <title>Pedido Metzker #${Date.now().toString().slice(-6)}</title>
+    <style>
+      body{font-family:system-ui,sans-serif;max-width:600px;margin:40px auto;padding:0 20px;color:#1a1a1a}
+      .logo{font-size:28px;font-weight:300;letter-spacing:2px;margin-bottom:4px}
+      .logo span{color:#c41e3a;font-weight:700}
+      h2{font-size:20px;font-weight:600;margin:24px 0 4px}
+      .badge{display:inline-block;padding:4px 12px;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:999px;font-size:12px;font-weight:600;margin-bottom:20px}
+      table{width:100%;border-collapse:collapse;margin:16px 0}
+      th{background:#f3f4f6;padding:10px 4px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+      td{font-size:14px}
+      .total{font-size:18px;font-weight:700;text-align:right;padding:12px 0;border-top:2px solid #1a1a1a}
+      .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+      .info-block{padding:12px;background:#f9fafb;border:1px solid #e5e7eb}
+      .info-block h3{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;margin:0 0 6px}
+      .info-block p{font-size:13px;margin:2px 0}
+      .footer{margin-top:32px;padding-top:16px;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280;text-align:center}
+    </style></head><body>
+      <div class="logo"><span>m</span>etzker soluções</div>
+      <p style="color:#6b7280;font-size:12px;margin:0 0 20px">Vila Velha, ES · (27) 99787-8391 · andremetzkrr@gmail.com</p>
+      <h2>Comprovante de Pedido</h2>
+      <span class="badge">✅ Pedido confirmado</span>
+      <div class="info-grid">
+        <div class="info-block">
+          <h3>Cliente</h3>
+          <p><strong>${c.nome}</strong></p>
+          <p>${c.telefone}</p>
+          <p>${c.email}</p>
+        </div>
+        <div class="info-block">
+          <h3>Endereço de entrega</h3>
+          <p>${c.rua}, ${c.numero}${c.complemento?" - "+c.complemento:""}</p>
+          <p>${c.bairro} — ${c.cidade}/${c.estado}</p>
+          <p>CEP: ${c.cep}</p>
+        </div>
+        <div class="info-block">
+          <h3>Pagamento</h3>
+          <p>${c.formaPagamento}</p>
+        </div>
+        <div class="info-block">
+          <h3>Data</h3>
+          <p>${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</p>
+        </div>
+      </div>
+      <table>
+        <thead><tr>
+          <th>Produto</th><th style="text-align:center">Tamanho</th>
+          <th style="text-align:center">Qtd</th><th style="text-align:right">Subtotal</th>
+        </tr></thead>
+        <tbody>${itensHTML}</tbody>
+      </table>
+      <div class="total">Total: R$ ${totalSalvo.toFixed(2)}</div>
+      ${c.observacao ? `<p style="margin-top:12px;font-size:13px;color:#6b7280">Obs: ${c.observacao}</p>` : ""}
+      <div class="footer">
+        Guarde este comprovante. Nossa equipe entrará em contato pelo WhatsApp para confirmar a entrega.<br/>
+        Desenvolvido por Matheus Costa Rodrigues · metzkersolucoes.com.br
+      </div>
+    </body></html>`;
+
+    const win = window.open("", "_blank");
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+      setTimeout(() => win.print(), 500);
+    }
+  }
+
   function montarMsgWA(dados) {
     const {itens,totalSalvo,c} = dados;
     const itensStr = itens.map(i =>
@@ -177,15 +255,20 @@ export default function Pedidos() {
         </div>
 
         <div className="flex gap-3 justify-center flex-wrap">
+          <button onClick={() => gerarPDF(pedidoSalvo)}
+            className="px-6 py-3 font-semibold rounded-lg"
+            style={{backgroundColor:t.btnPrimarioBg, color:t.btnPrimarioText, fontFamily:"system-ui", cursor:"pointer"}}>
+            📄 Salvar / Imprimir PDF
+          </button>
           <a href={montarMsgWA(pedidoSalvo)} target="_blank" rel="noreferrer"
             className="px-6 py-3 font-semibold text-white rounded-lg"
             style={{backgroundColor:"#22c55e", fontFamily:"system-ui", cursor:"pointer"}}>
-            💬 Enviar detalhes pelo WhatsApp
+            💬 Enviar pelo WhatsApp
           </a>
           <button onClick={() => { setPedidoConcluido(false); setPedidoSalvo(null); }}
             className="px-6 py-3 font-semibold rounded-lg"
             style={{backgroundColor:t.bgSecundario, color:t.text, fontFamily:"system-ui", cursor:"pointer", border:"1px solid "+t.border}}>
-            Voltar ao carrinho
+            Novo pedido
           </button>
         </div>
       </div>

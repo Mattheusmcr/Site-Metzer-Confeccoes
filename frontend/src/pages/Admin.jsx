@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import api from "../services/api";
 import { useTheme } from "../context/ThemeContext";
 
@@ -7,8 +7,9 @@ const GALERIA_KEY = "metzker_galeria_trabalhos";
 function Toast({ mensagem, tipo, onClose }) {
   useEffect(() => { const t = setTimeout(onClose, 3500); return () => clearTimeout(t); }, [onClose]);
   return (
-    <div className="fixed top-6 right-6 z-50 px-6 py-4 rounded-xl shadow-2xl text-white text-sm font-medium flex items-center gap-3"
-      style={{ backgroundColor: tipo === "sucesso" ? "#16a34a" : "#dc2626" }}>
+    <div className="fixed bottom-6 left-1/2 z-50 px-6 py-4 rounded-xl shadow-2xl text-white text-sm font-medium flex items-center gap-3"
+      style={{ transform: "translateX(-50%)", backgroundColor: tipo === "sucesso" ? "#16a34a" : "#dc2626",
+        fontFamily: "system-ui", maxWidth: "90vw", whiteSpace: "nowrap" }}>
       {tipo === "sucesso" ? "✅" : "❌"} {mensagem}
     </div>
   );
@@ -325,6 +326,117 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
   );
 }
 
+
+// ─── DASHBOARD ──────────────────────────────────────────────────────────────
+function Dashboard({ dark, estilos }) {
+  const { text, subtext, cardBg, border } = estilos;
+  const [pedidos, setPedidos] = useState([]);
+  const [personalizados, setPersonalizados] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([api.get("pedidos/"), api.get("pedidos-personalizados/")])
+      .then(([r1, r2]) => { setPedidos(r1.data); setPersonalizados(r2.data); })
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <p style={{ color: subtext }}>Carregando...</p>;
+
+  const totalPedidos = pedidos.length + personalizados.length;
+  const faturamento = pedidos.reduce((acc, p) => acc + (p.total || 0), 0);
+  const novos = pedidos.filter(p => (p.status||"novo")==="novo").length + personalizados.filter(p => p.status==="novo").length;
+  const concluidos = pedidos.filter(p => p.status==="concluido").length + personalizados.filter(p => p.status==="concluido").length;
+
+  // Top produtos
+  const contagem = {};
+  pedidos.forEach(p => (p.itens||[]).forEach(i => {
+    contagem[i.produto_nome] = (contagem[i.produto_nome]||0) + i.quantidade;
+  }));
+  const topProdutos = Object.entries(contagem).sort((a,b)=>b[1]-a[1]).slice(0,5);
+
+  // Pedidos por mês (últimos 6)
+  const meses = {};
+  [...pedidos, ...personalizados].forEach(p => {
+    const d = new Date(p.data_pedido);
+    const k = `${d.getMonth()+1}/${d.getFullYear()}`;
+    meses[k] = (meses[k]||0)+1;
+  });
+
+  const cards = [
+    { label: "Total de pedidos", valor: totalPedidos, icone: "📦", cor: "#2563eb" },
+    { label: "Faturamento estimado", valor: `R$ ${faturamento.toFixed(2)}`, icone: "💰", cor: "#16a34a" },
+    { label: "Pedidos novos", valor: novos, icone: "🆕", cor: "#d97706" },
+    { label: "Concluídos", valor: concluidos, icone: "✅", cor: "#7c3aed" },
+  ];
+
+  return (
+    <div>
+      <h2 className="text-xl font-semibold mb-6" style={{ color: text }}>📈 Dashboard</h2>
+
+      {/* Cards métricas */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        {cards.map((c, i) => (
+          <div key={i} className="rounded-xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
+            <div style={{ fontSize: "28px", marginBottom: "8px" }}>{c.icone}</div>
+            <p style={{ fontSize: "22px", fontWeight: "700", color: c.cor, fontFamily: "system-ui" }}>{c.valor}</p>
+            <p style={{ fontSize: "12px", color: subtext, fontFamily: "system-ui", marginTop: "4px" }}>{c.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Top produtos */}
+        <div className="rounded-xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
+          <p className="font-semibold mb-4" style={{ color: text }}>🏆 Produtos mais pedidos</p>
+          {topProdutos.length === 0 && <p style={{ color: subtext, fontSize: "13px" }}>Nenhum pedido de catálogo ainda.</p>}
+          {topProdutos.map(([nome, qtd], i) => {
+            const max = topProdutos[0]?.[1] || 1;
+            return (
+              <div key={i} className="mb-3">
+                <div className="flex justify-between mb-1">
+                  <span style={{ fontSize: "13px", color: text, fontFamily: "system-ui" }}>{nome}</span>
+                  <span style={{ fontSize: "13px", fontWeight: "600", color: text }}>{qtd} un</span>
+                </div>
+                <div style={{ height: "6px", backgroundColor: dark ? "#374151" : "#e5e7eb", borderRadius: "3px" }}>
+                  <div style={{ height: "100%", width: `${(qtd/max)*100}%`, backgroundColor: "#2563eb", borderRadius: "3px" }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Distribuição por status */}
+        <div className="rounded-xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
+          <p className="font-semibold mb-4" style={{ color: text }}>📊 Status dos pedidos</p>
+          {[
+            { id: "novo",         label: "Novos",         cor: "#2563eb" },
+            { id: "em_andamento", label: "Em andamento",  cor: "#d97706" },
+            { id: "concluido",    label: "Concluídos",    cor: "#16a34a" },
+            { id: "cancelado",    label: "Cancelados",    cor: "#dc2626" },
+          ].map(s => {
+            const total = [...pedidos, ...personalizados].filter(p => (p.status||"novo") === s.id).length;
+            const pct = totalPedidos > 0 ? Math.round((total/totalPedidos)*100) : 0;
+            return (
+              <div key={s.id} className="flex items-center gap-3 mb-3">
+                <div style={{ width: "12px", height: "12px", borderRadius: "50%", backgroundColor: s.cor, flexShrink: 0 }} />
+                <span style={{ fontSize: "13px", color: text, fontFamily: "system-ui", flex: 1 }}>{s.label}</span>
+                <span style={{ fontSize: "13px", fontWeight: "600", color: text }}>{total}</span>
+                <span style={{ fontSize: "11px", color: subtext }}>({pct}%)</span>
+              </div>
+            );
+          })}
+          <div style={{ marginTop: "16px", padding: "12px", backgroundColor: dark ? "#374151" : "#f3f4f6", borderRadius: "8px" }}>
+            <p style={{ fontSize: "12px", color: subtext, fontFamily: "system-ui" }}>
+              Pedidos personalizados: <strong style={{ color: text }}>{personalizados.length}</strong> &nbsp;|&nbsp;
+              Portfólio: <strong style={{ color: text }}>{pedidos.length}</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── PEDIDOS ───────────────────────────────────────────────────────────────
 function VerPedidos({ mostrarToast, dark, estilos }) {
   const { text, subtext, cardBg, border } = estilos;
@@ -332,24 +444,99 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
   const [personalizados, setPersonalizados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [aberto, setAberto] = useState(null);
-  const [aba, setAba] = useState("catalogo"); // "catalogo" | "personalizado"
+  const [aba, setAba] = useState("catalogo");
   const [pedidoParaExcluir, setPedidoParaExcluir] = useState(null);
+  const [busca, setBusca] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState("todos");
+  const [historicoStatus, setHistoricoStatus] = useState({});
+  const ultimoTotalRef = useRef(null);
 
-  useEffect(() => {
-    Promise.all([
+  // ── Notificação sonora de novo pedido ──
+  function tocarSom() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [523, 659, 784].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = freq;
+        osc.type = "sine";
+        gain.gain.setValueAtTime(0.3, ctx.currentTime + i * 0.15);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.3);
+        osc.start(ctx.currentTime + i * 0.15);
+        osc.stop(ctx.currentTime + i * 0.15 + 0.35);
+      });
+    } catch {}
+  }
+
+  const carregar = useCallback(() => {
+    return Promise.all([
       api.get("pedidos/"),
       api.get("pedidos-personalizados/"),
     ]).then(([r1, r2]) => {
+      const novoTotal = r1.data.length + r2.data.length;
+      if (ultimoTotalRef.current !== null && novoTotal > ultimoTotalRef.current) {
+        tocarSom();
+        mostrarToast(`🔔 Novo pedido recebido!`, "sucesso");
+      }
+      ultimoTotalRef.current = novoTotal;
       setPedidos(r1.data);
       setPersonalizados(r2.data);
     }).catch(() => mostrarToast("Erro ao carregar pedidos.", "erro"))
       .finally(() => setLoading(false));
-  }, []);
+  }, [mostrarToast]);
+
+  useEffect(() => {
+    carregar();
+    // Polling a cada 60 segundos para detectar novos pedidos
+    const interval = setInterval(carregar, 60000);
+    return () => clearInterval(interval);
+  }, [carregar]);
+
+  function exportarExcel() {
+    const todosP = [
+      ...pedidos.map(p => ({
+        Tipo: "Catálogo", ID: p.id, Nome: p.nome_cliente, Telefone: p.telefone, Email: p.email||"",
+        Status: p.status||"novo", Data: new Date(p.data_pedido).toLocaleDateString("pt-BR"),
+        Total: p.total?.toFixed(2)||"0.00", Pagamento: p.forma_pagamento,
+        Cidade: p.cidade, Estado: p.estado,
+      })),
+      ...personalizados.map(p => ({
+        Tipo: "Personalizado", ID: p.id, Nome: p.nome_cliente, Telefone: p.telefone, Email: p.email||"",
+        Status: p.status, Data: new Date(p.data_pedido).toLocaleDateString("pt-BR"),
+        Total: "-", Pagamento: "-", Cidade: "-", Estado: "-",
+      })),
+    ];
+    const header = Object.keys(todosP[0]||{}).join(";");
+    const linhas = todosP.map(r => Object.values(r).join(";"));
+    const csv = [header, ...linhas].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url;
+    a.download = `pedidos_metzker_${new Date().toLocaleDateString("pt-BR").replace(/\//g,"-")}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+    mostrarToast("Exportado com sucesso!", "sucesso");
+  }
+
+  function registrarHistorico(id, novoStatus) {
+    const entrada = { status: novoStatus, data: new Date().toLocaleString("pt-BR") };
+    setHistoricoStatus(prev => ({ ...prev, [id]: [...(prev[id] || []), entrada] }));
+  }
 
   async function atualizarStatus(id, status) {
     try {
       await api.patch(`pedidos-personalizados/${id}/`, { status });
       setPersonalizados(prev => prev.map(p => p.id === id ? { ...p, status } : p));
+      registrarHistorico(`pers-${id}`, status);
+      mostrarToast("Status atualizado!", "sucesso");
+    } catch { mostrarToast("Erro ao atualizar.", "erro"); }
+  }
+
+  async function atualizarStatusCatalogo(id, status) {
+    try {
+      await api.patch(`pedidos/${id}/`, { status });
+      setPedidos(prev => prev.map(p => p.id === id ? { ...p, status } : p));
+      registrarHistorico(`cat-${id}`, status);
       mostrarToast("Status atualizado!", "sucesso");
     } catch { mostrarToast("Erro ao atualizar.", "erro"); }
   }
@@ -381,6 +568,37 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
 
   return (
     <div>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+        <h2 className="text-xl font-semibold" style={{ color: text }}>Pedidos</h2>
+        <button onClick={exportarExcel}
+          className="px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center gap-2"
+          style={{ backgroundColor: "#16a34a", cursor: "pointer", fontFamily: "system-ui" }}>
+          📥 Exportar Excel
+        </button>
+      </div>
+
+      {/* Busca e filtro */}
+      <div className="flex flex-col md:flex-row gap-3 mb-4">
+        <input value={busca} onChange={e => setBusca(e.target.value)}
+          placeholder="🔍 Buscar por nome ou email..."
+          style={{ flex: 1, padding: "9px 14px", border: "1px solid " + border, backgroundColor: dark ? "#374151" : "#fff",
+            color: text, borderRadius: "8px", fontSize: "13px", fontFamily: "system-ui", outline: "none" }} />
+        <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)}
+          style={{ padding: "9px 14px", border: "1px solid " + border, backgroundColor: dark ? "#374151" : "#fff",
+            color: text, borderRadius: "8px", fontSize: "13px", fontFamily: "system-ui", outline: "none" }}>
+          <option value="todos">Todos os status</option>
+          <option value="novo">Novo</option>
+          <option value="em_andamento">Em andamento</option>
+          <option value="concluido">Concluído</option>
+          <option value="cancelado">Cancelado</option>
+        </select>
+        <button onClick={carregar} title="Atualizar pedidos"
+          style={{ padding: "9px 14px", border: "1px solid " + border, backgroundColor: dark ? "#374151" : "#fff",
+            color: text, borderRadius: "8px", fontSize: "14px", cursor: "pointer" }}>
+          🔄
+        </button>
+      </div>
+
       <h2 className="text-xl font-semibold mb-2" style={{ color: text }}>Pedidos</h2>
 
       {/* ABAS */}
@@ -403,8 +621,21 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
       {/* ── PEDIDOS DO CATÁLOGO ── */}
       {aba === "catalogo" && (
         <div className="space-y-3">
-          {pedidos.length === 0 && <p style={{ color: subtext }}>Nenhum pedido ainda.</p>}
-          {pedidos.map(p => {
+          {(() => {
+            const filtrados = pedidos.filter(p => {
+              const q = busca.toLowerCase();
+              const matchBusca = !q || (p.nome_cliente||"").toLowerCase().includes(q) || (p.email||"").toLowerCase().includes(q) || String(p.id) === q;
+              const matchStatus = filtroStatus === "todos" || (p.status||"novo") === filtroStatus;
+              return matchBusca && matchStatus;
+            });
+            return filtrados.length === 0 ? <p style={{ color: subtext }}>Nenhum pedido encontrado.</p> : null;
+          })()}
+          {pedidos.filter(p => {
+            const q = busca.toLowerCase();
+            const matchBusca = !q || (p.nome_cliente||"").toLowerCase().includes(q) || (p.email||"").toLowerCase().includes(q);
+            const matchStatus = filtroStatus === "todos" || (p.status||"novo") === filtroStatus;
+            return matchBusca && matchStatus;
+          }).map(p => {
             const expandido = aberto === `cat-${p.id}`;
             const totalPedido = p.total || p.itens?.reduce((acc, i) => acc + parseFloat(i.produto_preco) * i.quantidade, 0) || 0;
             return (
@@ -483,10 +714,23 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                               cursor: "pointer", border: "none", borderRadius: "6px", fontFamily: "system-ui",
                               backgroundColor: (p.status || "novo") === s.id ? s.cor : (dark ? "#374151" : "#e5e7eb"),
                               color: (p.status || "novo") === s.id ? "white" : text,
+                              cursor: "pointer",
                             }}>{s.label}</button>
                         ))}
                       </div>
                     </div>
+
+                    {/* HISTÓRICO DE STATUS */}
+                    {historicoStatus[`cat-${p.id}`]?.length > 0 && (
+                      <div className="rounded-lg p-3 mt-2 mb-3" style={{ backgroundColor: dark ? "#111827" : "#f9fafb", border: "1px solid " + border }}>
+                        <p className="text-xs font-bold uppercase mb-2" style={{ color: subtext }}>📋 Histórico de status</p>
+                        {historicoStatus[`cat-${p.id}`].map((h, i) => (
+                          <p key={i} style={{ fontSize: "11px", color: subtext, fontFamily: "system-ui" }}>
+                            {h.data} → <strong style={{ color: text }}>{h.status}</strong>
+                          </p>
+                        ))}
+                      </div>
+                    )}
 
                     <div className="flex items-center gap-3">
                       <a href={`https://wa.me/55${p.telefone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
@@ -509,8 +753,16 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
       {/* ── PEDIDOS PERSONALIZADOS ── */}
       {aba === "personalizado" && (
         <div className="space-y-3">
-          {personalizados.length === 0 && <p style={{ color: subtext }}>Nenhum pedido personalizado ainda.</p>}
-          {personalizados.map(p => {
+          {personalizados.filter(p => {
+            const q = busca.toLowerCase();
+            return (!q || (p.nome_cliente||"").toLowerCase().includes(q) || (p.email||"").toLowerCase().includes(q))
+              && (filtroStatus === "todos" || p.status === filtroStatus);
+          }).length === 0 && <p style={{ color: subtext }}>Nenhum pedido encontrado.</p>}
+          {personalizados.filter(p => {
+            const q = busca.toLowerCase();
+            return (!q || (p.nome_cliente||"").toLowerCase().includes(q) || (p.email||"").toLowerCase().includes(q))
+              && (filtroStatus === "todos" || p.status === filtroStatus);
+          }).map(p => {
             const expandido = aberto === `per-${p.id}`;
             return (
               <div key={p.id} className="rounded-xl overflow-hidden" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
@@ -541,6 +793,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                         <p className="text-xs font-bold uppercase mb-2" style={{ color: subtext }}>👤 Contato</p>
                         <p className="font-semibold text-sm" style={{ color: text }}>{p.nome_cliente}</p>
                         {p.telefone && <p className="text-sm" style={{ color: subtext }}>📱 {p.telefone}</p>}
+                        {p.email && <p className="text-sm" style={{ color: subtext }}>📧 {p.email}</p>}
                         {p.email && <p className="text-sm" style={{ color: subtext }}>📧 {p.email}</p>}
                         {p.observacoes && p.observacoes.includes("CEP") && (
                           <p className="text-sm" style={{ color: subtext }}>
@@ -619,6 +872,18 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                       </div>
                     )}
 
+                    {/* HISTÓRICO DE STATUS */}
+                    {historicoStatus[`pers-${p.id}`]?.length > 0 && (
+                      <div className="rounded-lg p-3 mt-2" style={{ backgroundColor: dark ? "#111827" : "#f9fafb", border: "1px solid " + border }}>
+                        <p className="text-xs font-bold uppercase mb-2" style={{ color: subtext }}>📋 Histórico de status</p>
+                        {historicoStatus[`pers-${p.id}`].map((h, i) => (
+                          <p key={i} style={{ fontSize: "11px", color: subtext, fontFamily: "system-ui" }}>
+                            {h.data} → <strong style={{ color: text }}>{h.status}</strong>
+                          </p>
+                        ))}
+                      </div>
+                    )}
+
                     {/* IMAGENS DE REFERÊNCIA */}
                     {(p.imagem1 || p.imagem2 || p.imagem3 || p.imagem4 || p.imagem5) && (
                       <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
@@ -651,6 +916,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                             style={{
                               backgroundColor: p.status === s.id ? s.cor : (dark ? "#374151" : "#e5e7eb"),
                               color: p.status === s.id ? "white" : text,
+                              cursor: "pointer",
                             }}>
                             {s.label}
                           </button>
@@ -986,6 +1252,7 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
 
 // ─── ADMIN PRINCIPAL ───────────────────────────────────────────────────────
 const abas = [
+  { id: "dashboard", label: "📈 Dashboard"  },
   { id: "cadastrar", label: "➕ Cadastrar" },
   { id: "produtos",  label: "📦 Produtos"  },
   { id: "pedidos",   label: "🧾 Pedidos"   },
@@ -995,7 +1262,7 @@ const abas = [
 
 export default function Admin() {
   const { dark } = useTheme();
-  const [abaAtiva, setAbaAtiva] = useState("cadastrar");
+  const [abaAtiva, setAbaAtiva] = useState("dashboard");
   const [toast, setToast] = useState(null);
 
   const bg = dark ? "#111827" : "#ffffff";
@@ -1022,6 +1289,7 @@ export default function Admin() {
             </button>
           ))}
         </div>
+        {abaAtiva === "dashboard" && <Dashboard        {...props} />}
         {abaAtiva === "cadastrar" && <CadastrarProduto {...props} />}
         {abaAtiva === "produtos"  && <ListarProdutos   {...props} />}
         {abaAtiva === "pedidos"   && <VerPedidos        {...props} />}
