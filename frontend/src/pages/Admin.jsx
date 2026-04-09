@@ -342,10 +342,16 @@ function Dashboard({ dark, estilos }) {
 
   if (loading) return <p style={{ color: subtext }}>Carregando...</p>;
 
-  const totalPedidos = pedidos.length + personalizados.length;
+  const totalGeral = pedidos.length + personalizados.length;
   const faturamento = pedidos.reduce((acc, p) => acc + (p.total || 0), 0);
-  const novos = pedidos.filter(p => (p.status||"novo")==="novo").length + personalizados.filter(p => p.status==="novo").length;
-  const concluidos = pedidos.filter(p => p.status==="concluido").length + personalizados.filter(p => p.status==="concluido").length;
+  const STATUS_LABELS = { novo:"Novo", em_andamento:"Em andamento", concluido:"Concluído", cancelado:"Cancelado" };
+  const STATUS_CORES_D = { novo:"#2563eb", em_andamento:"#d97706", concluido:"#16a34a", cancelado:"#dc2626" };
+
+  // Contagem por status separada
+  const statusCat = {novo:0, em_andamento:0, concluido:0, cancelado:0};
+  pedidos.forEach(p => { const s = p.status||"novo"; statusCat[s] = (statusCat[s]||0)+1; });
+  const statusPers = {novo:0, em_andamento:0, concluido:0, cancelado:0};
+  personalizados.forEach(p => { const s = p.status||"novo"; statusPers[s] = (statusPers[s]||0)+1; });
 
   // Top produtos
   const contagem = {};
@@ -354,19 +360,11 @@ function Dashboard({ dark, estilos }) {
   }));
   const topProdutos = Object.entries(contagem).sort((a,b)=>b[1]-a[1]).slice(0,5);
 
-  // Pedidos por mês (últimos 6)
-  const meses = {};
-  [...pedidos, ...personalizados].forEach(p => {
-    const d = new Date(p.data_pedido);
-    const k = `${d.getMonth()+1}/${d.getFullYear()}`;
-    meses[k] = (meses[k]||0)+1;
-  });
-
   const cards = [
-    { label: "Total de pedidos", valor: totalPedidos, icone: "📦", cor: "#2563eb" },
+    { label: "Total de pedidos", valor: totalGeral, icone: "📦", cor: "#2563eb" },
     { label: "Faturamento estimado", valor: `R$ ${faturamento.toFixed(2)}`, icone: "💰", cor: "#16a34a" },
-    { label: "Pedidos novos", valor: novos, icone: "🆕", cor: "#d97706" },
-    { label: "Concluídos", valor: concluidos, icone: "✅", cor: "#7c3aed" },
+    { label: "Portfólio / Catálogo", valor: pedidos.length, icone: "🛍️", cor: "#7c3aed" },
+    { label: "Personalizados", valor: personalizados.length, icone: "🎨", cor: "#d97706" },
   ];
 
   return (
@@ -405,32 +403,35 @@ function Dashboard({ dark, estilos }) {
           })}
         </div>
 
-        {/* Distribuição por status */}
+        {/* Status separado por tipo */}
         <div className="rounded-xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
-          <p className="font-semibold mb-4" style={{ color: text }}>📊 Status dos pedidos</p>
-          {[
-            { id: "novo",         label: "Novos",         cor: "#2563eb" },
-            { id: "em_andamento", label: "Em andamento",  cor: "#d97706" },
-            { id: "concluido",    label: "Concluídos",    cor: "#16a34a" },
-            { id: "cancelado",    label: "Cancelados",    cor: "#dc2626" },
-          ].map(s => {
-            const total = [...pedidos, ...personalizados].filter(p => (p.status||"novo") === s.id).length;
-            const pct = totalPedidos > 0 ? Math.round((total/totalPedidos)*100) : 0;
-            return (
-              <div key={s.id} className="flex items-center gap-3 mb-3">
-                <div style={{ width: "12px", height: "12px", borderRadius: "50%", backgroundColor: s.cor, flexShrink: 0 }} />
-                <span style={{ fontSize: "13px", color: text, fontFamily: "system-ui", flex: 1 }}>{s.label}</span>
-                <span style={{ fontSize: "13px", fontWeight: "600", color: text }}>{total}</span>
-                <span style={{ fontSize: "11px", color: subtext }}>({pct}%)</span>
-              </div>
-            );
-          })}
-          <div style={{ marginTop: "16px", padding: "12px", backgroundColor: dark ? "#374151" : "#f3f4f6", borderRadius: "8px" }}>
-            <p style={{ fontSize: "12px", color: subtext, fontFamily: "system-ui" }}>
-              Pedidos personalizados: <strong style={{ color: text }}>{personalizados.length}</strong> &nbsp;|&nbsp;
-              Portfólio: <strong style={{ color: text }}>{pedidos.length}</strong>
-            </p>
-          </div>
+          <p className="font-semibold mb-4" style={{ color: text }}>📊 Status por tipo</p>
+          
+          {/* Portfólio */}
+          <p style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.08em", color: subtext, fontFamily: "system-ui", marginBottom: "8px" }}>
+            🛍️ Portfólio / Catálogo ({pedidos.length})
+          </p>
+          {Object.entries(statusCat).map(([id, qtd]) => (
+            <div key={id} className="flex items-center gap-3 mb-2">
+              <div style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: STATUS_CORES_D[id], flexShrink: 0 }} />
+              <span style={{ fontSize: "13px", color: text, fontFamily: "system-ui", flex: 1 }}>{STATUS_LABELS[id]}</span>
+              <span style={{ fontSize: "13px", fontWeight: qtd > 0 ? "700" : "400", color: qtd > 0 ? text : subtext }}>{qtd}</span>
+            </div>
+          ))}
+
+          <div style={{ margin: "14px 0", borderTop: "1px solid " + border }} />
+
+          {/* Personalizados */}
+          <p style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.08em", color: subtext, fontFamily: "system-ui", marginBottom: "8px" }}>
+            🎨 Personalizados ({personalizados.length})
+          </p>
+          {Object.entries(statusPers).map(([id, qtd]) => (
+            <div key={id} className="flex items-center gap-3 mb-2">
+              <div style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: STATUS_CORES_D[id], flexShrink: 0 }} />
+              <span style={{ fontSize: "13px", color: text, fontFamily: "system-ui", flex: 1 }}>{STATUS_LABELS[id]}</span>
+              <span style={{ fontSize: "13px", fontWeight: qtd > 0 ? "700" : "400", color: qtd > 0 ? text : subtext }}>{qtd}</span>
+            </div>
+          ))}
         </div>
       </div>
       </div>
@@ -445,6 +446,11 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
   const [loading, setLoading] = useState(true);
   const [aberto, setAberto] = useState(null);
   const [aba, setAba] = useState("catalogo");
+  
+  function mudarAba(novaAba) {
+    setAba(novaAba);
+    carregar(); // Recarrega ao trocar aba para refletir status atualizados
+  }
   const [pedidoParaExcluir, setPedidoParaExcluir] = useState(null);
   const [busca, setBusca] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("todos");
@@ -469,7 +475,9 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
     } catch {}
   }
 
+  // Carregar pedidos (chamado no mount e ao trocar aba)
   const carregar = useCallback(() => {
+    setLoading(true);
     return Promise.all([
       api.get("pedidos/"),
       api.get("pedidos-personalizados/"),
@@ -494,22 +502,41 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
   }, [carregar]);
 
   function exportarExcel() {
-    const todosP = [
-      ...pedidos.map(p => ({
-        Tipo: "Catálogo", ID: p.id, Nome: p.nome_cliente, Telefone: p.telefone, Email: p.email||"",
-        Status: p.status||"novo", Data: new Date(p.data_pedido).toLocaleDateString("pt-BR"),
-        Total: p.total?.toFixed(2)||"0.00", Pagamento: p.forma_pagamento,
-        Cidade: p.cidade, Estado: p.estado,
-      })),
-      ...personalizados.map(p => ({
-        Tipo: "Personalizado", ID: p.id, Nome: p.nome_cliente, Telefone: p.telefone, Email: p.email||"",
-        Status: p.status, Data: new Date(p.data_pedido).toLocaleDateString("pt-BR"),
-        Total: "-", Pagamento: "-", Cidade: "-", Estado: "-",
-      })),
-    ];
-    const header = Object.keys(todosP[0]||{}).join(";");
-    const linhas = todosP.map(r => Object.values(r).join(";"));
-    const csv = [header, ...linhas].join("\n");
+    const sanitize = (v) => String(v||"-").replace(/;/g, ",").replace(/\n/g, " ");
+    const catRows = pedidos.map(p => {
+      const itensStr = (p.itens||[]).map(i => `${i.produto_nome}(${i.tamanho}x${i.quantidade})`).join(" | ");
+      return {
+        Tipo: "Catálogo", ID: p.id, Nome: sanitize(p.nome_cliente),
+        Telefone: sanitize(p.telefone), Email: sanitize(p.email),
+        Status: sanitize(p.status||"novo"),
+        Data: new Date(p.data_pedido).toLocaleDateString("pt-BR"),
+        Total: `R$ ${(p.total||0).toFixed(2)}`,
+        Pagamento: sanitize(p.forma_pagamento),
+        Rua: sanitize(p.rua), Numero: sanitize(p.numero),
+        Bairro: sanitize(p.bairro), Cidade: sanitize(p.cidade), Estado: sanitize(p.estado),
+        CEP: sanitize(p.cep), Itens: sanitize(itensStr),
+        Observacoes: sanitize(p.observacao),
+      };
+    });
+    const persRows = personalizados.map(p => {
+      const ref = sanitize(p.referencia||p.ramo||"");
+      return {
+        Tipo: "Personalizado", ID: p.id, Nome: sanitize(p.nome_cliente),
+        Telefone: sanitize(p.telefone), Email: sanitize(p.email),
+        Status: sanitize(p.status),
+        Data: new Date(p.data_pedido).toLocaleDateString("pt-BR"),
+        Total: "-", Pagamento: "-",
+        Rua: "-", Numero: "-", Bairro: "-", Cidade: "-", Estado: "-", CEP: "-",
+        Itens: ref.slice(0, 200),
+        Observacoes: sanitize(p.observacoes),
+      };
+    });
+    const todos = [...catRows, ...persRows];
+    if (todos.length === 0) { mostrarToast("Nenhum pedido para exportar.", "erro"); return; }
+    const header = Object.keys(todos[0]).join(";");
+    const linhas = todos.map(r => Object.values(r).join(";"));
+    const bom = "\uFEFF"; // UTF-8 BOM para Excel
+    const csv = bom + [header, ...linhas].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href = url;
@@ -519,8 +546,14 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
   }
 
   function registrarHistorico(id, novoStatus) {
-    const entrada = { status: novoStatus, data: new Date().toLocaleString("pt-BR") };
-    setHistoricoStatus(prev => ({ ...prev, [id]: [...(prev[id] || []), entrada] }));
+    setHistoricoStatus(prev => {
+      const hist = prev[id] || [];
+      // Se voltou para status anterior, limpa o histórico posterior
+      const idxAnterior = hist.findLastIndex ? hist.findLastIndex(h => h.status === novoStatus) : -1;
+      const baseHist = idxAnterior >= 0 ? hist.slice(0, idxAnterior) : hist;
+      const entrada = { status: novoStatus, data: new Date().toLocaleString("pt-BR") };
+      return { ...prev, [id]: [...baseHist, entrada] };
+    });
   }
 
   async function atualizarStatus(id, status) {
@@ -607,7 +640,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
           { id: "catalogo",     label: `🛒 Portfólio / Catálogo (${pedidos.length})` },
           { id: "personalizado", label: `🎨 Personalizados (${personalizados.length})` },
         ].map(a => (
-          <button key={a.id} onClick={() => setAba(a.id)}
+          <button key={a.id} onClick={() => mudarAba(a.id)}
             className="px-4 py-2 text-sm font-medium transition"
             style={{
               borderBottom: aba === a.id ? "2px solid " + text : "2px solid transparent",
@@ -793,7 +826,6 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                         <p className="text-xs font-bold uppercase mb-2" style={{ color: subtext }}>👤 Contato</p>
                         <p className="font-semibold text-sm" style={{ color: text }}>{p.nome_cliente}</p>
                         {p.telefone && <p className="text-sm" style={{ color: subtext }}>📱 {p.telefone}</p>}
-                        {p.email && <p className="text-sm" style={{ color: subtext }}>📧 {p.email}</p>}
                         {p.email && <p className="text-sm" style={{ color: subtext }}>📧 {p.email}</p>}
                         {p.observacoes && p.observacoes.includes("CEP") && (
                           <p className="text-sm" style={{ color: subtext }}>

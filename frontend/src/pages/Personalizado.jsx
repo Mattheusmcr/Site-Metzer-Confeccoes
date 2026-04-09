@@ -146,6 +146,99 @@ export default function Personalizado(){
   );
 
   // ── salvar ──
+  function gerarPDFPersonalizado() {
+    const combinacoesHTML = form.categoria === "roupas"
+      ? form.combinacoes.map((c, i) => {
+          const tipo = TIPOS_ROUPA.find(t => t.id === c.tipoId);
+          const cor = CORES_OPCOES.find(x => x.id === c.cor)?.label || c.cor;
+          const mat = c.tipoId === "calcas"
+            ? c.material
+            : MATERIAIS_OPCOES.find(m => m.id === c.material)?.label || c.material;
+          const tamanhos = (c.tipoId === "calcas"
+            ? Object.entries(c.quantidades.calcas || {})
+            : GRUPOS_TAMANHO.flatMap(g => Object.entries(c.quantidades[g.id] || {}).map(([t,v]) => [t,v,g.label]))
+          ).filter(([,v]) => v > 0)
+           .map(([tam, qtd, grupo]) => `${grupo ? grupo+": " : ""}${tam}: ${qtd} pç${qtd > 1 ? "s" : ""}`)
+           .join(" &nbsp;|&nbsp; ");
+          return `<div style="padding:12px;background:#f9fafb;border:1px solid #e5e7eb;margin-bottom:8px;border-radius:6px">
+            <strong style="font-size:14px">#${i+1} ${tipo?.label}</strong><br/>
+            <span style="font-size:12px;color:#6b7280">Cor: ${cor} &nbsp;|&nbsp; Material: ${mat}</span><br/>
+            <span style="font-size:12px">${tamanhos}</span>
+            <div style="font-size:12px;font-weight:600;margin-top:4px">Total: ${totalComb(c)} unidades</div>
+          </div>`;
+        }).join("")
+      : `<div style="padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px">
+          <strong>${TIPOS_COMUNICACAO.find(t => t.id === form.tipoComunicacao)?.label || ""}</strong><br/>
+          <span style="font-size:12px;color:#6b7280">Dimensões: ${form.dimensoes}</span>
+        </div>`;
+
+    const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+    <title>Pedido Personalizado Metzker</title>
+    <style>
+      body{font-family:system-ui,sans-serif;max-width:600px;margin:40px auto;padding:0 20px;color:#1a1a1a}
+      .logo{font-size:28px;font-weight:300;letter-spacing:2px;margin-bottom:4px}
+      .logo span{color:#c41e3a;font-weight:700}
+      h2{font-size:20px;font-weight:600;margin:24px 0 4px}
+      .badge{display:inline-block;padding:4px 14px;background:#fef9f0;color:#92400e;border:1px solid #fde68a;border-radius:999px;font-size:12px;font-weight:600;margin-bottom:20px}
+      .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+      .info-block{padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px}
+      .info-block h3{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;margin:0 0 6px}
+      .info-block p{font-size:13px;margin:2px 0}
+      .aviso{background:#fef9f0;border:1px solid #fde68a;padding:14px;border-radius:6px;font-size:12px;color:#92400e;margin-top:20px}
+      .footer{margin-top:32px;padding-top:16px;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280;text-align:center}
+    </style></head><body>
+      <div class="logo"><span>m</span>etzker soluções</div>
+      <p style="color:#6b7280;font-size:12px;margin:0 0 20px">Vila Velha, ES · (27) 99787-8391 · andremetzkrr@gmail.com</p>
+      <h2>Comprovante de Pedido Personalizado</h2>
+      <span class="badge">🎨 Pedido personalizado registrado</span>
+
+      <div class="info-grid">
+        <div class="info-block">
+          <h3>Cliente</h3>
+          <p><strong>${form.nomeCliente}</strong></p>
+          <p>${form.telefone}</p>
+          <p>${form.email}</p>
+        </div>
+        <div class="info-block">
+          <h3>Endereço</h3>
+          <p>${form.rua||"-"}, ${form.numero||"-"}${form.complemento ? " — " + form.complemento : ""}</p>
+          <p>${form.bairro||"-"} — ${form.cidade||"-"}/${form.estado||"-"}</p>
+          <p>CEP: ${form.cep||"-"}</p>
+        </div>
+        <div class="info-block">
+          <h3>Categoria</h3>
+          <p>${form.categoria === "roupas" ? "👕 Item de Roupa" : "🖨️ Comunicação Visual"}</p>
+          ${form.categoria === "roupas" ? `<p>Total: <strong>${totalGeral} unidades</strong></p>` : `<p>Dimensões: ${form.dimensoes}</p>`}
+        </div>
+        <div class="info-block">
+          <h3>Data</h3>
+          <p>${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR", {hour:"2-digit",minute:"2-digit"})}</p>
+        </div>
+      </div>
+
+      <h3 style="font-size:15px;margin:20px 0 10px">Combinações / Detalhes</h3>
+      ${combinacoesHTML}
+
+      ${form.descricao ? `<div style="margin-top:14px;padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;font-size:13px"><strong>Descrição:</strong> ${form.descricao}</div>` : ""}
+      ${form.observacoes ? `<div style="margin-top:8px;padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;font-size:13px"><strong>Observações:</strong> ${form.observacoes}</div>` : ""}
+
+      <div class="aviso">
+        ⚠️ <strong>Atenção:</strong> o valor não está incluído neste comprovante. O orçamento será confirmado pela equipe Metzker pelo WhatsApp após análise do pedido.
+      </div>
+      <div class="footer">
+        Guarde este comprovante. Nossa equipe entrará em contato para confirmar detalhes e orçamento.<br/>
+        metzkersolucoes.com.br · Desenvolvido por Matheus Costa Rodrigues
+      </div>
+    </body></html>`;
+
+    const win = window.open("", "_blank");
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+      setTimeout(() => win.print(), 500);
+    }
+  }
+
   async function salvarNoBanco(){
     setSalvando(true); setErro("");
     try{
@@ -230,9 +323,13 @@ export default function Personalizado(){
         <div style={{fontSize:"64px",marginBottom:"24px"}}>🎉</div>
         <h2 style={{fontSize:"2rem",fontWeight:"300",color:t.text,marginBottom:"16px",fontFamily:"Georgia, serif"}}>Pedido recebido!</h2>
         <p style={{color:t.textSecundario,lineHeight:1.8,marginBottom:"32px",fontFamily:"system-ui"}}>Seu pedido foi registrado. Nossa equipe entrará em contato em breve.</p>
-        <div style={{display:"flex",gap:"12px",justifyContent:"center"}}>
+        <div style={{display:"flex",gap:"12px",justifyContent:"center",flexWrap:"wrap"}}>
+          <button onClick={gerarPDFPersonalizado}
+            style={{padding:"12px 24px",backgroundColor:t.btnPrimarioBg,color:t.btnPrimarioText,border:"none",cursor:"pointer",fontFamily:"system-ui"}}>
+            📄 Salvar / Imprimir PDF
+          </button>
           <button onClick={()=>navigate("/")} style={{padding:"12px 24px",border:"1px solid "+t.border,color:t.text,backgroundColor:t.bg,cursor:"pointer",fontFamily:"system-ui"}}>Voltar ao início</button>
-          <button onClick={()=>{setEnviado(false);setEtapa(1);setForm(FORM_INICIAL);}} style={{padding:"12px 24px",backgroundColor:t.btnPrimarioBg,color:t.btnPrimarioText,border:"none",cursor:"pointer",fontFamily:"system-ui"}}>Novo pedido</button>
+          <button onClick={()=>{setEnviado(false);setEtapa(1);setForm(FORM_INICIAL);}} style={{padding:"12px 24px",backgroundColor:t.bgSecundario,color:t.text,border:"1px solid "+t.border,cursor:"pointer",fontFamily:"system-ui"}}>Novo pedido</button>
         </div>
       </div>
     </div>
