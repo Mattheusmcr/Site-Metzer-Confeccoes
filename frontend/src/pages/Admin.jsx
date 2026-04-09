@@ -119,7 +119,7 @@ function CadastrarProduto({ mostrarToast, dark, estilos }) {
             </div>
           )}
         </div>
-        <button onClick={handleSubmit} disabled={loading} className="py-3 rounded-lg font-semibold text-white"
+        <button onClick={handleSubmit} disabled={loading} className="cursor-pointer py-3 rounded-lg font-semibold text-white"
           style={{ backgroundColor: loading ? "#9ca3af" : "#1a1a1a", cursor: loading ? "not-allowed" : "pointer" }}>
           {loading ? "Salvando..." : "Salvar Produto"}
         </button>
@@ -283,7 +283,7 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
                     )}
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={salvarEdicao} className="px-4 py-2 rounded-lg text-sm font-semibold text-white" style={{ backgroundColor: "#16a34a" }}>Salvar</button>
+                    <button onClick={salvarEdicao} className="cursor-pointer px-4 py-2 rounded-lg text-sm font-semibold text-white" style={{ backgroundColor: "#16a34a" }}>Salvar</button>
                     <button onClick={() => { setEditando(null); setNovasImagens([]); setPreviews([]); }}
                       className="px-4 py-2 rounded-lg text-sm font-semibold"
                       style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: text }}>Cancelar</button>
@@ -449,7 +449,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
   
   function mudarAba(novaAba) {
     setAba(novaAba);
-    carregar(); // Recarrega ao trocar aba para refletir status atualizados
+    carregar(true); // Silent reload ao trocar aba
   }
   const [pedidoParaExcluir, setPedidoParaExcluir] = useState(null);
   const [busca, setBusca] = useState("");
@@ -476,8 +476,8 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
   }
 
   // Carregar pedidos (chamado no mount e ao trocar aba)
-  const carregar = useCallback(() => {
-    setLoading(true);
+  const carregar = useCallback((silent = false) => {
+    if (!silent) setLoading(true);
     return Promise.all([
       api.get("pedidos/"),
       api.get("pedidos-personalizados/"),
@@ -496,47 +496,64 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
 
   useEffect(() => {
     carregar();
-    // Polling a cada 60 segundos para detectar novos pedidos
-    const interval = setInterval(carregar, 60000);
+    // Polling a cada 3 minutos - silencioso (sem refetch de loading)
+    const interval = setInterval(() => {
+      Promise.all([api.get("pedidos/"), api.get("pedidos-personalizados/")])
+        .then(([r1, r2]) => {
+          const novoTotal = r1.data.length + r2.data.length;
+          if (ultimoTotalRef.current !== null && novoTotal > ultimoTotalRef.current) {
+            tocarSom();
+            mostrarToast("🔔 Novo pedido recebido!", "sucesso");
+          }
+          ultimoTotalRef.current = novoTotal;
+          setPedidos(r1.data);
+          setPersonalizados(r2.data);
+        }).catch(() => {});
+    }, 180000); // 3 minutos
     return () => clearInterval(interval);
   }, [carregar]);
 
   function exportarExcel() {
-    const sanitize = (v) => String(v||"-").replace(/;/g, ",").replace(/\n/g, " ");
+    // Sanitize: remove quebras de linha, escapa aspas duplas, envolve em aspas se tiver vírgula/ponto-e-vírgula
+    const cell = (v) => {
+      const s = String(v||"-").replace(/\r?\n/g, " ").replace(/\t/g, " ").trim();
+      return s.includes(";") || s.includes('"') || s.includes(",")
+        ? `"${s.replace(/"/g, '""')}"`
+        : s;
+    };
+
     const catRows = pedidos.map(p => {
-      const itensStr = (p.itens||[]).map(i => `${i.produto_nome}(${i.tamanho}x${i.quantidade})`).join(" | ");
-      return {
-        Tipo: "Catálogo", ID: p.id, Nome: sanitize(p.nome_cliente),
-        Telefone: sanitize(p.telefone), Email: sanitize(p.email),
-        Status: sanitize(p.status||"novo"),
-        Data: new Date(p.data_pedido).toLocaleDateString("pt-BR"),
-        Total: `R$ ${(p.total||0).toFixed(2)}`,
-        Pagamento: sanitize(p.forma_pagamento),
-        Rua: sanitize(p.rua), Numero: sanitize(p.numero),
-        Bairro: sanitize(p.bairro), Cidade: sanitize(p.cidade), Estado: sanitize(p.estado),
-        CEP: sanitize(p.cep), Itens: sanitize(itensStr),
-        Observacoes: sanitize(p.observacao),
-      };
+      const itensStr = (p.itens||[]).map(i =>
+        `${i.produto_nome} - Tam: ${i.tamanho} - Qtd: ${i.quantidade} - R$ ${(parseFloat(i.produto_preco||0)*i.quantidade).toFixed(2)}`
+      ).join(" | ");
+      return [
+        cell("Catálogo"), cell(p.id), cell(p.nome_cliente), cell(p.telefone), cell(p.email),
+        cell(p.status||"novo"), cell(new Date(p.data_pedido).toLocaleDateString("pt-BR")),
+        cell(`R$ ${(p.total||0).toFixed(2)}`), cell(p.forma_pagamento),
+        cell(p.rua), cell(p.numero), cell(p.bairro), cell(p.cidade), cell(p.estado), cell(p.cep),
+        cell(itensStr), cell(p.observacao),
+      ].join(";");
     });
+
     const persRows = personalizados.map(p => {
-      const ref = sanitize(p.referencia||p.ramo||"");
-      return {
-        Tipo: "Personalizado", ID: p.id, Nome: sanitize(p.nome_cliente),
-        Telefone: sanitize(p.telefone), Email: sanitize(p.email),
-        Status: sanitize(p.status),
-        Data: new Date(p.data_pedido).toLocaleDateString("pt-BR"),
-        Total: "-", Pagamento: "-",
-        Rua: "-", Numero: "-", Bairro: "-", Cidade: "-", Estado: "-", CEP: "-",
-        Itens: ref.slice(0, 200),
-        Observacoes: sanitize(p.observacoes),
-      };
+      // Combina referencia + ramo de forma limpa
+      const ref = [p.ramo, p.referencia].filter(Boolean).join(" — ");
+      return [
+        cell("Personalizado"), cell(p.id), cell(p.nome_cliente), cell(p.telefone), cell(p.email),
+        cell(p.status||"novo"), cell(new Date(p.data_pedido).toLocaleDateString("pt-BR")),
+        cell("-"), cell("-"), cell("-"), cell("-"), cell("-"), cell("-"), cell("-"), cell("-"),
+        cell(ref.slice(0, 500)), cell(p.observacoes),
+      ].join(";");
     });
+
+    const header = ["Protocolo","Tipo","ID","Nome","Telefone","Email","Status","Data","Total","Pagamento",
+      "Rua","Numero","Bairro","Cidade","Estado","CEP","Itens","Observacoes"].join(";");
+
     const todos = [...catRows, ...persRows];
     if (todos.length === 0) { mostrarToast("Nenhum pedido para exportar.", "erro"); return; }
-    const header = Object.keys(todos[0]).join(";");
-    const linhas = todos.map(r => Object.values(r).join(";"));
-    const bom = "\uFEFF"; // UTF-8 BOM para Excel
-    const csv = bom + [header, ...linhas].join("\n");
+
+    const bom = "\uFEFF";
+    const csv = bom + [header, ...todos].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href = url;
@@ -604,7 +621,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
         <h2 className="text-xl font-semibold" style={{ color: text }}>Pedidos</h2>
         <button onClick={exportarExcel}
-          className="px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center gap-2"
+          className="cursor-pointer px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center gap-2"
           style={{ backgroundColor: "#16a34a", cursor: "pointer", fontFamily: "system-ui" }}>
           📥 Exportar Excel
         </button>
@@ -679,6 +696,9 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                     <span className="text-xs px-2 py-1 rounded-lg font-mono" style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: subtext }}>#{p.id}</span>
                     <div>
                       <p className="font-semibold" style={{ color: text }}>{p.nome_cliente}</p>
+                      <p className="text-xs font-mono" style={{ color: "#2563eb" }}>
+                        🔖 {p.protocolo || `MTZ-${String(p.id).padStart(4,"0")}`}
+                      </p>
                       <p className="text-xs" style={{ color: subtext }}>{new Date(p.data_pedido).toLocaleString("pt-BR")}</p>
                     </div>
                   </div>
@@ -804,8 +824,11 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                   <div className="flex items-center gap-4">
                     <span className="text-xs px-2 py-1 rounded-lg font-mono" style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: subtext }}>#{p.id}</span>
                     <div>
-                      <p className="font-semibold" style={{ color: text }}>{p.nome_empresa}</p>
-                      <p className="text-xs" style={{ color: subtext }}>{p.nome_cliente} — {new Date(p.data_pedido).toLocaleString("pt-BR")}</p>
+                      <p className="font-semibold" style={{ color: text }}>{p.nome_cliente}</p>
+                      <p className="text-xs font-mono" style={{ color: "#2563eb" }}>
+                        🔖 {p.protocolo || `MTZ-PERS-${String(p.id).padStart(4,"0")}`}
+                      </p>
+                      <p className="text-xs" style={{ color: subtext }}>{new Date(p.data_pedido).toLocaleString("pt-BR")}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -1000,7 +1023,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                 Cancelar
               </button>
               <button onClick={excluirPedido}
-                className="flex-1 py-3 rounded-lg font-semibold text-white transition hover:opacity-80"
+                className="cursor-pointer flex-1 py-3 rounded-lg font-semibold text-white transition hover:opacity-80"
                 style={{ backgroundColor: "#dc2626" }}>
                 Sim, excluir
               </button>
@@ -1221,7 +1244,7 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
               placeholder="https://exemplo.com/foto.jpg"
               style={{ ...inputStyle, flex: 1 }} />
             <button onClick={adicionarUrl}
-              className="px-4 py-2 rounded-lg text-sm font-semibold text-white shrink-0"
+              className="cursor-pointer px-4 py-2 rounded-lg text-sm font-semibold text-white shrink-0"
               style={{ backgroundColor: "#374151" }}>Adicionar</button>
           </div>
         </div>
@@ -1242,7 +1265,7 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
             )}
             {novoArquivo && (
               <button onClick={adicionarArquivo}
-                className="px-4 py-2 rounded-lg text-sm font-semibold text-white"
+                className="cursor-pointer px-4 py-2 rounded-lg text-sm font-semibold text-white"
                 style={{ backgroundColor: "#16a34a" }}>Adicionar</button>
             )}
           </div>

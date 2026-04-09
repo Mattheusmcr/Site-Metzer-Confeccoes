@@ -65,7 +65,7 @@ function Navbar() {
             {/* Login — só desktop */}
             <div className="hidden md:flex items-center gap-4">
               {isAdmin
-                ? <button onClick={logout} className="text-sm hover:opacity-70 transition" style={{ color: "#dc2626" }}>Sair</button>
+                ? <button onClick={logout} className="cursor-pointer text-sm hover:opacity-70 transition" style={{ color: "#dc2626" }}>Sair</button>
                 : <Link to="/admin-login" className="hover:opacity-50 transition" style={{ color: t.text, fontSize: "20px" }}>👤</Link>
               }
             </div>
@@ -84,7 +84,7 @@ function Navbar() {
 
             {/* Hamburguer — só mobile */}
             <button
-              className="md:hidden flex flex-col justify-center items-center gap-1.5 w-8 h-8"
+              className="cursor-pointer md:hidden flex flex-col justify-center items-center gap-1.5 w-8 h-8"
               onClick={() => { setMenuAberto(v => !v); setCarrinhoAberto(false); }}
               aria-label="Menu">
               <span style={{ display: "block", width: "22px", height: "2px", backgroundColor: t.text, transition: "all 0.3s",

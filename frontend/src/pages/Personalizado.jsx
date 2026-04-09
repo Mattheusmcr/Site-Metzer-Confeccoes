@@ -85,6 +85,8 @@ export default function Personalizado(){
   const [enviado, setEnviado] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
+  const [protocolo, setProtocolo] = useState("");
+  const [copiado, setCopiado] = useState(false);
   // modais
   const [modalTamanhos, setModalTamanhos] = useState(null); // combId
   const [modalCores, setModalCores] = useState(null);       // combId
@@ -191,6 +193,9 @@ export default function Personalizado(){
       <p style="color:#6b7280;font-size:12px;margin:0 0 20px">Vila Velha, ES · (27) 99787-8391 · andremetzkrr@gmail.com</p>
       <h2>Comprovante de Pedido Personalizado</h2>
       <span class="badge">🎨 Pedido personalizado registrado</span>
+      <div style="margin:12px 0;padding:12px 16px;background:#fef9f0;border:1px solid #fde68a;border-radius:8px;font-family:monospace;font-size:18px;font-weight:700;letter-spacing:0.05em">
+        🔖 ${protocolo}
+      </div>
 
       <div class="info-grid">
         <div class="info-block">
@@ -280,6 +285,13 @@ export default function Personalizado(){
       await api.post("pedidos-personalizados/", fd, {
         headers: { "Content-Type": "multipart/form-data" }
       });
+      // Gerar protocolo único
+      const agora = new Date();
+      const dataStr = agora.getFullYear().toString() +
+        String(agora.getMonth()+1).padStart(2,'0') +
+        String(agora.getDate()).padStart(2,'0');
+      const prot = `MTZ-PERS-${dataStr}-${String(Date.now()).slice(-4)}`;
+      setProtocolo(prot);
       setEnviado(true);
     } catch(e) {
       console.error("Erro pedido personalizado:", e.response?.data, e.response?.status);
@@ -322,7 +334,29 @@ export default function Personalizado(){
       <div className="text-center px-6" style={{maxWidth:"480px"}}>
         <div style={{fontSize:"64px",marginBottom:"24px"}}>🎉</div>
         <h2 style={{fontSize:"2rem",fontWeight:"300",color:t.text,marginBottom:"16px",fontFamily:"Georgia, serif"}}>Pedido recebido!</h2>
-        <p style={{color:t.textSecundario,lineHeight:1.8,marginBottom:"32px",fontFamily:"system-ui"}}>Seu pedido foi registrado. Nossa equipe entrará em contato em breve.</p>
+        <p style={{color:t.textSecundario,lineHeight:1.8,marginBottom:"20px",fontFamily:"system-ui"}}>Seu pedido foi registrado. Nossa equipe entrará em contato em breve pelo WhatsApp para confirmar detalhes e orçamento.</p>
+
+        {/* PROTOCOLO */}
+        <div style={{backgroundColor:t.bgSecundario, border:"2px solid "+t.borderForte, padding:"20px", marginBottom:"24px"}}>
+          <p style={{fontSize:"11px", fontWeight:"700", textTransform:"uppercase", letterSpacing:"0.1em", color:t.textSecundario, fontFamily:"system-ui", marginBottom:"10px"}}>
+            🔖 Número do Protocolo
+          </p>
+          <div style={{display:"flex", alignItems:"center", justifyContent:"center", gap:"12px", flexWrap:"wrap"}}>
+            <span style={{fontSize:"1.5rem", fontWeight:"700", fontFamily:"monospace", letterSpacing:"0.05em", color:t.text}}>
+              {protocolo}
+            </span>
+            <button
+              onClick={() => { navigator.clipboard.writeText(protocolo).then(() => { setCopiado(true); setTimeout(()=>setCopiado(false),2500); }); }}
+              style={{padding:"6px 16px", backgroundColor:copiado?"#16a34a":t.btnPrimarioBg, color:t.btnPrimarioText,
+                border:"none", cursor:"pointer", fontFamily:"system-ui", fontSize:"12px", fontWeight:"600",
+                borderRadius:"6px", transition:"background 0.3s"}}>
+              {copiado ? "✅ Copiado!" : "📋 Copiar"}
+            </button>
+          </div>
+          <p style={{fontSize:"11px", color:t.textSecundario, fontFamily:"system-ui", marginTop:"8px"}}>
+            Guarde este número para acompanhar ou questionar seu pedido.
+          </p>
+        </div>
         <div style={{display:"flex",gap:"12px",justifyContent:"center",flexWrap:"wrap"}}>
           <button onClick={gerarPDFPersonalizado}
             style={{padding:"12px 24px",backgroundColor:t.btnPrimarioBg,color:t.btnPrimarioText,border:"none",cursor:"pointer",fontFamily:"system-ui"}}>
@@ -730,7 +764,7 @@ export default function Personalizado(){
               <button onClick={()=>setEtapa(1)} style={{flex:1,padding:"14px",border:"1px solid "+t.border,color:t.text,backgroundColor:t.bg,cursor:"pointer",fontFamily:"system-ui",fontWeight:"600"}}>← Voltar</button>
             </div>
             <button onClick={salvarNoBanco} disabled={salvando||!finalizacaoValida}
-              style={{...btnP(!salvando&&finalizacaoValida),width:"100%",padding:"18px",fontSize:"16px"}}>
+              style={{ cursor: "pointer",...btnP(!salvando&&finalizacaoValida),width:"100%",padding:"18px",fontSize:"16px"}}>
               {salvando?"Salvando...":"✅ Confirmar Pedido"}
             </button>
           </div>
