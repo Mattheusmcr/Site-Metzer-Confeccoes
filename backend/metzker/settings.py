@@ -176,3 +176,9 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'andremetzkrr@gmail.com')
+
+# ── MERCADO PAGO ───────────────────────────────────────────────────────────────
+MP_ACCESS_TOKEN = os.environ.get('MP_ACCESS_TOKEN', '')
+MP_PUBLIC_KEY   = os.environ.get('MP_PUBLIC_KEY', '')
+FRONTEND_URL    = os.environ.get('FRONTEND_URL', 'https://www.metzkersolucoes.com.br')
+BACKEND_URL     = os.environ.get('BACKEND_URL', 'https://api.metzkersolucoes.com.br')
