@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { CartContext } from "../context/CartContext";
 
-const t = tema || {
+const FALLBACK_TEMA = {
   bg: "#FAF8F5", bgSecundario: "#F2EDE6", bgCard: "#FFFFFF",
   text: "#1a1a1a", textSecundario: "#7a7065",
   border: "#D5C9BC", borderForte: "#C4B5A5",
@@ -22,6 +22,7 @@ function Navbar() {
   const { isAdmin, logout } = useAuth();
   const { cart, removeFromCart, increase, decrease } = useContext(CartContext);
   const { dark, toggleDark, tema } = useTheme();
+  const t = tema || FALLBACK_TEMA;
   const location = useLocation();
   const [carrinhoAberto, setCarrinhoAberto] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
