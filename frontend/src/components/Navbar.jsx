@@ -1,10 +1,9 @@
 import { useState, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
 import { CartContext } from "../context/CartContext";
 
-const FALLBACK_TEMA = {
+const t = {
   bg: "#FAF8F5", bgSecundario: "#F2EDE6", bgCard: "#FFFFFF",
   text: "#1a1a1a", textSecundario: "#7a7065",
   border: "#D5C9BC", borderForte: "#C4B5A5",
@@ -21,8 +20,6 @@ const links = [
 function Navbar() {
   const { isAdmin, logout } = useAuth();
   const { cart, removeFromCart, increase, decrease } = useContext(CartContext);
-  const { dark, toggleDark, tema } = useTheme();
-  const t = tema || FALLBACK_TEMA;
   const location = useLocation();
   const [carrinhoAberto, setCarrinhoAberto] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
@@ -68,19 +65,10 @@ function Navbar() {
             {/* Login — só desktop */}
             <div className="hidden md:flex items-center gap-4">
               {isAdmin
-                ? <button onClick={logout} className="cursor-pointer text-sm hover:opacity-70 transition" style={{ color: "#dc2626" }}>Sair</button>
+                ? <button onClick={logout} className="text-sm hover:opacity-70 transition" style={{ color: "#dc2626" }}>Sair</button>
                 : <Link to="/admin-login" className="hover:opacity-50 transition" style={{ color: t.text, fontSize: "20px" }}>👤</Link>
               }
             </div>
-
-            {/* Dark mode toggle */}
-            <button onClick={toggleDark}
-              title={dark ? "Modo claro" : "Modo escuro"}
-              style={{ background: "none", border: "1px solid " + t.border,
-                cursor: "pointer", padding: "5px 9px", fontSize: "15px",
-                color: t.text, borderRadius: "4px", transition: "all 0.2s" }}>
-              {dark ? "☀️" : "🌙"}
-            </button>
 
             {/* Carrinho */}
             <button onClick={() => { setCarrinhoAberto(true); setMenuAberto(false); }}
@@ -96,7 +84,7 @@ function Navbar() {
 
             {/* Hamburguer — só mobile */}
             <button
-              className="cursor-pointer md:hidden flex flex-col justify-center items-center gap-1.5 w-8 h-8"
+              className="md:hidden flex flex-col justify-center items-center gap-1.5 w-8 h-8"
               onClick={() => { setMenuAberto(v => !v); setCarrinhoAberto(false); }}
               aria-label="Menu">
               <span style={{ display: "block", width: "22px", height: "2px", backgroundColor: t.text, transition: "all 0.3s",
@@ -149,15 +137,9 @@ function Navbar() {
       )}
 
       {/* MINI CARRINHO */}
-{/* MINI CARRINHO */}
-          <div
-            className="fixed top-0 right-0 h-full z-50 shadow-2xl flex flex-col transition-transform duration-300"
-            style={{
-              width: "min(384px, 100vw)",
-              backgroundColor: t.bgCard,
-              borderLeft: "2px solid " + t.borderForte,
-              transform: carrinhoAberto ? "translateX(0)" : "translateX(100%)",
-            }}>
+      <div className={`fixed top-0 right-0 h-full z-50 shadow-2xl flex flex-col transition-transform duration-300 ${carrinhoAberto ? "translate-x-0" : "translate-x-full"}`}
+        style={{ width: "min(384px, 100vw)", backgroundColor: t.bgCard, borderLeft: "2px solid " + t.borderForte }}>
+
         <div className="flex justify-between items-center p-5 md:p-6"
           style={{ borderBottom: "2px solid " + t.borderForte }}>
           <h2 className="text-base font-semibold" style={{ color: t.text }}>
