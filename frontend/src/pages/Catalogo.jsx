@@ -349,7 +349,7 @@ function Catalogo() {
         </div>
       </div>
     </div>
-    </div>  
+    </div> 
   );
 }
 

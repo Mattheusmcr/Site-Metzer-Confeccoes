@@ -46,6 +46,9 @@ export default function Pedidos() {
   const [erroPedido, setErroPedido] = useState("");
   const [pedidoConcluido, setPedidoConcluido] = useState(false);
   const [pedidoSalvo, setPedidoSalvo] = useState(null);
+  // Verificar retorno do Mercado Pago via URL params
+  const urlParams = new URLSearchParams(window.location.search);
+  const mpStatus = urlParams.get('status');
   const [protocolo, setProtocolo] = useState("");
   const [copiado, setCopiado] = useState(false);
 
@@ -175,6 +178,45 @@ export default function Pedidos() {
     ).join("%0A");
     const obs = c.observacao ? `%0A%0A📝 *Obs:* ${c.observacao}` : "";
     return `https://wa.me/5527997878391?text=Olá! Fiz um pedido no site:%0A%0A👤 *Nome:* ${c.nome}%0A📱 *Tel:* ${c.telefone}%0A📧 *Email:* ${c.email}%0A%0A🛍️ *Itens:*%0A${itensStr}%0A%0A💰 *Total: R$ ${totalSalvo.toFixed(2)}*%0A%0A📍 *Endereço:*%0A${c.rua}, ${c.numero}${c.complemento?" - "+c.complemento:""}%0A${c.bairro} - ${c.cidade}/${c.estado} | CEP: ${c.cep}%0A%0A💳 *Pagamento:* ${c.formaPagamento}${obs}`;
+  }
+
+  async function pagarComMP() {
+    setTentouEnviar(true);
+    setMensagemEstoque("");
+    setErroPedido("");
+    if (!verificarEstoque()) return;
+    if (!validar()) { window.scrollTo({top:0,behavior:"smooth"}); return; }
+
+    try {
+      const res = await api.post("mp-criar-preferencia/", {
+        itens: cart.map(i => ({
+          produto_id: i.produto.id,
+          nome: i.produto.nome,
+          quantidade: i.quantidade,
+          preco: parseFloat(i.produto.preco),
+          tamanho: i.tamanho,
+        })),
+        cliente: {
+          nome: cliente.nome,
+          email: cliente.email,
+          telefone: cliente.telefone,
+          cep: cliente.cep,
+          rua: cliente.rua,
+          numero: cliente.numero,
+          bairro: cliente.bairro,
+          cidade: cliente.cidade,
+          estado: cliente.estado,
+          complemento: cliente.complemento,
+          observacao: cliente.observacao,
+        },
+      });
+      // Redireciona para o checkout do Mercado Pago
+      window.location.href = res.data.init_point;
+    } catch(e) {
+      console.error("Erro MP:", e.response?.data);
+      setErroPedido("Não foi possível iniciar o pagamento. Tente novamente ou escolha outra forma.");
+      window.scrollTo({top:0,behavior:"smooth"});
+    }
   }
 
   async function finalizarPedido() {
@@ -312,7 +354,28 @@ export default function Pedidos() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8" style={{color:t.text}}>Finalizar Pedido</h1>
 
-        {cart.length===0 && <p style={{color:t.textSecundario}}>Carrinho vazio.</p>}
+        {mpStatus === 'aprovado' && (
+          <div className="rounded-xl p-6 mb-6 text-center" style={{backgroundColor:"#f0fdf4", border:"2px solid #86efac"}}>
+            <div style={{fontSize:"48px", marginBottom:"12px"}}>🎉</div>
+            <h2 className="text-xl font-bold mb-2" style={{color:"#16a34a"}}>Pagamento aprovado!</h2>
+            <p style={{color:t.textSecundario, fontFamily:"system-ui"}}>Seu pedido foi confirmado pelo Mercado Pago. Nossa equipe entrará em contato em breve.</p>
+          </div>
+        )}
+        {mpStatus === 'pendente' && (
+          <div className="rounded-xl p-6 mb-6 text-center" style={{backgroundColor:"#fef9f0", border:"2px solid #fde68a"}}>
+            <div style={{fontSize:"48px", marginBottom:"12px"}}>⏳</div>
+            <h2 className="text-xl font-bold mb-2" style={{color:"#92400e"}}>Pagamento pendente</h2>
+            <p style={{color:t.textSecundario, fontFamily:"system-ui"}}>Aguardando confirmação do pagamento. Você receberá um email quando for aprovado.</p>
+          </div>
+        )}
+        {mpStatus === 'falhou' && (
+          <div className="rounded-xl p-6 mb-6 text-center" style={{backgroundColor:"#fef2f2", border:"2px solid #fecaca"}}>
+            <div style={{fontSize:"48px", marginBottom:"12px"}}>❌</div>
+            <h2 className="text-xl font-bold mb-2" style={{color:"#dc2626"}}>Pagamento não realizado</h2>
+            <p style={{color:t.textSecundario, fontFamily:"system-ui"}}>O pagamento não foi concluído. Tente novamente ou escolha outra forma de pagamento.</p>
+          </div>
+        )}
+        {cart.length===0 && !mpStatus && <p style={{color:t.textSecundario}}>Carrinho vazio.</p>}
 
         {/* ALERTAS */}
         {mensagemEstoque && (
@@ -490,12 +553,21 @@ export default function Pedidos() {
             </div>
 
             {/* BOTÃO */}
-            <button onClick={finalizarPedido}
-              className="cursor-pointer w-full py-5 font-bold text-lg hover:opacity-90 transition"
-              style={{backgroundColor:t.btnPrimarioBg, color:t.btnPrimarioText, cursor:"pointer",
-                fontFamily:"system-ui", borderRadius:"12px"}}>
-              ✅ Confirmar Pedido
-            </button>
+            {cliente.formaPagamento === "Mercado Pago" ? (
+              <button onClick={pagarComMP}
+                className="cursor-pointer w-full py-5 font-bold text-lg hover:opacity-90 transition"
+                style={{backgroundColor:"#009ee3", color:"white", cursor:"pointer",
+                  fontFamily:"system-ui", borderRadius:"12px"}}>
+                💳 Ir para o Mercado Pago
+              </button>
+            ) : (
+              <button onClick={finalizarPedido}
+                className="cursor-pointer w-full py-5 font-bold text-lg hover:opacity-90 transition"
+                style={{backgroundColor:t.btnPrimarioBg, color:t.btnPrimarioText, cursor:"pointer",
+                  fontFamily:"system-ui", borderRadius:"12px"}}>
+                ✅ Confirmar Pedido
+              </button>
+            )}
           </div>
         )}
       </div>
