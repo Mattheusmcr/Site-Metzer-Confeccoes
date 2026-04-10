@@ -45,9 +45,7 @@ export default function Pedidos() {
   const [mensagemEstoque, setMensagemEstoque] = useState("");
   const [erroPedido, setErroPedido] = useState("");
   const [pedidoConcluido, setPedidoConcluido] = useState(false);
-  const [pedidoSalvo, setPedidoSalvo] = useState(null);
-  const [protocolo, setProtocolo] = useState("");
-  const [copiado, setCopiado] = useState(false);
+  const [pedidoSalvo, setPedidoSalvo] = useState(null); // dados salvos antes de limpar carrinho
 
   const total = cart.reduce((a,i) => a + (parseFloat(i.produto?.preco)||0)*i.quantidade, 0);
   const itensComProblema = cart.filter(item => {
@@ -120,9 +118,6 @@ export default function Pedidos() {
       <p style="color:#6b7280;font-size:12px;margin:0 0 20px">Vila Velha, ES · (27) 99787-8391 · andremetzkrr@gmail.com</p>
       <h2>Comprovante de Pedido</h2>
       <span class="badge">✅ Pedido confirmado</span>
-      <div style="margin:12px 0;padding:12px 16px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;font-family:monospace;font-size:18px;font-weight:700;letter-spacing:0.05em">
-        🔖 ${dados.protocolo || ""}
-      </div>
       <div class="info-grid">
         <div class="info-block">
           <h3>Cliente</h3>
@@ -206,15 +201,7 @@ export default function Pedidos() {
         forma_pagamento: cliente.formaPagamento, observacao: cliente.observacao,
         itens_input: cart.map(i => ({produto:i.produto.id, tamanho:i.tamanho, quantidade:i.quantidade})),
       });
-      // Gerar número de protocolo único
-      const agora = new Date();
-      const dataStr = agora.getFullYear().toString() +
-        String(agora.getMonth()+1).padStart(2,'0') +
-        String(agora.getDate()).padStart(2,'0');
-      const idStr = String(Date.now()).slice(-4);
-      const prot = `MTZ-${dataStr}-${idStr}`;
-      setProtocolo(prot);
-      setPedidoSalvo({...snapshot, protocolo: prot});
+      setPedidoSalvo(snapshot);
       setCart([]);
       setPedidoConcluido(true);
       window.scrollTo({top:0,behavior:"smooth"});
@@ -245,31 +232,12 @@ export default function Pedidos() {
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
         <div style={{fontSize:"64px",marginBottom:"20px"}}>🎉</div>
         <h1 className="text-3xl font-bold mb-4" style={{color:t.text}}>Pedido confirmado!</h1>
+        <p className="mb-2" style={{color:t.textSecundario, lineHeight:1.8}}>
+          Seu pedido foi registrado e o estoque atualizado.
+        </p>
         <p className="mb-6" style={{color:t.textSecundario, lineHeight:1.8}}>
           Nossa equipe entrará em contato pelo WhatsApp <strong style={{color:t.text}}>{pedidoSalvo.c.telefone}</strong> para confirmar os detalhes.
         </p>
-
-        {/* PROTOCOLO */}
-        <div className="mb-8 rounded-xl p-5" style={{backgroundColor:t.bgSecundario, border:"2px solid "+t.borderForte}}>
-          <p className="text-xs uppercase font-bold mb-2" style={{color:t.textSecundario, letterSpacing:"0.1em"}}>
-            🔖 Número do Protocolo
-          </p>
-          <div className="flex items-center justify-center gap-3 flex-wrap">
-            <span style={{fontSize:"1.6rem", fontWeight:"700", fontFamily:"monospace", letterSpacing:"0.05em", color:t.text}}>
-              {protocolo}
-            </span>
-            <button
-              onClick={() => { navigator.clipboard.writeText(protocolo).then(() => { setCopiado(true); setTimeout(()=>setCopiado(false),2500); }); }}
-              style={{padding:"6px 16px", backgroundColor:copiado?"#16a34a":t.btnPrimarioBg, color:t.btnPrimarioText,
-                border:"none", cursor:"pointer", fontFamily:"system-ui", fontSize:"12px", fontWeight:"600",
-                borderRadius:"6px", transition:"background 0.3s"}}>
-              {copiado ? "✅ Copiado!" : "📋 Copiar"}
-            </button>
-          </div>
-          <p className="text-xs mt-3" style={{color:t.textSecundario, fontFamily:"system-ui"}}>
-            Guarde este número para acompanhar ou questionar seu pedido.
-          </p>
-        </div>
 
         {/* Resumo do pedido */}
         <div className="text-left mb-8 rounded-xl p-5" style={{backgroundColor:t.bgCard, border:"1px solid "+t.border}}>
@@ -491,7 +459,7 @@ export default function Pedidos() {
 
             {/* BOTÃO */}
             <button onClick={finalizarPedido}
-              className="cursor-pointer w-full py-5 font-bold text-lg hover:opacity-90 transition"
+              className="w-full py-5 font-bold text-lg hover:opacity-90 transition"
               style={{backgroundColor:t.btnPrimarioBg, color:t.btnPrimarioText, cursor:"pointer",
                 fontFamily:"system-ui", borderRadius:"12px"}}>
               ✅ Confirmar Pedido

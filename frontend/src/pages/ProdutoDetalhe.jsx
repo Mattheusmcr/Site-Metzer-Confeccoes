@@ -254,10 +254,10 @@ export default function ProdutoDetalhe() {
             {/* ══ BOTÕES ══ */}
             <div className="flex flex-col gap-3 mb-6">
               <button onClick={handleComprar}
-                className="cursor-pointer w-full py-4 font-semibold text-white transition hover:opacity-90"
+                className="w-full py-4 font-semibold text-white transition hover:opacity-90"
                 style={{ backgroundColor: t.text, cursor: "pointer" }}>Comprar agora</button>
               <button onClick={handleAdicionar}
-                className="cursor-pointer w-full py-4 font-semibold transition hover:opacity-80"
+                className="w-full py-4 font-semibold transition hover:opacity-80"
                 style={{ backgroundColor: t.bgSecundario, color: t.text, border: "1px solid " + t.border, cursor: "pointer" }}>
                 Adicionar ao carrinho
               </button>
