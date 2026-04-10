@@ -149,9 +149,15 @@ function Navbar() {
       )}
 
       {/* MINI CARRINHO */}
-      <div className={`fixed top-0 right-0 h-full z-50 shadow-2xl flex flex-col transition-transform duration-300 ${carrinhoAberto ? "translate-x-0" : "translate-x-full"}`}
-        style={{ width: "min(384px, 100vw)", backgroundColor: t.bgCard, borderLeft: "2px solid " + t.borderForte }}>
-
+{/* MINI CARRINHO */}
+          <div
+            className="fixed top-0 right-0 h-full z-50 shadow-2xl flex flex-col transition-transform duration-300"
+            style={{
+              width: "min(384px, 100vw)",
+              backgroundColor: t.bgCard,
+              borderLeft: "2px solid " + t.borderForte,
+              transform: carrinhoAberto ? "translateX(0)" : "translateX(100%)",
+            }}>
         <div className="flex justify-between items-center p-5 md:p-6"
           style={{ borderBottom: "2px solid " + t.borderForte }}>
           <h2 className="text-base font-semibold" style={{ color: t.text }}>
