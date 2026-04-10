@@ -1,9 +1,10 @@
 import { useState, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import { CartContext } from "../context/CartContext";
 
-const t = {
+const t = tema || {
   bg: "#FAF8F5", bgSecundario: "#F2EDE6", bgCard: "#FFFFFF",
   text: "#1a1a1a", textSecundario: "#7a7065",
   border: "#D5C9BC", borderForte: "#C4B5A5",
@@ -20,6 +21,7 @@ const links = [
 function Navbar() {
   const { isAdmin, logout } = useAuth();
   const { cart, removeFromCart, increase, decrease } = useContext(CartContext);
+  const { dark, toggleDark, tema } = useTheme();
   const location = useLocation();
   const [carrinhoAberto, setCarrinhoAberto] = useState(false);
   const [menuAberto, setMenuAberto] = useState(false);
@@ -69,6 +71,15 @@ function Navbar() {
                 : <Link to="/admin-login" className="hover:opacity-50 transition" style={{ color: t.text, fontSize: "20px" }}>👤</Link>
               }
             </div>
+
+            {/* Dark mode toggle */}
+            <button onClick={toggleDark}
+              title={dark ? "Modo claro" : "Modo escuro"}
+              style={{ background: "none", border: "1px solid " + t.border,
+                cursor: "pointer", padding: "5px 9px", fontSize: "15px",
+                color: t.text, borderRadius: "4px", transition: "all 0.2s" }}>
+              {dark ? "☀️" : "🌙"}
+            </button>
 
             {/* Carrinho */}
             <button onClick={() => { setCarrinhoAberto(true); setMenuAberto(false); }}

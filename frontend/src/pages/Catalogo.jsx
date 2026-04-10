@@ -198,8 +198,6 @@ function Catalogo() {
           <Sidebar filtro={filtro} setFiltro={(f) => { setFiltro(f); setFiltroMobileAberto(false); }} mobile={true} />
         </div>
       )}
-       </div>
-      
 
       <div className="flex" style={{ minHeight: "calc(100vh - 100px)" }}>
         {/* SIDEBAR */}
@@ -351,6 +349,7 @@ function Catalogo() {
         </div>
       </div>
     </div>
+    </div>    
   );
 }
 
