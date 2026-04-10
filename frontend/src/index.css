@@ -1,17 +1,39 @@
 @import "tailwindcss";
 
-/* Cursor pointer em todos os elementos clicáveis */
-button,
-[role="button"],
-a,
-select,
-input[type="submit"],
-input[type="button"],
-input[type="checkbox"],
-input[type="radio"] {
-  cursor: pointer;
+@layer base {
+  body {
+    font-family: "Gill Sans MT", "Gill Sans", Calibri, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
 
-button:disabled {
-  cursor: not-allowed;
+@layer components {
+  button,
+  [role="button"],
+  a,
+  select,
+  label[for],
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="submit"],
+  input[type="button"] {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+@layer utilities {
+  .hover-opacity {
+    transition: opacity 0.15s ease;
+  }
+  .hover-opacity:hover {
+    opacity: 0.85;
+  }
 }

@@ -186,7 +186,7 @@ export default function Home() {
       </section>
 
       {/* ══ PORQUE NOS ESCOLHEM ══ */}
-      <section ref={porqueRef} style={{ backgroundColor: t.bgSecundario }}>
+      <section ref={porqueRef} style={{ backgroundColor: t.bgSecundario, borderBottom: "2px solid " + t.borderForte }}>
         <div className="px-6 md:px-24 py-16 md:py-20">
           <div style={{ opacity: porqueVisible ? 1 : 0, transform: porqueVisible ? "translateY(0)" : "translateY(30px)", transition: "all 0.8s ease" }}>
             <p className="uppercase mb-10" style={{ fontSize: "10px", letterSpacing: "0.25em", color: t.textSecundario, fontFamily: "system-ui" }}>
@@ -223,7 +223,7 @@ export default function Home() {
                 Projetos entregues
               </p>
               <h2 style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: "300", color: t.text, letterSpacing: "-0.02em" }}>
-                Alguns dos trabalhos<em style={{ fontStyle: "italic" }}>que já entregamos</em>
+                Alguns dos trabalhos<br /><em style={{ fontStyle: "italic" }}>que já entregamos</em>
               </h2>
               <p className="mt-3" style={{ fontSize: "14px", color: t.textSecundario, fontFamily: "system-ui", maxWidth: "380px", lineHeight: 1.6 }}>
                 Para empresas e eventos que precisavam de padrão e prazo.
@@ -286,7 +286,7 @@ export default function Home() {
           <Link to="/personalizado"
             className="px-10 py-4 text-sm uppercase tracking-widest font-medium transition hover:opacity-80 shrink-0 whitespace-nowrap"
             style={{ backgroundColor: "white", color: "#1a1a1a", letterSpacing: "0.15em", fontFamily: "system-ui" }}>
-            FAÇA UMA COTAÇÃO →
+            QUER FAZER UM ORÇAMENTO? →
           </Link>
         </div>
       </section>

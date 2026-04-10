@@ -1,5 +1,11 @@
 # backend/core/mercadopago_views.py
-import mercadopago
+try:
+    import mercadopago
+    MP_DISPONIVEL = True
+except ImportError:
+    MP_DISPONIVEL = False
+    mercadopago = None
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -13,6 +19,8 @@ logger = logging.getLogger(__name__)
 MP_ACCESS_TOKEN = getattr(settings, "MP_ACCESS_TOKEN", "")
 
 def get_sdk():
+    if not MP_DISPONIVEL:
+        raise ImportError("Mercado Pago não instalado. Execute: pip install mercadopago")
     return mercadopago.SDK(MP_ACCESS_TOKEN)
 
 
