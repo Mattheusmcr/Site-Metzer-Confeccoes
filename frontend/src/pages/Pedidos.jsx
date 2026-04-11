@@ -540,6 +540,31 @@ export default function Pedidos() {
                     }}>{forma}</button>
                 ))}
               </div>
+
+              {/* Mercado Pago — linha separada em destaque */}
+              <div className="mt-3">
+                <button
+                  onClick={() => {setCliente(p=>({...p,formaPagamento:"Mercado Pago"})); setErros(p=>({...p,formaPagamento:false}));}}
+                  style={{
+                    width:"100%", padding:"14px 16px", borderRadius:"8px",
+                    fontSize:"14px", fontWeight:"700", cursor:"pointer", fontFamily:"system-ui",
+                    display:"flex", alignItems:"center", justifyContent:"center", gap:"10px",
+                    backgroundColor: cliente.formaPagamento==="Mercado Pago" ? "#009ee3" : "#e8f6fd",
+                    color: cliente.formaPagamento==="Mercado Pago" ? "white" : "#009ee3",
+                    border: "2px solid #009ee3",
+                    transition: "all 0.2s",
+                  }}>
+                  <span style={{fontSize:"20px"}}>💳</span>
+                  <span>Pagar com Mercado Pago</span>
+                  <span style={{fontSize:"11px", fontWeight:"400", opacity:0.8}}>(cartão, Pix, boleto)</span>
+                  {cliente.formaPagamento==="Mercado Pago" && <span>✓</span>}
+                </button>
+                {cliente.formaPagamento==="Mercado Pago" && (
+                  <p style={{fontSize:"11px", color:t.textSecundario, fontFamily:"system-ui", marginTop:"6px", textAlign:"center"}}>
+                    Você será redirecionado para o ambiente seguro do Mercado Pago para concluir o pagamento.
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* OBS */}
