@@ -526,8 +526,9 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
       const itensStr = (p.itens||[]).map(i =>
         `${i.produto_nome} - Tam: ${i.tamanho} - Qtd: ${i.quantidade} - R$ ${(parseFloat(i.produto_preco||0)*i.quantidade).toFixed(2)}`
       ).join(" | ");
+      const protCat = p.protocolo || `MTZ-${String(p.id).padStart(4,"0")}`;
       return [
-        cell("Catálogo"), cell(p.id), cell(p.nome_cliente), cell(p.telefone), cell(p.email),
+        cell(protCat), cell("Catálogo"), cell(p.id), cell(p.nome_cliente), cell(p.telefone), cell(p.email),
         cell(p.status||"novo"), cell(new Date(p.data_pedido).toLocaleDateString("pt-BR")),
         cell(`R$ ${(p.total||0).toFixed(2)}`), cell(p.forma_pagamento),
         cell(p.rua), cell(p.numero), cell(p.bairro), cell(p.cidade), cell(p.estado), cell(p.cep),
@@ -536,13 +537,19 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
     });
 
     const persRows = personalizados.map(p => {
-      // Combina referencia + ramo de forma limpa
-      const ref = [p.ramo, p.referencia].filter(Boolean).join(" — ");
+      // Monta referencia limpa sem quebras de linha
+      const ref = (p.referencia || p.ramo || "")
+        .replace(/\r?\n/g, " | ").replace(/\s+/g, " ").trim().slice(0, 400);
+      // Observação sem o bloco de endereço
+      const obsLimpa = (p.observacoes || "").split("Descrição:")[0]
+        .replace(/\r?\n/g, " ").trim();
+      const prot = p.protocolo || `MTZ-PERS-${String(p.id).padStart(4,"0")}`;
       return [
-        cell("Personalizado"), cell(p.id), cell(p.nome_cliente), cell(p.telefone), cell(p.email),
+        cell(prot), cell("Personalizado"), cell(p.id), cell(p.nome_cliente), cell(p.telefone), cell(p.email),
         cell(p.status||"novo"), cell(new Date(p.data_pedido).toLocaleDateString("pt-BR")),
-        cell("-"), cell("-"), cell("-"), cell("-"), cell("-"), cell("-"), cell("-"), cell("-"),
-        cell(ref.slice(0, 500)), cell(p.observacoes),
+        cell("-"), cell("-"),
+        cell("-"), cell("-"), cell("-"), cell("-"), cell("-"), cell("-"),
+        cell(ref), cell(obsLimpa),
       ].join(";");
     });
 

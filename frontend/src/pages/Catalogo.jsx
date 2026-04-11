@@ -101,6 +101,7 @@ function Catalogo() {
   const [toastMsg, setToastMsg] = useState(null);
   const [filtro, setFiltro] = useState({ categoria: null, subcategoria: null });
   const [filtroMobileAberto, setFiltroMobileAberto] = useState(false);
+  const [busca, setBusca] = useState("");
   const { addToCart } = useContext(CartContext);
 
   useEffect(() => {
