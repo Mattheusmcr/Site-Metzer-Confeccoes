@@ -180,6 +180,16 @@ export default function Pedidos() {
     return `https://wa.me/5527997878391?text=Olá! Fiz um pedido no site:%0A%0A👤 *Nome:* ${c.nome}%0A📱 *Tel:* ${c.telefone}%0A📧 *Email:* ${c.email}%0A%0A🛍️ *Itens:*%0A${itensStr}%0A%0A💰 *Total: R$ ${totalSalvo.toFixed(2)}*%0A%0A📍 *Endereço:*%0A${c.rua}, ${c.numero}${c.complemento?" - "+c.complemento:""}%0A${c.bairro} - ${c.cidade}/${c.estado} | CEP: ${c.cep}%0A%0A💳 *Pagamento:* ${c.formaPagamento}${obs}`;
   }
 
+  function verificarEstoque() {
+  if (estoqueInsuficiente) {
+    const nomes = itensComProblema.map(i => i.produto.nome).join(", ");
+    setMensagemEstoque(`⚠️ Estoque insuficiente: ${nomes}. Ajuste as quantidades.`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return false;
+  }
+  return true;
+}
+
   async function pagarComMP() {
     setTentouEnviar(true);
     setMensagemEstoque("");
