@@ -181,14 +181,14 @@ export default function Pedidos() {
   }
 
   function verificarEstoque() {
-  if (estoqueInsuficiente) {
-    const nomes = itensComProblema.map(i => i.produto.nome).join(", ");
-    setMensagemEstoque(`⚠️ Estoque insuficiente: ${nomes}. Ajuste as quantidades.`);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    return false;
+    if (estoqueInsuficiente) {
+      const nomes = itensComProblema.map(i => i.produto.nome).join(", ");
+      setMensagemEstoque(`⚠️ Estoque insuficiente: ${nomes}. Ajuste as quantidades.`);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return false;
+    }
+    return true;
   }
-  return true;
-}
 
   async function pagarComMP() {
     setTentouEnviar(true);
@@ -555,17 +555,17 @@ export default function Pedidos() {
 
             {/* BOTÃO */}
             {/* Info sobre pagamento */}
-            <div style={{backgroundColor:"#e8f6fd", border:"1px solid #009ee3", borderRadius:"10px", padding:"14px 16px"}}>
-              <p style={{fontSize:"13px", color:"#0077b6", fontFamily:"system-ui", margin:0}}>
-                💳 O pagamento é feito com segurança pelo <strong>Mercado Pago</strong> — aceita cartão de crédito, débito, Pix e boleto. Você será redirecionado após confirmar.
+            <div style={{backgroundColor:t.bgSecundario, border:"1px solid "+t.border, borderRadius:"10px", padding:"14px 16px"}}>
+              <p style={{fontSize:"13px", color:t.textSecundario, fontFamily:"system-ui", margin:0}}>
+                🔒 Pagamento processado com segurança pelo <strong style={{color:t.text}}>Mercado Pago</strong>. Ao confirmar, você será redirecionado para concluir o pagamento.
               </p>
             </div>
 
             <button onClick={pagarComMP}
               className="cursor-pointer w-full py-5 font-bold text-lg hover:opacity-90 transition"
-              style={{backgroundColor:"#009ee3", color:"white", cursor:"pointer",
+              style={{backgroundColor:t.btnPrimarioBg, color:t.btnPrimarioText, cursor:"pointer",
                 fontFamily:"system-ui", borderRadius:"12px", fontSize:"16px"}}>
-              Confirmar e Pagar com Mercado Pago 💳
+              ✅ Confirmar Pedido
             </button>
           </div>
         )}
