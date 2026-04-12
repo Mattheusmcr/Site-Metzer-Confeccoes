@@ -82,7 +82,7 @@ export default function Pedidos() {
 
   function validar() {
     const novos = {};
-    ["nome","telefone","cep","rua","numero","bairro","cidade","estado","formaPagamento"].forEach(c => {
+    ["nome","telefone","cep","rua","numero","bairro","cidade","estado"].forEach(c => {
       if (!cliente[c]?.trim()) novos[c]=true;
     });
     if (!emailValido(cliente.email)) novos.email=true;
@@ -188,7 +188,7 @@ export default function Pedidos() {
     if (!validar()) { window.scrollTo({top:0,behavior:"smooth"}); return; }
 
     try {
-      const res = await api.post("mp-criar-preferencia/", {
+      const payload = {
         itens: cart.map(i => ({
           produto_id: i.produto.id,
           nome: i.produto.nome,
@@ -209,12 +209,20 @@ export default function Pedidos() {
           complemento: cliente.complemento,
           observacao: cliente.observacao,
         },
-      });
+      };
+      console.log("Criando preferência MP:", payload);
+      const res = await api.post("mp-criar-preferencia/", payload);
+      console.log("Resposta MP:", res.data);
+
+      const url = res.data.init_point;
+      if (!url) throw new Error("URL de pagamento não retornada pelo servidor.");
+
       // Redireciona para o checkout do Mercado Pago
-      window.location.href = res.data.init_point;
+      window.location.href = url;
     } catch(e) {
-      console.error("Erro MP:", e.response?.data);
-      setErroPedido("Não foi possível iniciar o pagamento. Tente novamente ou escolha outra forma.");
+      console.error("Erro MP completo:", e.response?.data || e.message);
+      const msg = e.response?.data?.erro || e.message || "Erro desconhecido";
+      setErroPedido(`Não foi possível iniciar o pagamento: ${msg}`);
       window.scrollTo({top:0,behavior:"smooth"});
     }
   }
@@ -245,7 +253,7 @@ export default function Pedidos() {
         cep: cliente.cep, rua: cliente.rua, numero: cliente.numero,
         complemento: cliente.complemento, bairro: cliente.bairro,
         cidade: cliente.cidade, estado: cliente.estado,
-        forma_pagamento: cliente.formaPagamento, observacao: cliente.observacao,
+        forma_pagamento: "Mercado Pago", observacao: cliente.observacao,
         itens_input: cart.map(i => ({produto:i.produto.id, tamanho:i.tamanho, quantidade:i.quantidade})),
       });
       // Gerar número de protocolo único
@@ -523,49 +531,7 @@ export default function Pedidos() {
               </div>
             </div>
 
-            {/* PAGAMENTO */}
-            <div style={{...cardStyle, borderColor:erros.formaPagamento?"#fecaca":t.border}}>
-              <h2 className="text-lg font-semibold mb-1" style={{color:t.text}}>💳 Forma de Pagamento *</h2>
-              {erros.formaPagamento && <p className="text-sm mb-3" style={{color:"#dc2626"}}>⚠️ Selecione uma forma de pagamento</p>}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
-                {["PIX","Cartão de Crédito","Cartão de Débito","Dinheiro"].map(forma => (
-                  <button key={forma}
-                    onClick={() => {setCliente(p=>({...p,formaPagamento:forma})); setErros(p=>({...p,formaPagamento:false}));}}
-                    style={{
-                      padding:"12px 8px", borderRadius:"8px", fontSize:"13px", fontWeight:"500",
-                      cursor:"pointer", fontFamily:"system-ui",
-                      backgroundColor: cliente.formaPagamento===forma ? t.btnPrimarioBg : t.bgSecundario,
-                      color: cliente.formaPagamento===forma ? t.btnPrimarioText : t.text,
-                      border:"1px solid "+(cliente.formaPagamento===forma ? t.btnPrimarioBg : t.border),
-                    }}>{forma}</button>
-                ))}
-              </div>
 
-              {/* Mercado Pago — linha separada em destaque */}
-              <div className="mt-3">
-                <button
-                  onClick={() => {setCliente(p=>({...p,formaPagamento:"Mercado Pago"})); setErros(p=>({...p,formaPagamento:false}));}}
-                  style={{
-                    width:"100%", padding:"14px 16px", borderRadius:"8px",
-                    fontSize:"14px", fontWeight:"700", cursor:"pointer", fontFamily:"system-ui",
-                    display:"flex", alignItems:"center", justifyContent:"center", gap:"10px",
-                    backgroundColor: cliente.formaPagamento==="Mercado Pago" ? "#009ee3" : "#e8f6fd",
-                    color: cliente.formaPagamento==="Mercado Pago" ? "white" : "#009ee3",
-                    border: "2px solid #009ee3",
-                    transition: "all 0.2s",
-                  }}>
-                  <span style={{fontSize:"20px"}}>💳</span>
-                  <span>Pagar com Mercado Pago</span>
-                  <span style={{fontSize:"11px", fontWeight:"400", opacity:0.8}}>(cartão, Pix, boleto)</span>
-                  {cliente.formaPagamento==="Mercado Pago" && <span>✓</span>}
-                </button>
-                {cliente.formaPagamento==="Mercado Pago" && (
-                  <p style={{fontSize:"11px", color:t.textSecundario, fontFamily:"system-ui", marginTop:"6px", textAlign:"center"}}>
-                    Você será redirecionado para o ambiente seguro do Mercado Pago para concluir o pagamento.
-                  </p>
-                )}
-              </div>
-            </div>
 
             {/* OBS */}
             <div style={cardStyle}>
@@ -578,21 +544,19 @@ export default function Pedidos() {
             </div>
 
             {/* BOTÃO */}
-            {cliente.formaPagamento === "Mercado Pago" ? (
-              <button onClick={pagarComMP}
-                className="cursor-pointer w-full py-5 font-bold text-lg hover:opacity-90 transition"
-                style={{backgroundColor:"#009ee3", color:"white", cursor:"pointer",
-                  fontFamily:"system-ui", borderRadius:"12px"}}>
-                💳 Ir para o Mercado Pago
-              </button>
-            ) : (
-              <button onClick={finalizarPedido}
-                className="cursor-pointer w-full py-5 font-bold text-lg hover:opacity-90 transition"
-                style={{backgroundColor:t.btnPrimarioBg, color:t.btnPrimarioText, cursor:"pointer",
-                  fontFamily:"system-ui", borderRadius:"12px"}}>
-                ✅ Confirmar Pedido
-              </button>
-            )}
+            {/* Info sobre pagamento */}
+            <div style={{backgroundColor:"#e8f6fd", border:"1px solid #009ee3", borderRadius:"10px", padding:"14px 16px"}}>
+              <p style={{fontSize:"13px", color:"#0077b6", fontFamily:"system-ui", margin:0}}>
+                💳 O pagamento é feito com segurança pelo <strong>Mercado Pago</strong> — aceita cartão de crédito, débito, Pix e boleto. Você será redirecionado após confirmar.
+              </p>
+            </div>
+
+            <button onClick={pagarComMP}
+              className="cursor-pointer w-full py-5 font-bold text-lg hover:opacity-90 transition"
+              style={{backgroundColor:"#009ee3", color:"white", cursor:"pointer",
+                fontFamily:"system-ui", borderRadius:"12px", fontSize:"16px"}}>
+              Confirmar e Pagar com Mercado Pago 💳
+            </button>
           </div>
         )}
       </div>
