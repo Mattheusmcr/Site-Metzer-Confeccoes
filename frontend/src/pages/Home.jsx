@@ -223,7 +223,7 @@ export default function Home() {
                 Projetos entregues
               </p>
               <h2 style={{ fontSize: "clamp(2rem, 4vw, 3.5rem)", fontWeight: "300", color: t.text, letterSpacing: "-0.02em" }}>
-                Alguns dos trabalhos<em style={{ fontStyle: "italic" }}>que já entregamos</em>
+                Alguns dos trabalhos<em style={{ fontStyle: "italic" }}> que já entregamos</em>
               </h2>
               <p className="mt-3" style={{ fontSize: "14px", color: t.textSecundario, fontFamily: "system-ui", maxWidth: "380px", lineHeight: 1.6 }}>
                 Para empresas e eventos que precisavam de padrão e prazo.
