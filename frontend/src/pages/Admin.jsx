@@ -382,6 +382,34 @@ function Dashboard({ dark, estilos }) {
         ))}
       </div>
 
+      {/* GOOGLE ANALYTICS */}
+      <div className="rounded-xl p-5 mb-6" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
+        <div className="flex items-center justify-between mb-3">
+          <p className="font-semibold" style={{ color: text }}>📊 Visitantes do site</p>
+          <a href="https://analytics.google.com" target="_blank" rel="noreferrer"
+            style={{ fontSize:"12px", color:"#2563eb", textDecoration:"none", fontFamily:"system-ui" }}>
+            Abrir Google Analytics
+          </a>
+        </div>
+        <p style={{ fontSize:"12px", color: subtext, fontFamily:"system-ui", lineHeight:1.7 }}>
+          Dados de visitantes disponíveis no Google Analytics. Clique nos atalhos abaixo para acessar diretamente.
+        </p>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"10px", marginTop:"14px" }}>
+          {[
+            { label:"Tempo real", url:"https://analytics.google.com", icone:"🟢" },
+            { label:"Usuários", url:"https://analytics.google.com", icone:"👥" },
+            { label:"Páginas", url:"https://analytics.google.com", icone:"📄" },
+          ].map((item, i) => (
+            <a key={i} href={item.url} target="_blank" rel="noreferrer"
+              style={{ borderRadius:"8px", padding:"12px 8px", textAlign:"center",
+                backgroundColor: dark ? "#374151" : "#f3f4f6", textDecoration:"none", display:"block" }}>
+              <div style={{ fontSize:"20px", marginBottom:"6px" }}>{item.icone}</div>
+              <p style={{ fontSize:"11px", color: text, fontFamily:"system-ui", fontWeight:"500" }}>{item.label}</p>
+            </a>
+          ))}
+        </div>
+      </div>
+
       <div className="grid md:grid-cols-2 gap-6">
         {/* Top produtos */}
         <div className="rounded-xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
