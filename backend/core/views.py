@@ -109,9 +109,12 @@ class PedidoViewSet(viewsets.ModelViewSet):
                     "forma_pagamento": getattr(pedido, "forma_pagamento", ""),
                     "itens_resumo": [{"produto_nome": str(i.produto), "tamanho": i.tamanho, "quantidade": i.quantidade} for i in pedido.itens.all()],
                 }
-                notificar_pedido_catalogo(pedido_dict)
+                import datetime
+                protocolo = f"MTZ-{datetime.datetime.now().strftime('%Y%m%d')}-{str(pedido.id).zfill(4)}"
+                notificar_pedido_catalogo(pedido_dict, protocolo=protocolo)
             except Exception as e:
-                print(f"Notificação erro: {e}")
+                import logging
+                logging.getLogger(__name__).error(f"Notificação catálogo erro: {e}")
 
     def _old_stock_deduction(self):
         for item in []:
@@ -220,7 +223,10 @@ class PedidoPersonalizadoViewSet(viewsets.ModelViewSet):
                     "referencia": pedido.referencia,
                     "observacoes": pedido.observacoes,
                 }
-                notificar_pedido_personalizado(pedido_dict)
+                import datetime
+                protocolo = f"MTZ-PERS-{datetime.datetime.now().strftime('%Y%m%d')}-{str(pedido.id).zfill(4)}"
+                notificar_pedido_personalizado(pedido_dict, protocolo=protocolo)
             except Exception as e:
-                print(f"Notificação personalizado erro: {e}")
+                import logging
+                logging.getLogger(__name__).error(f"Notificação personalizado erro: {e}")
         return Response(serializer.data, status=201)

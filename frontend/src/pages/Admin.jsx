@@ -537,19 +537,21 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
     });
 
     const persRows = personalizados.map(p => {
-      // Monta referencia limpa sem quebras de linha
-      const ref = (p.referencia || p.ramo || "")
-        .replace(/\r?\n/g, " | ").replace(/\s+/g, " ").trim().slice(0, 400);
-      // Observação sem o bloco de endereço
-      const obsLimpa = (p.observacoes || "").split("Descrição:")[0]
-        .replace(/\r?\n/g, " ").trim();
+      // Referencia: combina ramo + combinacoes de forma limpa
+      const refParts = [
+        p.ramo ? `Produto: ${p.ramo}` : "",
+        p.quantidade ? `Qtd: ${p.quantidade} un` : "",
+        (p.referencia || "").replace(/\r?\n/g, " | ").replace(/\s+/g, " ").trim().slice(0, 300),
+      ].filter(Boolean).join(" | ");
+      // Observações limpas
+      const obs = (p.observacoes || "").replace(/\r?\n/g, " ").replace(/\s+/g, " ").trim();
       const prot = p.protocolo || `MTZ-PERS-${String(p.id).padStart(4,"0")}`;
       return [
         cell(prot), cell("Personalizado"), cell(p.id), cell(p.nome_cliente), cell(p.telefone), cell(p.email),
         cell(p.status||"novo"), cell(new Date(p.data_pedido).toLocaleDateString("pt-BR")),
-        cell("-"), cell("-"),
-        cell("-"), cell("-"), cell("-"), cell("-"), cell("-"), cell("-"),
-        cell(ref), cell(obsLimpa),
+        cell("A combinar"), cell("A combinar"),
+        cell("—"), cell("—"), cell("—"), cell("—"), cell("—"), cell("—"),
+        cell(refParts), cell(obs),
       ].join(";");
     });
 

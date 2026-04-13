@@ -48,7 +48,7 @@ def criar_preferencia(request):
                 "id": str(item.get("produto_id", "")),
                 "title": item.get("nome", "Produto Metzker"),
                 "quantity": int(item.get("quantidade", 1)),
-                "unit_price": float(item.get("preco", 0)),
+                "unit_price": round(float(item.get("preco", 0)), 2),
                 "currency_id": "BRL",
                 "description": f"Tamanho: {item.get('tamanho', '')}",
             })
@@ -56,14 +56,19 @@ def criar_preferencia(request):
         # URLs de retorno
         frontend_url = getattr(settings, "FRONTEND_URL", "https://www.metzkersolucoes.com.br")
 
+        # Limpa telefone para enviar só números
+        tel_raw = cliente.get("telefone", "").replace(" ","").replace("(","").replace(")","").replace("-","")
+        tel_num = tel_raw[2:] if len(tel_raw) >= 10 else tel_raw  # Remove DDD se tiver
+        area = tel_raw[:2] if len(tel_raw) >= 10 else "27"
+
         preference_data = {
             "items": mp_items,
             "payer": {
-                "name": cliente.get("nome", ""),
+                "name": cliente.get("nome", "Cliente"),
                 "email": cliente.get("email", ""),
                 "phone": {
-                    "area_code": "27",
-                    "number": cliente.get("telefone", "").replace(" ", "").replace("(", "").replace(")", "").replace("-", ""),
+                    "area_code": area,
+                    "number": tel_num,
                 },
             },
             "back_urls": {
@@ -73,7 +78,8 @@ def criar_preferencia(request):
             },
             "auto_return": "approved",
             "notification_url": f"{getattr(settings, 'BACKEND_URL', 'https://api.metzkersolucoes.com.br')}/api/mp-webhook/",
-            "statement_descriptor": "Metzker Solucoes",
+            "statement_descriptor": "METZKER",
+            "binary_mode": False,
             "external_reference": json.dumps({
                 "nome": cliente.get("nome"),
                 "email": cliente.get("email"),
@@ -87,9 +93,8 @@ def criar_preferencia(request):
                 "complemento": cliente.get("complemento", ""),
                 "observacao": cliente.get("observacao", ""),
                 "itens": itens,
-            }),
+            }, ensure_ascii=False),
             "payment_methods": {
-                "excluded_payment_types": [],
                 "installments": 12,
             },
         }
@@ -97,9 +102,9 @@ def criar_preferencia(request):
         result = sdk.preference().create(preference_data)
         preference = result["response"]
 
-        if result["status"] not in [200, 201]:
-            logger.error(f"Erro MP ao criar preferência: {preference}")
-            return Response({"erro": "Erro ao criar pagamento."}, status=500)
+        if result["status"] not in [200, 201] or "id" not in result.get("response", {}):
+            logger.error(f"Erro MP ao criar preferência: status={result['status']} response={preference}")
+            return Response({"erro": f"Erro ao criar pagamento. Status: {result['status']}"}, status=500)
 
         return Response({
             "preference_id": preference["id"],

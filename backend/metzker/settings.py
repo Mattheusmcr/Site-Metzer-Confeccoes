@@ -182,3 +182,5 @@ MP_ACCESS_TOKEN = os.environ.get('MP_ACCESS_TOKEN', '')
 MP_PUBLIC_KEY   = os.environ.get('MP_PUBLIC_KEY', '')
 FRONTEND_URL    = os.environ.get('FRONTEND_URL', 'https://www.metzkersolucoes.com.br')
 BACKEND_URL     = os.environ.get('BACKEND_URL', 'https://api.metzkersolucoes.com.br')
+
+OWNER_EMAIL = os.environ.get('OWNER_EMAIL', 'andremetzkrr@gmail.com')

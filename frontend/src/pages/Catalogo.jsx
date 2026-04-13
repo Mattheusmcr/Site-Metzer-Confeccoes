@@ -281,7 +281,26 @@ function Catalogo() {
 
                     {/* Tamanhos/formatos */}
                     {isComunicacao ? (
-                      <div>{/* sem descrição no card */}</div>
+                      <div className="flex gap-1.5 flex-wrap">
+                        {tamanhosComEstoque.length > 0
+                          ? tamanhosComEstoque.map(tam => (
+                            <button key={tam}
+                              onClick={() => {
+                                setTamanhosSelecionados(prev => ({ ...prev, [produto.id]: tam }));
+                                setAlertas(prev => ({ ...prev, [produto.id]: false }));
+                              }}
+                              className="px-2.5 py-1 text-xs transition hover:opacity-70"
+                              style={{
+                                border: "1px solid " + (tamanhosSelecionados[produto.id] === tam ? t.text : t.border),
+                                backgroundColor: tamanhosSelecionados[produto.id] === tam ? t.btnPrimarioBg : "transparent",
+                                color: tamanhosSelecionados[produto.id] === tam ? t.btnPrimarioText : t.text,
+                              }}>
+                              {tam}
+                            </button>
+                          ))
+                          : <p className="text-xs" style={{ color: t.textSecundario }}>Sem estoque</p>
+                        }
+                      </div>
                     ) : (
                       // Roupas — botões de tamanho
                       <div className="flex gap-1.5 flex-wrap">
@@ -350,7 +369,7 @@ function Catalogo() {
         </div>
       </div>
     </div>
-    </div> 
+    </div>   
   );
 }
 
