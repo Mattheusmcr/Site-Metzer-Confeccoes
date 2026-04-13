@@ -81,6 +81,11 @@ class Pedido(models.Model):
     estado = models.CharField(max_length=2, blank=True, default="")
     forma_pagamento = models.CharField(max_length=50, blank=True, default="")
     observacao = models.TextField(blank=True, default="")
+
+    # Frete
+    frete_tipo  = models.CharField(max_length=50, blank=True, default="retirada")
+    frete_valor = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+
     data_pedido = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=30, default="novo",
         choices=[("novo","Novo"),("em_andamento","Em andamento"),("concluido","Concluído"),("cancelado","Cancelado")])
@@ -129,6 +134,19 @@ class PedidoPersonalizado(models.Model):
     nome_cliente    = models.CharField(max_length=200, blank=True, default="")
     telefone        = models.CharField(max_length=30, blank=True, default="")
     email           = models.CharField(max_length=200, blank=True, default="")
+
+    # Endereço de entrega
+    cep             = models.CharField(max_length=9, blank=True, default="")
+    rua             = models.CharField(max_length=200, blank=True, default="")
+    numero          = models.CharField(max_length=20, blank=True, default="")
+    complemento     = models.CharField(max_length=100, blank=True, default="")
+    bairro          = models.CharField(max_length=100, blank=True, default="")
+    cidade          = models.CharField(max_length=100, blank=True, default="")
+    estado          = models.CharField(max_length=2, blank=True, default="")
+
+    # Frete
+    frete_tipo      = models.CharField(max_length=50, blank=True, default="retirada")
+    frete_valor     = models.DecimalField(max_digits=8, decimal_places=2, default=0)
 
     # Imagens de referência
     imagem1 = models.ImageField(upload_to='pedidos_personalizados/', blank=True, null=True)

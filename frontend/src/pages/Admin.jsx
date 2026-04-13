@@ -549,8 +549,9 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
       return [
         cell(prot), cell("Personalizado"), cell(p.id), cell(p.nome_cliente), cell(p.telefone), cell(p.email),
         cell(p.status||"novo"), cell(new Date(p.data_pedido).toLocaleDateString("pt-BR")),
-        cell("A combinar"), cell("A combinar"),
-        cell("—"), cell("—"), cell("—"), cell("—"), cell("—"), cell("—"),
+        cell("A combinar"), cell(p.frete_tipo||"retirada"),
+        cell(p.rua||"—"), cell(p.numero||"—"), cell(p.bairro||"—"),
+        cell(p.cidade||"—"), cell(p.estado||"—"), cell(p.cep||"—"),
         cell(refParts), cell(obs),
       ].join(";");
     });

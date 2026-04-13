@@ -76,6 +76,7 @@ const FORM_INICIAL = {
   nomeCliente:"", telefone:"", email:"",
   cep:"", cidade:"", estado:"", rua:"", numero:"", bairro:"", complemento:"",
   observacoes:"",
+  frete_tipo:"", frete_valor:0,
 };
 
 export default function Personalizado(){
@@ -277,6 +278,15 @@ export default function Personalizado(){
       fd.append("nome_cliente", form.nomeCliente);
       fd.append("telefone", form.telefone);
       fd.append("email", form.email);
+      fd.append("cep", form.cep);
+      fd.append("rua", form.rua);
+      fd.append("numero", form.numero);
+      fd.append("complemento", form.complemento);
+      fd.append("bairro", form.bairro);
+      fd.append("cidade", form.cidade);
+      fd.append("estado", form.estado);
+      fd.append("frete_tipo", form.frete_tipo || "retirada");
+      fd.append("frete_valor", form.frete_valor || 0);
       // Imagens (máx 5)
       form.fotos.forEach((foto, i) => {
         if(foto.file && i < 5) fd.append(`imagem${i+1}`, foto.file);
@@ -731,6 +741,34 @@ export default function Personalizado(){
                   <div><label style={labelStyle}>Complemento</label><input value={form.complemento||""} onChange={e=>setForm(p=>({...p,complemento:e.target.value}))} placeholder="Apto 2" style={inputStyle}/></div>
                 </div>
                 <div><label style={labelStyle}>Observações finais (opcional)</label><textarea value={form.observacoes} onChange={e=>setForm(p=>({...p,observacoes:e.target.value}))} rows={3} placeholder="Alguma informação extra..." style={{...inputStyle,resize:"none"}}/></div>
+
+                {/* FRETE */}
+                <div>
+                  <label style={{...labelStyle,marginBottom:"10px",display:"block"}}>🚚 Opção de entrega *</label>
+                  <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+                    {[
+                      {id:"retirada", label:"🏪 Retirada no local", sub:"Polo Têxtil Santa Inês, Vila Velha — ES", valor:"Grátis", cor:"#16a34a"},
+                      {id:"motoboy",  label:"🛵 Entrega por motoboy", sub:"Entrega própria — valor combinado com a loja", valor:"A combinar", cor:t.textSecundario},
+                      {id:"correios", label:"📬 Correios (PAC / SEDEX)", sub:"Para todo o Brasil — calculado pela loja", valor:"A calcular", cor:t.textSecundario},
+                    ].map(op => (
+                      <button key={op.id} onClick={()=>setForm(p=>({...p,frete_tipo:op.id}))}
+                        style={{
+                          padding:"12px 14px", borderRadius:"8px", textAlign:"left", cursor:"pointer",
+                          border:"2px solid "+(form.frete_tipo===op.id ? t.text : t.border),
+                          backgroundColor: form.frete_tipo===op.id ? t.bgSecundario : "transparent",
+                        }}>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                          <div>
+                            <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0}}>{op.label}</p>
+                            <p style={{fontSize:"11px",color:t.textSecundario,margin:"2px 0 0"}}>{op.sub}</p>
+                          </div>
+                          <span style={{fontSize:"12px",fontWeight:"700",color:op.cor,whiteSpace:"nowrap",marginLeft:"12px"}}>{op.valor}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
               </div>
             </div>
 
