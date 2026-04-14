@@ -96,29 +96,35 @@ class InstitucionalSerializer(serializers.ModelSerializer):
 class PedidoPersonalizadoSerializer(serializers.ModelSerializer):
     class Meta:
         model  = PedidoPersonalizado
-        fields = '__all__'
+        fields = [
+            'id', 'nome_empresa', 'slogan', 'ramo', 'quantidade',
+            'estilo', 'paleta', 'aplicacoes',
+            'referencia', 'observacoes',
+            'nome_cliente', 'telefone', 'email',
+            'cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'estado',
+            'frete_tipo', 'frete_valor',
+            'imagem1', 'imagem2', 'imagem3', 'imagem4', 'imagem5',
+            'data_pedido', 'status',
+        ]
         extra_kwargs = {
-            'nome_cliente': {'required': False, 'allow_blank': True},
-            'telefone':     {'required': False, 'allow_blank': True},
-            'email':        {'required': False, 'allow_blank': True},
-            'slogan':       {'required': False, 'allow_blank': True},
-            'referencia':   {'required': False, 'allow_blank': True},
-            'observacoes':  {'required': False, 'allow_blank': True},
-            # Endereço — opcionais
-            'cep':          {'required': False, 'allow_blank': True},
-            'rua':          {'required': False, 'allow_blank': True},
-            'numero':       {'required': False, 'allow_blank': True},
-            'complemento':  {'required': False, 'allow_blank': True},
-            'bairro':       {'required': False, 'allow_blank': True},
-            'cidade':       {'required': False, 'allow_blank': True},
-            'estado':       {'required': False, 'allow_blank': True},
-            # Frete — opcionais
-            'frete_tipo':   {'required': False, 'allow_blank': True},
-            'frete_valor':  {'required': False},
-            # Imagens
-            'imagem1':      {'required': False, 'allow_null': True},
-            'imagem2':      {'required': False, 'allow_null': True},
-            'imagem3':      {'required': False, 'allow_null': True},
-            'imagem4':      {'required': False, 'allow_null': True},
-            'imagem5':      {'required': False, 'allow_null': True},
+            'nome_cliente':  {'required': False, 'allow_blank': True},
+            'telefone':      {'required': False, 'allow_blank': True},
+            'email':         {'required': False, 'allow_blank': True},
+            'slogan':        {'required': False, 'allow_blank': True},
+            'referencia':    {'required': False, 'allow_blank': True},
+            'observacoes':   {'required': False, 'allow_blank': True},
+            'cep':           {'required': False, 'allow_blank': True},
+            'rua':           {'required': False, 'allow_blank': True},
+            'numero':        {'required': False, 'allow_blank': True},
+            'complemento':   {'required': False, 'allow_blank': True},
+            'bairro':        {'required': False, 'allow_blank': True},
+            'cidade':        {'required': False, 'allow_blank': True},
+            'estado':        {'required': False, 'allow_blank': True},
+            'frete_tipo':    {'required': False, 'allow_blank': True},
+            'frete_valor':   {'required': False},
+            'imagem1':       {'required': False, 'allow_null': True},
+            'imagem2':       {'required': False, 'allow_null': True},
+            'imagem3':       {'required': False, 'allow_null': True},
+            'imagem4':       {'required': False, 'allow_null': True},
+            'imagem5':       {'required': False, 'allow_null': True},
         }

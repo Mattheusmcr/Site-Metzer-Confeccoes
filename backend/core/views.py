@@ -1,6 +1,7 @@
 from rest_framework import viewsets, serializers
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, AllowAny
+from rest_framework.views import APIView
 import threading
 
 # Import email notifications (fails gracefully if not configured)
@@ -40,6 +41,27 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import Produto, Pedido, Institucional, Estoque, ItemPedido, ProdutoImagem, PedidoPersonalizado
 from .serializers import ProdutoSerializer, PedidoSerializer, InstitucionalSerializer, EstoqueSerializer, PedidoPersonalizadoSerializer
+
+
+class HealthCheckView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        from django.db import connection
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'core_pedidopersonalizado' ORDER BY column_name;")
+                cols = [r[0] for r in cursor.fetchall()]
+            has_frete = 'frete_tipo' in cols
+            has_cep = 'cep' in cols
+            return Response({
+                "status": "ok",
+                "migration_frete": has_frete,
+                "migration_cep": has_cep,
+                "colunas_personalizado": cols,
+            })
+        except Exception as e:
+            return Response({"status": "error", "detail": str(e)}, status=500)
 
 
 class ProdutoViewSet(viewsets.ModelViewSet):
@@ -196,6 +218,15 @@ class PedidoPersonalizadoViewSet(viewsets.ModelViewSet):
         if self.action == 'create':
             return [AllowAny()]
         return [IsAdminUser()]
+
+    def list(self, request, *args, **kwargs):
+        try:
+            return super().list(request, *args, **kwargs)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"PedidoPersonalizado list error: {e}")
+            # Se a tabela tiver colunas faltando, retorna lista vazia com aviso
+            return Response({"error": str(e), "pedidos": [], "aviso": "Migration pendente — rode python manage.py migrate"}, status=200)
 
     def create(self, request, *args, **kwargs):
         # Salva imagens separadamente (campos imagem1..5)
