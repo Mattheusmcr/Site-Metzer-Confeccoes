@@ -1,14 +1,13 @@
 """
-Safe migration: adds address + frete fields
-Uses RunPython to add columns safely even if they already exist.
+Migration 0020: adds address + frete fields to Pedido and PedidoPersonalizado
+Safe: uses RunPython with try/except so it never fails if columns already exist.
 """
-from django.db import migrations, models, connection
+from django.db import migrations, models
 
 
 def add_columns_safe(apps, schema_editor):
     db = schema_editor.connection
     with db.cursor() as cursor:
-        # Check PostgreSQL
         try:
             cursor.execute(
                 "SELECT column_name FROM information_schema.columns "
@@ -22,7 +21,7 @@ def add_columns_safe(apps, schema_editor):
             )
             ped_cols = {r[0] for r in cursor.fetchall()}
         except Exception:
-            return  # SQLite or other DB — let Django handle it
+            return
 
         for col, defn in [
             ('frete_tipo',  "VARCHAR(50) NOT NULL DEFAULT 'retirada'"),
@@ -31,8 +30,9 @@ def add_columns_safe(apps, schema_editor):
             if col not in ped_cols:
                 try:
                     cursor.execute(f"ALTER TABLE core_pedido ADD COLUMN {col} {defn};")
+                    print(f"  ✅ core_pedido.{col} added")
                 except Exception as e:
-                    print(f"Skipping core_pedido.{col}: {e}")
+                    print(f"  ⚠️  core_pedido.{col} skip: {e}")
 
         for col, defn in [
             ('cep',         "VARCHAR(9) NOT NULL DEFAULT ''"),
@@ -50,14 +50,15 @@ def add_columns_safe(apps, schema_editor):
                     cursor.execute(
                         f"ALTER TABLE core_pedidopersonalizado ADD COLUMN {col} {defn};"
                     )
+                    print(f"  ✅ core_pedidopersonalizado.{col} added")
                 except Exception as e:
-                    print(f"Skipping core_pedidopersonalizado.{col}: {e}")
+                    print(f"  ⚠️  core_pedidopersonalizado.{col} skip: {e}")
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0001_initial'),
+        ('core', '0019_pedido_status'),
     ]
 
     operations = [
