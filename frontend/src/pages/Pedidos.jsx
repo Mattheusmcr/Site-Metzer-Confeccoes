@@ -575,74 +575,82 @@ export default function Pedidos() {
 
 
 
-            {/* FRETE — dinâmico baseado no CEP */}
+            {/* FRETE */}
             {(() => {
               const motoInfo = estimarMotoboy(cliente.cidade, cliente.estado);
-              const corInfo  = cliente.estado ? estimarCorreios(cliente.estado) : null;
-              const temCep   = cliente.cep?.replace(/\D/g,"").length === 8;
+              const corInfo  = estimarCorreios(cliente.estado || "outros");
+              const cidadeLabel = cliente.cidade ? ` para ${cliente.cidade}` : "";
               return (
                 <div style={{...cardStyle, borderColor: !frete.tipo && calcFrete ? "#fecaca" : t.border}}>
-                  <h2 className="text-lg font-semibold mb-1" style={{color:t.text}}>🚚 Entrega *</h2>
-                  {!temCep
-                    ? <p className="text-sm" style={{color:t.textSecundario}}>Preencha o CEP acima para ver as opções de entrega.</p>
-                    : <div className="flex flex-col gap-3 mt-3">
+                  <h2 className="text-lg font-semibold mb-1" style={{color:t.text}}>🚚 Como deseja receber? *</h2>
+                  <p className="text-sm mb-4" style={{color:t.textSecundario}}>
+                    Escolha uma opção abaixo. Os valores de motoboy e Correios são estimativas — a loja confirmará o valor exato pelo WhatsApp antes de enviar.
+                  </p>
+                  <div className="flex flex-col gap-3">
 
-                        {/* Retirada — sempre disponível */}
-                        <button onClick={() => setFrete({tipo:"retirada", valor:0})}
-                          style={{ padding:"14px 16px", borderRadius:"8px", textAlign:"left", cursor:"pointer",
-                            border:"2px solid "+(frete.tipo==="retirada" ? t.text : t.border),
-                            backgroundColor: frete.tipo==="retirada" ? t.bgSecundario : "transparent" }}>
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="font-semibold text-sm" style={{color:t.text}}>🏪 Retirada no local</p>
-                              <p className="text-xs mt-0.5" style={{color:t.textSecundario}}>Polo Têxtil Santa Inês, Vila Velha — ES</p>
-                            </div>
-                            <span className="font-bold text-sm" style={{color:"#16a34a"}}>Grátis</span>
-                          </div>
-                        </button>
-
-                        {/* Motoboy — só aparece se cidade for região metro ES */}
-                        {motoInfo && (
-                          <button onClick={() => setFrete({tipo:"motoboy", valor:motoInfo.min})}
-                            style={{ padding:"14px 16px", borderRadius:"8px", textAlign:"left", cursor:"pointer",
-                              border:"2px solid "+(frete.tipo==="motoboy" ? t.text : t.border),
-                              backgroundColor: frete.tipo==="motoboy" ? t.bgSecundario : "transparent" }}>
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <p className="font-semibold text-sm" style={{color:t.text}}>🛵 Entrega por motoboy</p>
-                                <p className="text-xs mt-0.5" style={{color:t.textSecundario}}>Entrega própria para {cliente.cidade} — valor confirmado pela loja</p>
-                              </div>
-                              <span className="text-xs font-bold" style={{color:t.text, whiteSpace:"nowrap", marginLeft:"8px"}}>
-                                ~R$ {motoInfo.min}–{motoInfo.max}
-                              </span>
-                            </div>
-                          </button>
-                        )}
-
-                        {/* Correios — sempre disponível se tem CEP */}
-                        {corInfo && (
-                          <button onClick={() => setFrete({tipo:"correios", valor:0})}
-                            style={{ padding:"14px 16px", borderRadius:"8px", textAlign:"left", cursor:"pointer",
-                              border:"2px solid "+(frete.tipo==="correios" ? t.text : t.border),
-                              backgroundColor: frete.tipo==="correios" ? t.bgSecundario : "transparent" }}>
-                            <div>
-                              <div className="flex justify-between items-center">
-                                <p className="font-semibold text-sm" style={{color:t.text}}>📬 Correios</p>
-                                <span className="text-xs" style={{color:t.textSecundario}}>Prazo: {corInfo.prazo}</span>
-                              </div>
-                              <div className="flex gap-4 mt-1">
-                                <p className="text-xs" style={{color:t.textSecundario}}>PAC: <strong style={{color:t.text}}>{corInfo.pac}</strong></p>
-                                <p className="text-xs" style={{color:t.textSecundario}}>SEDEX: <strong style={{color:t.text}}>{corInfo.sedex}</strong></p>
-                              </div>
-                              <p className="text-xs mt-1" style={{color:t.textSecundario}}>Valor exato confirmado pela loja antes do envio.</p>
-                            </div>
-                          </button>
-                        )}
-
+                    {/* ── Retirada ── */}
+                    <button onClick={() => setFrete({tipo:"retirada", valor:0})}
+                      style={{ padding:"14px 16px", borderRadius:"10px", textAlign:"left", cursor:"pointer",
+                        border:"2px solid "+(frete.tipo==="retirada" ? "#16a34a" : t.border),
+                        backgroundColor: frete.tipo==="retirada" ? "#f0fdf4" : t.bgCard }}>
+                      <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                        <div>
+                          <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0}}>🏪 Retirada no local</p>
+                          <p style={{fontSize:"12px", color:t.textSecundario, marginTop:"3px"}}>Polo Têxtil Santa Inês — Vila Velha, ES</p>
+                          <p style={{fontSize:"11px", color:t.textSecundario, marginTop:"2px"}}>Combinamos o dia e horário pelo WhatsApp</p>
+                        </div>
+                        <span style={{fontWeight:"700", fontSize:"15px", color:"#16a34a", whiteSpace:"nowrap", marginLeft:"12px"}}>
+                          Grátis
+                        </span>
                       </div>
-                  }
-                  {!frete.tipo && calcFrete && temCep && (
-                    <p className="text-xs mt-3" style={{color:"#dc2626"}}>⚠️ Selecione uma opção de entrega</p>
+                      {frete.tipo==="retirada" && <p style={{fontSize:"11px", color:"#16a34a", marginTop:"8px", fontWeight:"600"}}>✅ Selecionado</p>}
+                    </button>
+
+                    {/* ── Motoboy ── sempre aparece, preço muda conforme cidade */}
+                    <button onClick={() => setFrete({tipo:"motoboy", valor: motoInfo ? motoInfo.min : 0})}
+                      style={{ padding:"14px 16px", borderRadius:"10px", textAlign:"left", cursor:"pointer",
+                        border:"2px solid "+(frete.tipo==="motoboy" ? "#1d4ed8" : t.border),
+                        backgroundColor: frete.tipo==="motoboy" ? "#eff6ff" : t.bgCard,
+                        opacity: motoInfo ? 1 : 0.5 }}>
+                      <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                        <div>
+                          <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0}}>🛵 Entrega por motoboy</p>
+                          <p style={{fontSize:"12px", color:t.textSecundario, marginTop:"3px"}}>
+                            {motoInfo
+                              ? `Entrega própria${cidadeLabel} — estimativa de R$ ${motoInfo.min} a R$ ${motoInfo.max}`
+                              : "Disponível apenas para a região da Grande Vitória / ES"}
+                          </p>
+                          {motoInfo && <p style={{fontSize:"11px", color:t.textSecundario, marginTop:"2px"}}>Valor final confirmado pela loja pelo WhatsApp</p>}
+                        </div>
+                        <span style={{fontWeight:"700", fontSize:"13px", color: motoInfo ? "#1d4ed8" : t.textSecundario, whiteSpace:"nowrap", marginLeft:"12px"}}>
+                          {motoInfo ? `~R$ ${motoInfo.min}–${motoInfo.max}` : "Indisponível"}
+                        </span>
+                      </div>
+                      {frete.tipo==="motoboy" && <p style={{fontSize:"11px", color:"#1d4ed8", marginTop:"8px", fontWeight:"600"}}>✅ Selecionado</p>}
+                    </button>
+
+                    {/* ── Correios ── sempre aparece */}
+                    <button onClick={() => setFrete({tipo:"correios", valor:0})}
+                      style={{ padding:"14px 16px", borderRadius:"10px", textAlign:"left", cursor:"pointer",
+                        border:"2px solid "+(frete.tipo==="correios" ? "#7c3aed" : t.border),
+                        backgroundColor: frete.tipo==="correios" ? "#f5f3ff" : t.bgCard }}>
+                      <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start"}}>
+                        <div style={{flex:1}}>
+                          <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0}}>📬 Correios (PAC ou SEDEX)</p>
+                          <p style={{fontSize:"12px", color:t.textSecundario, marginTop:"3px"}}>Envio para qualquer cidade do Brasil</p>
+                          <div style={{display:"flex", gap:"16px", marginTop:"6px"}}>
+                            <span style={{fontSize:"12px", color:t.textSecundario}}>PAC: <strong style={{color:t.text}}>{corInfo.pac}</strong></span>
+                            <span style={{fontSize:"12px", color:t.textSecundario}}>SEDEX: <strong style={{color:t.text}}>{corInfo.sedex}</strong></span>
+                          </div>
+                          <p style={{fontSize:"11px", color:t.textSecundario, marginTop:"3px"}}>Prazo estimado: {corInfo.prazo} · Valor confirmado pela loja</p>
+                        </div>
+                      </div>
+                      {frete.tipo==="correios" && <p style={{fontSize:"11px", color:"#7c3aed", marginTop:"8px", fontWeight:"600"}}>✅ Selecionado</p>}
+                    </button>
+
+                  </div>
+                  {!frete.tipo && calcFrete && (
+                    <p style={{fontSize:"12px", color:"#dc2626", marginTop:"12px"}}>⚠️ Selecione uma opção de entrega para continuar.</p>
                   )}
                 </div>
               );

@@ -762,63 +762,74 @@ export default function Personalizado(){
                 </div>
                 <div><label style={labelStyle}>Observações finais (opcional)</label><textarea value={form.observacoes} onChange={e=>setForm(p=>({...p,observacoes:e.target.value}))} rows={3} placeholder="Alguma informação extra..." style={{...inputStyle,resize:"none"}}/></div>
 
-                {/* FRETE — dinâmico por CEP */}
+                {/* FRETE */}
                 {(() => {
                   const motoP = estimarMotoboyP(form.cidade, form.estado);
-                  const corP  = form.estado ? estimarCorreiosP(form.estado) : null;
-                  const temCepP = form.cep?.replace(/\D/g,"").length === 8;
+                  const corP  = estimarCorreiosP(form.estado || "outros");
+                  const cidadeL = form.cidade ? ` para ${form.cidade}` : "";
                   return (
                     <div>
-                      <label style={{...labelStyle,marginBottom:"10px",display:"block"}}>🚚 Opção de entrega *</label>
-                      {!temCepP
-                        ? <p style={{fontSize:"12px",color:t.textSecundario,fontFamily:"system-ui"}}>Preencha o CEP acima para ver as opções de entrega.</p>
-                        : <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
+                      <label style={{...labelStyle, marginBottom:"10px", display:"block"}}>🚚 Como deseja receber? *</label>
+                      <p style={{fontSize:"12px",color:t.textSecundario,fontFamily:"system-ui",marginBottom:"10px",lineHeight:1.5}}>
+                        Escolha uma opção. Os valores de motoboy e Correios são estimativas — confirmamos o valor exato pelo WhatsApp.
+                      </p>
+                      <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
 
-                            <button onClick={()=>setForm(p=>({...p,frete_tipo:"retirada"}))}
-                              style={{padding:"12px 14px",borderRadius:"8px",textAlign:"left",cursor:"pointer",
-                                border:"2px solid "+(form.frete_tipo==="retirada"?t.text:t.border),
-                                backgroundColor:form.frete_tipo==="retirada"?t.bgSecundario:"transparent"}}>
-                              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                                <div>
-                                  <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0}}>🏪 Retirada no local</p>
-                                  <p style={{fontSize:"11px",color:t.textSecundario,margin:"2px 0 0"}}>Polo Têxtil Santa Inês, Vila Velha — ES</p>
-                                </div>
-                                <span style={{fontSize:"12px",fontWeight:"700",color:"#16a34a",whiteSpace:"nowrap",marginLeft:"12px"}}>Grátis</span>
-                              </div>
-                            </button>
-
-                            {motoP && (
-                              <button onClick={()=>setForm(p=>({...p,frete_tipo:"motoboy",frete_valor:motoP.min}))}
-                                style={{padding:"12px 14px",borderRadius:"8px",textAlign:"left",cursor:"pointer",
-                                  border:"2px solid "+(form.frete_tipo==="motoboy"?t.text:t.border),
-                                  backgroundColor:form.frete_tipo==="motoboy"?t.bgSecundario:"transparent"}}>
-                                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                                  <div>
-                                    <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0}}>🛵 Entrega por motoboy</p>
-                                    <p style={{fontSize:"11px",color:t.textSecundario,margin:"2px 0 0"}}>Para {form.cidade} — confirmado pela loja</p>
-                                  </div>
-                                  <span style={{fontSize:"12px",fontWeight:"700",color:t.text,whiteSpace:"nowrap",marginLeft:"12px"}}>~R$ {motoP.min}–{motoP.max}</span>
-                                </div>
-                              </button>
-                            )}
-
-                            {corP && (
-                              <button onClick={()=>setForm(p=>({...p,frete_tipo:"correios"}))}
-                                style={{padding:"12px 14px",borderRadius:"8px",textAlign:"left",cursor:"pointer",
-                                  border:"2px solid "+(form.frete_tipo==="correios"?t.text:t.border),
-                                  backgroundColor:form.frete_tipo==="correios"?t.bgSecundario:"transparent"}}>
-                                <div>
-                                  <div style={{display:"flex",justifyContent:"space-between"}}>
-                                    <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0}}>📬 Correios</p>
-                                    <span style={{fontSize:"11px",color:t.textSecundario}}>{corP.prazo}</span>
-                                  </div>
-                                  <p style={{fontSize:"11px",color:t.textSecundario,margin:"4px 0 0"}}>PAC: <strong style={{color:t.text}}>{corP.pac}</strong> &nbsp;|&nbsp; SEDEX: <strong style={{color:t.text}}>{corP.sedex}</strong></p>
-                                </div>
-                              </button>
-                            )}
-
+                        {/* Retirada */}
+                        <button onClick={()=>setForm(p=>({...p,frete_tipo:"retirada",frete_valor:0}))}
+                          style={{padding:"12px 14px",borderRadius:"10px",textAlign:"left",cursor:"pointer",
+                            border:"2px solid "+(form.frete_tipo==="retirada"?"#16a34a":t.border),
+                            backgroundColor:form.frete_tipo==="retirada"?"#f0fdf4":t.bgCard}}>
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                            <div>
+                              <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0}}>🏪 Retirada no local</p>
+                              <p style={{fontSize:"11px",color:t.textSecundario,margin:"3px 0 0"}}>Polo Têxtil Santa Inês — Vila Velha, ES</p>
+                            </div>
+                            <span style={{fontSize:"13px",fontWeight:"700",color:"#16a34a",whiteSpace:"nowrap",marginLeft:"12px"}}>Grátis</span>
                           </div>
-                      }
+                          {form.frete_tipo==="retirada" && <p style={{fontSize:"11px",color:"#16a34a",marginTop:"6px",fontWeight:"600"}}>✅ Selecionado</p>}
+                        </button>
+
+                        {/* Motoboy — sempre visível, desativado se fora da região */}
+                        <button onClick={()=>{ if(motoP) setForm(p=>({...p,frete_tipo:"motoboy",frete_valor:motoP.min})); }}
+                          style={{padding:"12px 14px",borderRadius:"10px",textAlign:"left",cursor: motoP?"pointer":"default",
+                            border:"2px solid "+(form.frete_tipo==="motoboy"?"#1d4ed8":t.border),
+                            backgroundColor:form.frete_tipo==="motoboy"?"#eff6ff":t.bgCard,
+                            opacity: motoP ? 1 : 0.45}}>
+                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                            <div style={{flex:1}}>
+                              <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0}}>🛵 Entrega por motoboy</p>
+                              <p style={{fontSize:"11px",color:t.textSecundario,margin:"3px 0 0"}}>
+                                {motoP
+                                  ? `Entrega própria${cidadeL} — estimativa de R$ ${motoP.min} a R$ ${motoP.max}`
+                                  : "Disponível apenas para a região da Grande Vitória / ES"}
+                              </p>
+                            </div>
+                            <span style={{fontSize:"12px",fontWeight:"700",color:motoP?"#1d4ed8":t.textSecundario,whiteSpace:"nowrap",marginLeft:"12px"}}>
+                              {motoP ? `~R$ ${motoP.min}–${motoP.max}` : "Indisponível"}
+                            </span>
+                          </div>
+                          {form.frete_tipo==="motoboy" && <p style={{fontSize:"11px",color:"#1d4ed8",marginTop:"6px",fontWeight:"600"}}>✅ Selecionado</p>}
+                        </button>
+
+                        {/* Correios — sempre visível */}
+                        <button onClick={()=>setForm(p=>({...p,frete_tipo:"correios",frete_valor:0}))}
+                          style={{padding:"12px 14px",borderRadius:"10px",textAlign:"left",cursor:"pointer",
+                            border:"2px solid "+(form.frete_tipo==="correios"?"#7c3aed":t.border),
+                            backgroundColor:form.frete_tipo==="correios"?"#f5f3ff":t.bgCard}}>
+                          <div>
+                            <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0}}>📬 Correios (PAC ou SEDEX)</p>
+                            <p style={{fontSize:"11px",color:t.textSecundario,margin:"3px 0 0"}}>Para qualquer cidade do Brasil</p>
+                            <div style={{display:"flex",gap:"14px",marginTop:"5px"}}>
+                              <span style={{fontSize:"11px",color:t.textSecundario}}>PAC: <strong style={{color:t.text}}>{corP.pac}</strong></span>
+                              <span style={{fontSize:"11px",color:t.textSecundario}}>SEDEX: <strong style={{color:t.text}}>{corP.sedex}</strong></span>
+                            </div>
+                            <p style={{fontSize:"10px",color:t.textSecundario,marginTop:"3px"}}>Prazo: {corP.prazo} · Valor confirmado pela loja</p>
+                          </div>
+                          {form.frete_tipo==="correios" && <p style={{fontSize:"11px",color:"#7c3aed",marginTop:"6px",fontWeight:"600"}}>✅ Selecionado</p>}
+                        </button>
+
+                      </div>
                     </div>
                   );
                 })()}

@@ -384,30 +384,42 @@ function Dashboard({ dark, estilos }) {
 
       {/* GOOGLE ANALYTICS */}
       <div className="rounded-xl p-5 mb-6" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
-        <div className="flex items-center justify-between mb-3">
-          <p className="font-semibold" style={{ color: text }}>📊 Visitantes do site</p>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"12px" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+            <span style={{ fontSize:"20px" }}>📊</span>
+            <p style={{ fontWeight:"600", fontSize:"15px", color: text, margin:0 }}>Google Analytics</p>
+          </div>
           <a href="https://analytics.google.com" target="_blank" rel="noreferrer"
-            style={{ fontSize:"12px", color:"#2563eb", textDecoration:"none", fontFamily:"system-ui" }}>
-            Abrir Google Analytics
+            style={{ fontSize:"12px", color:"#2563eb", fontFamily:"system-ui", fontWeight:"500",
+              textDecoration:"none", padding:"6px 12px", borderRadius:"6px",
+              border:"1px solid #2563eb", display:"inline-block" }}>
+            Abrir GA →
           </a>
         </div>
-        <p style={{ fontSize:"12px", color: subtext, fontFamily:"system-ui", lineHeight:1.7 }}>
-          Dados de visitantes disponíveis no Google Analytics. Clique nos atalhos abaixo para acessar diretamente.
+        <p style={{ fontSize:"12px", color: subtext, fontFamily:"system-ui", lineHeight:1.6, marginBottom:"14px" }}>
+          Os dados de visitantes ficam no painel do Google Analytics.
+          Clique nos atalhos abaixo para ir direto a cada relatório.
         </p>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"10px", marginTop:"14px" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"8px" }}>
           {[
-            { label:"Tempo real", url:"https://analytics.google.com", icone:"🟢" },
-            { label:"Usuários", url:"https://analytics.google.com", icone:"👥" },
-            { label:"Páginas", url:"https://analytics.google.com", icone:"📄" },
+            { label:"Tempo real", desc:"Quem está no site agora", url:"https://analytics.google.com", icone:"🟢" },
+            { label:"Usuários", desc:"Visitantes por período", url:"https://analytics.google.com", icone:"👥" },
+            { label:"Páginas", desc:"Páginas mais acessadas", url:"https://analytics.google.com", icone:"📄" },
           ].map((item, i) => (
             <a key={i} href={item.url} target="_blank" rel="noreferrer"
-              style={{ borderRadius:"8px", padding:"12px 8px", textAlign:"center",
-                backgroundColor: dark ? "#374151" : "#f3f4f6", textDecoration:"none", display:"block" }}>
-              <div style={{ fontSize:"20px", marginBottom:"6px" }}>{item.icone}</div>
-              <p style={{ fontSize:"11px", color: text, fontFamily:"system-ui", fontWeight:"500" }}>{item.label}</p>
+              style={{ borderRadius:"8px", padding:"12px 10px", textAlign:"center",
+                backgroundColor: dark ? "#374151" : "#f9fafb",
+                border: "1px solid " + border,
+                textDecoration:"none", display:"block", transition:"opacity .15s" }}>
+              <div style={{ fontSize:"22px", marginBottom:"5px" }}>{item.icone}</div>
+              <p style={{ fontSize:"12px", color: text, fontFamily:"system-ui", fontWeight:"600", margin:0 }}>{item.label}</p>
+              <p style={{ fontSize:"10px", color: subtext, fontFamily:"system-ui", marginTop:"2px" }}>{item.desc}</p>
             </a>
           ))}
         </div>
+        <p style={{ fontSize:"11px", color: subtext, fontFamily:"system-ui", marginTop:"10px", lineHeight:1.5 }}>
+          💡 Para ver os dados dentro deste painel seria necessário integração com a API do GA (requer Service Account OAuth2). Por enquanto os links acima levam direto para o GA.
+        </p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">

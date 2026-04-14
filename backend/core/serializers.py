@@ -104,6 +104,18 @@ class PedidoPersonalizadoSerializer(serializers.ModelSerializer):
             'slogan':       {'required': False, 'allow_blank': True},
             'referencia':   {'required': False, 'allow_blank': True},
             'observacoes':  {'required': False, 'allow_blank': True},
+            # Endereço — opcionais
+            'cep':          {'required': False, 'allow_blank': True},
+            'rua':          {'required': False, 'allow_blank': True},
+            'numero':       {'required': False, 'allow_blank': True},
+            'complemento':  {'required': False, 'allow_blank': True},
+            'bairro':       {'required': False, 'allow_blank': True},
+            'cidade':       {'required': False, 'allow_blank': True},
+            'estado':       {'required': False, 'allow_blank': True},
+            # Frete — opcionais
+            'frete_tipo':   {'required': False, 'allow_blank': True},
+            'frete_valor':  {'required': False},
+            # Imagens
             'imagem1':      {'required': False, 'allow_null': True},
             'imagem2':      {'required': False, 'allow_null': True},
             'imagem3':      {'required': False, 'allow_null': True},
