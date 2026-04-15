@@ -1,4 +1,6 @@
 # backend/core/mercadopago_views.py
+
+# Tenta importar o SDK do Mercado Pago — se não estiver instalado, desativa graciosamente
 try:
     import mercadopago
     MP_DISPONIVEL = True
@@ -12,16 +14,34 @@ from rest_framework.response import Response
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
-import json, logging
+import os
+import json
+import time
+import logging
+
 
 logger = logging.getLogger(__name__)
 
-MP_ACCESS_TOKEN = getattr(settings, "MP_ACCESS_TOKEN", "")
-
 def get_sdk():
+    """
+    Instancia o SDK do Mercado Pago lendo o token em tempo de execução.
+    Lê primeiro do settings (que por sua vez lê do os.environ via Railway),
+    com fallback direto para os.environ caso settings não tenha o valor.
+    Lança exceção clara se o token não estiver configurado.
+    """
     if not MP_DISPONIVEL:
         raise ImportError("Mercado Pago não instalado. Execute: pip install mercadopago")
-    return mercadopago.SDK(MP_ACCESS_TOKEN)
+
+    # CORREÇÃO 1 (continuação): leitura do token dentro da função
+    token = getattr(settings, "MP_ACCESS_TOKEN", "") or os.environ.get("MP_ACCESS_TOKEN", "")
+
+    if not token:
+        raise ValueError(
+            "MP_ACCESS_TOKEN não configurado. "
+            "Adicione a variável de ambiente no Railway."
+        )
+
+    return mercadopago.SDK(token)
 
 
 @api_view(["POST"])
@@ -35,13 +55,13 @@ def criar_preferencia(request):
         data = request.data
         itens = data.get("itens", [])
         cliente = data.get("cliente", {})
-        
+
         if not itens:
             return Response({"erro": "Nenhum item informado."}, status=400)
 
         sdk = get_sdk()
 
-        # Monta os items no formato MP
+        # Monta os items no formato esperado pela API do MP
         mp_items = []
         for item in itens:
             mp_items.append({
@@ -53,12 +73,19 @@ def criar_preferencia(request):
                 "description": f"Tamanho: {item.get('tamanho', '')}",
             })
 
-        # URLs de retorno
+        # URL base do frontend para redirecionamento após pagamento
         frontend_url = getattr(settings, "FRONTEND_URL", "https://www.metzkersolucoes.com.br")
 
-        # Limpa telefone para enviar só números
-        tel_raw = cliente.get("telefone", "").replace(" ","").replace("(","").replace(")","").replace("-","")
-        tel_num = tel_raw[2:] if len(tel_raw) >= 10 else tel_raw  # Remove DDD se tiver
+        # Limpa o telefone para enviar somente números à API do MP
+        tel_raw = (
+            cliente.get("telefone", "")
+            .replace(" ", "")
+            .replace("(", "")
+            .replace(")", "")
+            .replace("-", "")
+        )
+        # Separa DDD (2 primeiros dígitos) do número, se o telefone tiver 10+ dígitos
+        tel_num = tel_raw[2:] if len(tel_raw) >= 10 else tel_raw
         area = tel_raw[:2] if len(tel_raw) >= 10 else "27"
 
         preference_data = {
@@ -71,15 +98,24 @@ def criar_preferencia(request):
                     "number": tel_num,
                 },
             },
+            # URLs para onde o comprador é redirecionado após o pagamento
             "back_urls": {
                 "success": f"{frontend_url}/pedidos?status=aprovado",
                 "failure": f"{frontend_url}/pedidos?status=falhou",
                 "pending": f"{frontend_url}/pedidos?status=pendente",
             },
+            # Redireciona automaticamente apenas quando aprovado
             "auto_return": "approved",
-            "notification_url": f"{getattr(settings, 'BACKEND_URL', 'https://api.metzkersolucoes.com.br')}/api/mp-webhook/",
+            # URL do webhook no Railway que receberá as notificações do MP
+            "notification_url": (
+                f"{getattr(settings, 'BACKEND_URL', 'https://api.metzkersolucoes.com.br')}"
+                f"/api/mp-webhook/"
+            ),
             "statement_descriptor": "METZKER",
+            # binary_mode False: permite pagamentos pendentes (boleto, pix, etc.)
             "binary_mode": False,
+            # Armazena todos os dados do pedido no external_reference
+            # para reconstruir o pedido quando o webhook chegar
             "external_reference": json.dumps({
                 "nome": cliente.get("nome"),
                 "email": cliente.get("email"),
@@ -95,7 +131,7 @@ def criar_preferencia(request):
                 "itens": itens,
             }, ensure_ascii=False),
             "payment_methods": {
-                "installments": 12,
+                "installments": 12,  # Permite parcelamento em até 12x
             },
         }
 
@@ -103,13 +139,18 @@ def criar_preferencia(request):
         preference = result["response"]
 
         if result["status"] not in [200, 201] or "id" not in result.get("response", {}):
-            logger.error(f"Erro MP ao criar preferência: status={result['status']} response={preference}")
-            return Response({"erro": f"Erro ao criar pagamento. Status: {result['status']}"}, status=500)
+            logger.error(
+                f"Erro MP ao criar preferência: status={result['status']} response={preference}"
+            )
+            return Response(
+                {"erro": f"Erro ao criar pagamento. Status: {result['status']}"},
+                status=500,
+            )
 
         return Response({
             "preference_id": preference["id"],
-            "init_point": preference["init_point"],
-            "sandbox_init_point": preference.get("sandbox_init_point", ""),
+            "init_point": preference["init_point"],                          # URL de produção
+            "sandbox_init_point": preference.get("sandbox_init_point", ""), # URL de testes
         })
 
     except Exception as e:
@@ -124,21 +165,46 @@ def mp_webhook(request):
     """
     Recebe notificações do Mercado Pago sobre pagamentos.
     Quando aprovado, registra o pedido automaticamente.
+    Sempre responde 200 para que o MP não fique reenviando a notificação.
     """
     try:
+        # O MP pode enviar o tipo via query string (?topic=payment)
+        # ou via body JSON ({"type": "payment", "data": {"id": "..."}})
         topic = request.GET.get("topic") or request.data.get("type", "")
         payment_id = request.GET.get("id") or request.data.get("data", {}).get("id")
 
-        if not payment_id or topic not in ("payment", "merchant_order"):
+        # CORREÇÃO 2: Removido "merchant_order" do filtro.
+        # merchant_order não contém payment_id diretamente — só contém uma lista
+        # de pagamentos associados, e tentar fazer .get(payment_id) com um
+        # merchant_order ID causava 404. Processamos apenas notificações de "payment".
+        if not payment_id or topic not in ("payment",):
+            logger.info(f"Webhook ignorado: topic='{topic}' payment_id='{payment_id}'")
             return HttpResponse(status=200)
+
+        # CORREÇÃO 3: Adicionado sleep antes de consultar o pagamento.
+        # O MP dispara o webhook quase instantaneamente após o pagamento,
+        # mas a API deles pode demorar alguns segundos para ter o pagamento
+        # disponível para consulta. Sem essa espera, o GET /payments retornava
+        # 404 — que era exatamente o erro de 161 ocorrências no painel de monitoramento.
+        time.sleep(3)
 
         sdk = get_sdk()
         payment_info = sdk.payment().get(payment_id)
-        payment = payment_info["response"]
 
+        # CORREÇÃO 3 (continuação): Retry caso o pagamento ainda não esteja disponível
+        if payment_info.get("status") == 404:
+            logger.warning(
+                f"Payment {payment_id} ainda não disponível na API do MP. "
+                f"Aguardando 5s para nova tentativa..."
+            )
+            time.sleep(5)
+            payment_info = sdk.payment().get(payment_id)
+
+        payment = payment_info["response"]
         status = payment.get("status")
         logger.info(f"Webhook MP: payment_id={payment_id} status={status}")
 
+        # Só cria o pedido se o pagamento foi aprovado
         if status == "approved":
             external_ref = payment.get("external_reference", "{}")
             try:
@@ -146,27 +212,32 @@ def mp_webhook(request):
             except Exception:
                 dados = {}
 
-            # Registrar o pedido automaticamente
             _criar_pedido_apos_pagamento(dados, payment_id, payment)
 
         return HttpResponse(status=200)
 
     except Exception as e:
         logger.exception(f"Erro webhook MP: {e}")
-        return HttpResponse(status=200)  # Sempre 200 para o MP não reenviar
+        # Sempre retorna 200 mesmo em erro para o MP não reenviar infinitamente
+        return HttpResponse(status=200)
 
 
 def _criar_pedido_apos_pagamento(dados, payment_id, payment):
-    """Cria o pedido no banco após pagamento aprovado pelo MP."""
+    """
+    Cria o pedido no banco de dados após pagamento aprovado pelo MP.
+    Os dados do pedido vêm do external_reference que foi salvo na preference.
+    """
     try:
         from .models import Pedido, ItemPedido, Produto, Estoque
         from .notificacoes import notificar_pedido_catalogo
 
-        # Verifica se já existe pedido com este payment_id (evita duplicatas)
+        # Proteção contra duplicatas: verifica se já existe um pedido
+        # com este payment_id antes de criar um novo
         if Pedido.objects.filter(observacao__contains=payment_id).exists():
-            logger.info(f"Pedido com payment_id {payment_id} já existe.")
+            logger.info(f"Pedido com payment_id {payment_id} já existe. Ignorando.")
             return
 
+        # Cria o pedido principal com os dados do cliente
         pedido = Pedido.objects.create(
             nome_cliente=dados.get("nome", ""),
             telefone=dados.get("telefone", ""),
@@ -179,30 +250,40 @@ def _criar_pedido_apos_pagamento(dados, payment_id, payment):
             cidade=dados.get("cidade", ""),
             estado=dados.get("estado", ""),
             forma_pagamento=f"Mercado Pago (ID: {payment_id})",
+            # O payment_id é salvo na observação para checagem de duplicatas acima
             observacao=dados.get("observacao", "") + f" | MP: {payment_id}",
             status="novo",
         )
 
+        # Cria os itens do pedido e desconta o estoque
         for item in dados.get("itens", []):
             try:
                 produto = Produto.objects.get(id=item.get("produto_id"))
                 qtd = int(item.get("quantidade", 1))
                 tamanho = item.get("tamanho", "Único")
+
                 ItemPedido.objects.create(
-                    pedido=pedido, produto=produto,
-                    tamanho=tamanho, quantidade=qtd,
+                    pedido=pedido,
+                    produto=produto,
+                    tamanho=tamanho,
+                    quantidade=qtd,
                 )
-                # Descontar estoque
+
+                # Desconta o estoque, nunca deixando negativo (max 0)
                 try:
                     est = Estoque.objects.get(produto=produto, tamanho=tamanho)
                     est.quantidade = max(0, est.quantidade - qtd)
                     est.save()
                 except Estoque.DoesNotExist:
-                    pass
-            except Exception as e:
-                logger.error(f"Erro ao criar item pedido: {e}")
+                    # Se não houver registro de estoque para esse tamanho, ignora
+                    logger.warning(
+                        f"Estoque não encontrado: produto={produto.id} tamanho={tamanho}"
+                    )
 
-        # Notificar dono e cliente
+            except Exception as e:
+                logger.error(f"Erro ao criar item do pedido: {e}")
+
+        # Envia notificações para o dono da loja e para o cliente
         try:
             notificar_pedido_catalogo({
                 "nome_cliente": pedido.nome_cliente,
@@ -215,14 +296,18 @@ def _criar_pedido_apos_pagamento(dados, payment_id, payment):
                 "estado": pedido.estado,
                 "forma_pagamento": pedido.forma_pagamento,
                 "itens_resumo": [
-                    {"produto_nome": i.produto.nome, "tamanho": i.tamanho, "quantidade": i.quantidade}
+                    {
+                        "produto_nome": i.produto.nome,
+                        "tamanho": i.tamanho,
+                        "quantidade": i.quantidade,
+                    }
                     for i in pedido.itens.all()
                 ],
             })
         except Exception as e:
-            logger.error(f"Erro ao notificar: {e}")
+            logger.error(f"Erro ao enviar notificação do pedido: {e}")
 
-        logger.info(f"Pedido #{pedido.id} criado após pagamento MP aprovado.")
+        logger.info(f"Pedido #{pedido.id} criado com sucesso após pagamento MP aprovado.")
 
     except Exception as e:
-        logger.exception(f"Erro ao criar pedido após MP: {e}")
+        logger.exception(f"Erro ao criar pedido após pagamento MP: {e}")
