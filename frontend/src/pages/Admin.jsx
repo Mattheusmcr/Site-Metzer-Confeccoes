@@ -956,7 +956,6 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                               cursor: "pointer", border: "none", borderRadius: "6px", fontFamily: "system-ui",
                               backgroundColor: (p.status || "novo") === s.id ? s.cor : (dark ? "#374151" : "#e5e7eb"),
                               color: (p.status || "novo") === s.id ? "white" : text,
-                              cursor: "pointer",
                             }}>{s.label}</button>
                         ))}
                       </div>

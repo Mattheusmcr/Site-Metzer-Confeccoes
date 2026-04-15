@@ -177,8 +177,6 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 
 # Brevo (ex-Sendinblue) HTTP API — funciona no Railway (sem bloqueio SMTP)
-# Cadastre grátis em https://app.brevo.com → Settings → API Keys
-# Adicione BREVO_API_KEY no Railway Variables
 BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')
 DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'andremetzkrr@gmail.com')
 
