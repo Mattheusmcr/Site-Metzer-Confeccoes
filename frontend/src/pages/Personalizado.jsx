@@ -470,9 +470,6 @@ export default function Personalizado(){
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"8px"}}>
                   <label style={{...labelStyle,marginBottom:0}}>Combinações de produto *</label>
                 </div>
-                <p style={{fontSize:"12px",color:t.textSecundario,fontFamily:"system-ui",marginBottom:"12px",padding:"8px 12px",backgroundColor:t.bgSecundario,border:"1px solid "+t.border}}>
-                  📦 Mínimo de <strong style={{color:t.text}}>20 unidades</strong> no total. Adicione uma combinação por cor/modelo.
-                </p>
 
                 {/* Lista de combinações */}
                 {form.combinacoes.map((comb,idx)=>{
