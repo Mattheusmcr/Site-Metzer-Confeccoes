@@ -12,16 +12,24 @@ from rest_framework.response import Response
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
-import json, logging
+import os
+import json
+import time
+import logging
 
 logger = logging.getLogger(__name__)
 
-MP_ACCESS_TOKEN = getattr(settings, "MP_ACCESS_TOKEN", "")
+# REMOVIDO: MP_ACCESS_TOKEN no nível do módulo — leitura movida para get_sdk()
+
 
 def get_sdk():
     if not MP_DISPONIVEL:
         raise ImportError("Mercado Pago não instalado. Execute: pip install mercadopago")
-    return mercadopago.SDK(MP_ACCESS_TOKEN)
+    # CORREÇÃO 1: lê o token em cada chamada, não no boot do servidor
+    token = getattr(settings, "MP_ACCESS_TOKEN", "") or os.environ.get("MP_ACCESS_TOKEN", "")
+    if not token:
+        raise ValueError("MP_ACCESS_TOKEN não configurado no Railway.")
+    return mercadopago.SDK(token)
 
 
 @api_view(["POST"])
@@ -35,13 +43,12 @@ def criar_preferencia(request):
         data = request.data
         itens = data.get("itens", [])
         cliente = data.get("cliente", {})
-        
+
         if not itens:
             return Response({"erro": "Nenhum item informado."}, status=400)
 
         sdk = get_sdk()
 
-        # Monta os items no formato MP
         mp_items = []
         for item in itens:
             mp_items.append({
@@ -53,12 +60,13 @@ def criar_preferencia(request):
                 "description": f"Tamanho: {item.get('tamanho', '')}",
             })
 
-        # URLs de retorno
         frontend_url = getattr(settings, "FRONTEND_URL", "https://www.metzkersolucoes.com.br")
 
-        # Limpa telefone para enviar só números
-        tel_raw = cliente.get("telefone", "").replace(" ","").replace("(","").replace(")","").replace("-","")
-        tel_num = tel_raw[2:] if len(tel_raw) >= 10 else tel_raw  # Remove DDD se tiver
+        tel_raw = (
+            cliente.get("telefone", "")
+            .replace(" ", "").replace("(", "").replace(")", "").replace("-", "")
+        )
+        tel_num = tel_raw[2:] if len(tel_raw) >= 10 else tel_raw
         area = tel_raw[:2] if len(tel_raw) >= 10 else "27"
 
         preference_data = {
@@ -77,7 +85,10 @@ def criar_preferencia(request):
                 "pending": f"{frontend_url}/pedidos?status=pendente",
             },
             "auto_return": "approved",
-            "notification_url": f"{getattr(settings, 'BACKEND_URL', 'https://api.metzkersolucoes.com.br')}/api/mp-webhook/",
+            "notification_url": (
+                f"{getattr(settings, 'BACKEND_URL', 'https://api.metzkersolucoes.com.br')}"
+                f"/api/mp-webhook/"
+            ),
             "statement_descriptor": "METZKER",
             "binary_mode": False,
             "external_reference": json.dumps({
@@ -126,18 +137,31 @@ def mp_webhook(request):
     """
     Recebe notificações do Mercado Pago sobre pagamentos.
     Quando aprovado, registra o pedido automaticamente.
+    Sempre responde 200 para o MP não reenviar a notificação.
     """
     try:
         topic = request.GET.get("topic") or request.data.get("type", "")
         payment_id = request.GET.get("id") or request.data.get("data", {}).get("id")
 
-        if not payment_id or topic not in ("payment", "merchant_order"):
+        # CORREÇÃO 2: removido "merchant_order" — não contém payment_id diretamente
+        if not payment_id or topic not in ("payment",):
+            logger.info(f"Webhook ignorado: topic='{topic}' payment_id='{payment_id}'")
             return HttpResponse(status=200)
+
+        # CORREÇÃO 3: aguarda o pagamento ficar disponível na API do MP
+        # sem isso, o GET retorna 404 pois o MP ainda não processou o pagamento
+        time.sleep(3)
 
         sdk = get_sdk()
         payment_info = sdk.payment().get(payment_id)
-        payment = payment_info["response"]
 
+        # Retry se ainda não estiver disponível após o sleep inicial
+        if payment_info.get("status") == 404:
+            logger.warning(f"Payment {payment_id} não disponível ainda. Aguardando mais 5s...")
+            time.sleep(5)
+            payment_info = sdk.payment().get(payment_id)
+
+        payment = payment_info["response"]
         status = payment.get("status")
         logger.info(f"Webhook MP: payment_id={payment_id} status={status}")
 
@@ -147,15 +171,13 @@ def mp_webhook(request):
                 dados = json.loads(external_ref)
             except Exception:
                 dados = {}
-
-            # Registrar o pedido automaticamente
             _criar_pedido_apos_pagamento(dados, payment_id, payment)
 
         return HttpResponse(status=200)
 
     except Exception as e:
         logger.exception(f"Erro webhook MP: {e}")
-        return HttpResponse(status=200)  # Sempre 200 para o MP não reenviar
+        return HttpResponse(status=200)
 
 
 def _criar_pedido_apos_pagamento(dados, payment_id, payment):
@@ -164,9 +186,8 @@ def _criar_pedido_apos_pagamento(dados, payment_id, payment):
         from .models import Pedido, ItemPedido, Produto, Estoque
         from .notificacoes import notificar_pedido_catalogo
 
-        # Verifica se já existe pedido com este payment_id (evita duplicatas)
         if Pedido.objects.filter(observacao__contains=payment_id).exists():
-            logger.info(f"Pedido com payment_id {payment_id} já existe.")
+            logger.info(f"Pedido com payment_id {payment_id} já existe. Ignorando.")
             return
 
         pedido = Pedido.objects.create(
@@ -196,17 +217,15 @@ def _criar_pedido_apos_pagamento(dados, payment_id, payment):
                     pedido=pedido, produto=produto,
                     tamanho=tamanho, quantidade=qtd,
                 )
-                # Descontar estoque
                 try:
                     est = Estoque.objects.get(produto=produto, tamanho=tamanho)
                     est.quantidade = max(0, est.quantidade - qtd)
                     est.save()
                 except Estoque.DoesNotExist:
-                    pass
+                    logger.warning(f"Estoque não encontrado: produto={produto.id} tamanho={tamanho}")
             except Exception as e:
                 logger.error(f"Erro ao criar item pedido: {e}")
 
-        # Notificar dono e cliente
         try:
             notificar_pedido_catalogo({
                 "nome_cliente": pedido.nome_cliente,
