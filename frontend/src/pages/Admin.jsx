@@ -553,6 +553,116 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
     return () => clearInterval(interval);
   }, [carregar]);
 
+
+  // ── GERAR PDF DO PEDIDO (Admin) ─────────────────────────────────────────────
+  function gerarPDFPedido(p) {
+    const isCat = !p.ramo; // catalog orders don't have ramo
+    const itensHTML = isCat
+      ? (p.itens || []).map(i =>
+          `<tr style="border-bottom:1px solid #eee">
+            <td style="padding:8px 4px">${i.produto_nome || i.nome || "Produto"}</td>
+            <td style="padding:8px 4px;text-align:center">${i.tamanho}</td>
+            <td style="padding:8px 4px;text-align:center">${i.quantidade}</td>
+            <td style="padding:8px 4px;text-align:right">R$ ${(parseFloat(i.produto_preco || 0) * i.quantidade).toFixed(2)}</td>
+          </tr>`).join("")
+      : `<tr><td colspan="4" style="padding:8px 4px">${p.ramo || "Pedido personalizado"} — ${p.quantidade || "—"} unidades</td></tr>`;
+
+    const freteLabel = p.frete_tipo === "retirada" ? "🏪 Retirada no local (Grátis)"
+      : p.frete_tipo === "motoboy" ? `🛵 Motoboy — estimativa R$ ${parseFloat(p.frete_valor||0).toFixed(2)} (apenas Grande Vitória/ES)`
+      : p.frete_tipo === "correios" ? "📬 Correios — valor a confirmar com o cliente"
+      : "Não informado";
+
+    const totalProdutos = isCat
+      ? (p.itens || []).reduce((s, i) => s + parseFloat(i.produto_preco || 0) * i.quantidade, 0)
+      : 0;
+
+    const protocolo = p.protocolo || (isCat ? `MTZ-${String(p.id).padStart(4,"0")}` : `MTZ-PERS-${String(p.id).padStart(4,"0")}`);
+
+    const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+    <title>Pedido ${protocolo}</title>
+    <style>
+      *{box-sizing:border-box}
+      body{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 24px;color:#1a1a1a}
+      .logo{font-size:26px;font-weight:300;letter-spacing:2px;margin-bottom:4px}
+      .logo span{color:#c41e3a;font-weight:700}
+      h2{font-size:18px;font-weight:600;margin:20px 0 6px}
+      .prot{font-family:monospace;font-size:16px;font-weight:700;padding:10px 16px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;display:inline-block;margin-bottom:16px}
+      .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+      .block{padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px}
+      .block h3{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;margin:0 0 6px;font-weight:700}
+      .block p{font-size:13px;margin:2px 0;line-height:1.5}
+      table{width:100%;border-collapse:collapse;margin:12px 0}
+      th{background:#f3f4f6;padding:8px 4px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+      td{font-size:13px;color:#1a1a1a}
+      .total-row{font-weight:700;font-size:15px;border-top:2px solid #1a1a1a}
+      .frete-block{margin:12px 0;padding:12px 16px;background:#fef9f0;border:1px solid #fde68a;border-radius:6px;font-size:13px}
+      .status{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;margin-bottom:16px;background:${
+        p.status === "concluido" ? "#f0fdf4" : p.status === "cancelado" ? "#fef2f2" : p.status === "em_andamento" ? "#eff6ff" : "#f9fafb"
+      };color:${
+        p.status === "concluido" ? "#16a34a" : p.status === "cancelado" ? "#dc2626" : p.status === "em_andamento" ? "#2563eb" : "#374151"
+      };border:1px solid ${
+        p.status === "concluido" ? "#86efac" : p.status === "cancelado" ? "#fecaca" : p.status === "em_andamento" ? "#bfdbfe" : "#e5e7eb"
+      }}
+      .footer{margin-top:28px;padding-top:14px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af;text-align:center}
+      @media print{body{margin:20px}button{display:none}}
+    </style></head><body>
+      <div class="logo"><span>m</span>etzker soluções</div>
+      <p style="color:#6b7280;font-size:12px;margin:0 0 16px">Vila Velha, ES · (27) 99787-8391 · andremetzkrr@gmail.com</p>
+      <h2>Pedido ${isCat ? "Catálogo" : "Personalizado"}</h2>
+      <div class="prot">🔖 ${protocolo}</div>
+      <div><span class="status">${
+        p.status === "concluido" ? "✅ Concluído" : p.status === "cancelado" ? "❌ Cancelado" : p.status === "em_andamento" ? "⏳ Em andamento" : "🆕 Novo"
+      }</span></div>
+
+      <div class="grid">
+        <div class="block">
+          <h3>Cliente</h3>
+          <p><strong>${p.nome_cliente || "—"}</strong></p>
+          <p>📱 ${p.telefone || "—"}</p>
+          <p>✉️ ${p.email || "—"}</p>
+        </div>
+        <div class="block">
+          <h3>Endereço de entrega</h3>
+          ${p.rua ? `<p>${p.rua}, ${p.numero || "s/n"}${p.complemento ? " — " + p.complemento : ""}</p><p>${p.bairro} — ${p.cidade}/${p.estado}</p><p>CEP: ${p.cep}</p>` : "<p>Retirada no local</p>"}
+        </div>
+        ${isCat ? `<div class="block"><h3>Pagamento</h3><p>${p.forma_pagamento || "—"}</p></div>` : ""}
+        <div class="block">
+          <h3>Data do pedido</h3>
+          <p>${new Date(p.data_pedido).toLocaleDateString("pt-BR")} às ${new Date(p.data_pedido).toLocaleTimeString("pt-BR", {hour:"2-digit",minute:"2-digit"})}</p>
+        </div>
+        ${!isCat ? `<div class="block"><h3>Categoria / Produto</h3><p>${p.ramo || "—"}</p><p><strong>${p.quantidade || "—"} unidades</strong></p></div>` : ""}
+      </div>
+
+      <div class="frete-block">
+        <strong>🚚 Entrega:</strong> ${freteLabel}
+      </div>
+
+      <h2 style="margin-top:20px">${isCat ? "Itens do pedido" : "Detalhes do pedido"}</h2>
+      <table>
+        <thead><tr>
+          <th style="width:45%">Produto</th>
+          ${isCat ? "<th style='text-align:center'>Tamanho</th><th style='text-align:center'>Qtd</th><th style='text-align:right'>Subtotal</th>" : ""}
+        </tr></thead>
+        <tbody>${itensHTML}</tbody>
+        ${isCat && totalProdutos > 0 ? `<tfoot><tr class="total-row"><td colspan="3" style="padding:10px 4px;text-align:right">Total produtos:</td><td style="padding:10px 4px;text-align:right">R$ ${totalProdutos.toFixed(2)}</td></tr></tfoot>` : ""}
+      </table>
+
+      ${p.observacao || p.observacoes ? `<div style="margin-top:16px;padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px"><h3 style="font-size:11px;text-transform:uppercase;color:#6b7280;margin:0 0 6px">Observações</h3><p style="font-size:13px">${p.observacao || p.observacoes}</p></div>` : ""}
+
+      <div class="footer">
+        Metzker Soluções · Polo Têxtil Santa Inês · Vila Velha, ES<br>
+        Pedido gerado em ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}
+      </div>
+      <div style="text-align:center;margin-top:16px">
+        <button onclick="window.print()" style="padding:10px 24px;background:#1a1a1a;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px">🖨️ Imprimir / Salvar PDF</button>
+      </div>
+    </body></html>`;
+
+    const win = window.open("", "_blank");
+    win.document.write(html);
+    win.document.close();
+  }
+
   function exportarExcel() {
     // Sanitize: remove quebras de linha, escapa aspas duplas, envolve em aspas se tiver vírgula/ponto-e-vírgula
     const cell = (v) => {
@@ -571,6 +681,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
         cell(protCat), cell("Catálogo"), cell(p.id), cell(p.nome_cliente), cell(p.telefone), cell(p.email),
         cell(p.status||"novo"), cell(new Date(p.data_pedido).toLocaleDateString("pt-BR")),
         cell(`R$ ${(p.total||0).toFixed(2)}`), cell(p.forma_pagamento),
+        cell(p.frete_tipo||"retirada"), cell(p.frete_valor!=null?`R$ ${parseFloat(p.frete_valor||0).toFixed(2)}`:"R$ 0,00"),
         cell(p.rua), cell(p.numero), cell(p.bairro), cell(p.cidade), cell(p.estado), cell(p.cep),
         cell(itensStr), cell(p.observacao),
       ].join(";");
@@ -589,7 +700,8 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
       return [
         cell(prot), cell("Personalizado"), cell(p.id), cell(p.nome_cliente), cell(p.telefone), cell(p.email),
         cell(p.status||"novo"), cell(new Date(p.data_pedido).toLocaleDateString("pt-BR")),
-        cell("A combinar"), cell(p.frete_tipo||"retirada"),
+        cell("A orçar"), cell("—"),
+        cell(p.frete_tipo||"retirada"), cell(p.frete_tipo==="motoboy"?`~R$ ${p.frete_valor||"a combinar"}`:p.frete_tipo==="correios"?"Conforme Correios":"Grátis"),
         cell(p.rua||"—"), cell(p.numero||"—"), cell(p.bairro||"—"),
         cell(p.cidade||"—"), cell(p.estado||"—"), cell(p.cep||"—"),
         cell(refParts), cell(obs),
@@ -597,7 +709,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
     });
 
     const header = ["Protocolo","Tipo","ID","Nome","Telefone","Email","Status","Data","Total","Pagamento",
-      "Rua","Numero","Bairro","Cidade","Estado","CEP","Itens","Observacoes"].join(";");
+      "Frete_Tipo","Frete_Valor","Rua","Numero","Bairro","Cidade","Estado","CEP","Itens","Observacoes"].join(";");
 
     const todos = [...catRows, ...persRows];
     if (todos.length === 0) { mostrarToast("Nenhum pedido para exportar.", "erro"); return; }
@@ -764,6 +876,33 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                         { titulo: "👤 Cliente", conteudo: <><p className="font-semibold text-sm" style={{ color: text }}>{p.nome_cliente}</p><p className="text-sm mt-1" style={{ color: subtext }}>📱 {p.telefone}</p></> },
                         { titulo: "📍 Endereço", conteudo: p.rua ? <div className="text-sm space-y-0.5" style={{ color: text }}><p>{p.rua}, {p.numero}</p><p>{p.bairro} — {p.cidade}/{p.estado}</p></div> : <p className="text-sm" style={{ color: subtext }}>Retirada no local</p> },
                         { titulo: "💳 Pagamento", conteudo: <p className="font-semibold text-sm" style={{ color: text }}>{p.forma_pagamento || "Não informado"}</p> },
+                        { titulo: "🚚 Entrega", conteudo: (
+                          <div>
+                            <p className="font-semibold text-sm" style={{ color: text }}>
+                              {p.frete_tipo === "retirada" ? "🏪 Retirada no local" :
+                               p.frete_tipo === "motoboy" ? "🛵 Motoboy" :
+                               p.frete_tipo === "correios" ? "📬 Correios" : "Não informado"}
+                            </p>
+                            {p.frete_tipo === "motoboy" && (
+                              <p className="text-xs mt-1" style={{ color: "#d97706" }}>
+                                ⚠️ Apenas Grande Vitória / ES — confirmar via WhatsApp
+                              </p>
+                            )}
+                            {p.frete_tipo === "correios" && (
+                              <p className="text-xs mt-1" style={{ color: subtext }}>
+                                Valor conforme Correios — confirmar com o cliente
+                              </p>
+                            )}
+                            {p.frete_tipo === "motoboy" && p.frete_valor > 0 && (
+                              <p className="text-xs font-semibold mt-1" style={{ color: text }}>
+                                Estimativa: R$ {parseFloat(p.frete_valor||0).toFixed(2)}
+                              </p>
+                            )}
+                            {p.frete_tipo === "retirada" && (
+                              <p className="text-xs mt-1" style={{ color: "#16a34a", fontWeight:"600" }}>Grátis</p>
+                            )}
+                          </div>
+                        ) },
                       ].map(({ titulo, conteudo }) => (
                         <div key={titulo} className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
                           <p className="text-xs font-bold uppercase mb-3" style={{ color: subtext }}>{titulo}</p>
@@ -1041,6 +1180,14 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                         className="px-4 py-2 rounded-lg text-sm font-medium"
                         style={{ backgroundColor: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}>
                         🗑️ Excluir pedido
+                      </button>
+                      <button
+                        onClick={() => gerarPDFPedido(p)}
+                        style={{ padding:"7px 14px", fontSize:"12px", fontWeight:"600",
+                          cursor:"pointer", border:"1px solid "+border, borderRadius:"6px",
+                          backgroundColor: dark ? "#374151" : "#f3f4f6", color: text,
+                          fontFamily:"system-ui", display:"flex", alignItems:"center", gap:"4px" }}>
+                        🖨️ Gerar PDF
                       </button>
                     </div>
                   </div>

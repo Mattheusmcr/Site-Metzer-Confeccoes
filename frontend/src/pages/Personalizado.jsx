@@ -16,9 +16,23 @@ function estimarMotoboyP(cidade, estado) {
 }
 function estimarCorreiosP(estado) {
   const e = (estado||"").toUpperCase();
-  if (e === "ES") return { pac:"R$ 20–35", sedex:"R$ 35–55", prazo:"3–5 dias úteis" };
-  if (["SP","RJ","MG"].includes(e)) return { pac:"R$ 25–45", sedex:"R$ 45–70", prazo:"5–8 dias úteis" };
-  return { pac:"R$ 35–60", sedex:"R$ 60–95", prazo:"7–12 dias úteis" };
+  const tabela = {
+    "ES":{ pac:"R$ 18–28", sedex:"R$ 30–45", prazo:"1–3 dias úteis" },
+    "RJ":{ pac:"R$ 22–32", sedex:"R$ 40–58", prazo:"2–4 dias úteis" },
+    "SP":{ pac:"R$ 24–36", sedex:"R$ 44–65", prazo:"3–5 dias úteis" },
+    "MG":{ pac:"R$ 22–33", sedex:"R$ 40–58", prazo:"2–5 dias úteis" },
+    "BA":{ pac:"R$ 26–38", sedex:"R$ 48–70", prazo:"3–6 dias úteis" },
+    "GO":{ pac:"R$ 28–40", sedex:"R$ 52–75", prazo:"4–7 dias úteis" },
+    "DF":{ pac:"R$ 28–40", sedex:"R$ 52–75", prazo:"4–7 dias úteis" },
+    "PR":{ pac:"R$ 28–42", sedex:"R$ 52–78", prazo:"4–7 dias úteis" },
+    "SC":{ pac:"R$ 30–44", sedex:"R$ 55–80", prazo:"4–7 dias úteis" },
+    "RS":{ pac:"R$ 32–48", sedex:"R$ 58–85", prazo:"5–8 dias úteis" },
+    "PA":{ pac:"R$ 36–54", sedex:"R$ 65–95", prazo:"6–10 dias úteis" },
+    "AM":{ pac:"R$ 40–60", sedex:"R$ 72–105", prazo:"7–12 dias úteis" },
+    "CE":{ pac:"R$ 30–45", sedex:"R$ 55–82", prazo:"4–8 dias úteis" },
+    "PE":{ pac:"R$ 30–45", sedex:"R$ 55–82", prazo:"4–8 dias úteis" },
+  };
+  return tabela[e] || { pac:"R$ 35–55", sedex:"R$ 62–92", prazo:"6–10 dias úteis" };
 }
 import api from "../services/api";
 
@@ -153,7 +167,6 @@ export default function Personalizado(){
         if((c.tipoId==="camisa-comum"||c.tipoId==="polo") && !c.material) return false;
         if(totalComb(c)===0) return false;
       }
-      if(totalGeral<20) return false;
       return true;
     }
     if(form.categoria==="comunicacao") return !!form.tipoComunicacao && !!form.dimensoes.trim();
@@ -235,6 +248,13 @@ export default function Personalizado(){
           <h3>Categoria</h3>
           <p>${form.categoria === "roupas" ? "👕 Item de Roupa" : "🖨️ Comunicação Visual"}</p>
           ${form.categoria === "roupas" ? `<p>Total: <strong>${totalGeral} unidades</strong></p>` : `<p>Dimensões: ${form.dimensoes}</p>`}
+        </div>
+        <div class="info-block">
+          <h3>Entrega</h3>
+          <p><strong>${form.frete_tipo === "retirada" ? "🏪 Retirada no local" : form.frete_tipo === "motoboy" ? "🛵 Motoboy" : form.frete_tipo === "correios" ? "📬 Correios (PAC/SEDEX)" : "A confirmar"}</strong></p>
+          ${form.frete_tipo === "motoboy" ? `<p style="color:#d97706;font-size:12px">⚠️ Apenas Grande Vitória / ES</p>` : ""}
+          ${form.frete_tipo === "correios" ? `<p style="color:#6b7280;font-size:12px">Valor confirmado pela loja</p>` : ""}
+          ${form.frete_tipo === "retirada" ? `<p style="color:#16a34a;font-weight:600">Grátis</p>` : ""}
         </div>
         <div class="info-block">
           <h3>Data</h3>
@@ -578,9 +598,9 @@ export default function Personalizado(){
 
                 {/* Contador e checklist */}
                 {form.combinacoes.length>0 && (
-                  <div style={{backgroundColor:totalGeral>=20?"#f0fdf4":"#fef9f0",border:"1px solid "+(totalGeral>=20?"#86efac":"#fde68a"),padding:"14px"}}>
-                    <p style={{fontSize:"13px",fontWeight:"600",fontFamily:"system-ui",marginBottom:"6px",color:totalGeral>=20?"#16a34a":"#92400e"}}>
-                      {totalGeral>=20?`✅ ${totalGeral} unidades — mínimo atingido!`:`⚠️ ${totalGeral} de 20 unidades mínimas`}
+                  <div style={{backgroundColor:totalGeral>0?"#f0fdf4":"#fef9f0",border:"1px solid "+(totalGeral>0?"#86efac":"#fde68a"),padding:"14px"}}>
+                    <p style={{fontSize:"13px",fontWeight:"600",fontFamily:"system-ui",marginBottom:"6px",color:totalGeral>0?"#16a34a":"#92400e"}}>
+                      {totalGeral>0?`✅ ${totalGeral} unidade${totalGeral>1?"s":""} selecionada${totalGeral>1?"s":""}`:`⚠️ Selecione ao menos 1 unidade`}
                     </p>
                     {(()=>{
                       const itens=[];
@@ -901,8 +921,13 @@ export default function Personalizado(){
                           <div key={tam} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",border:"1px solid "+t.border,backgroundColor:qtd>0?t.bgSecundario:t.bgCard}}>
                             <span style={{fontSize:"14px",fontWeight:"700",color:t.text,fontFamily:"system-ui"}}>{tam}</span>
                             <div style={{display:"flex",alignItems:"center"}}>
-                              <button onClick={()=>setQtdComb(comb.id,"calcas",tam,qtd-1)} style={{width:"28px",height:"28px",border:"1px solid "+t.border,backgroundColor:t.bg,color:t.text,cursor:"pointer",fontSize:"16px",display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
-                              <span style={{width:"36px",textAlign:"center",fontSize:"14px",fontWeight:"600",color:t.text,fontFamily:"system-ui",borderTop:"1px solid "+t.border,borderBottom:"1px solid "+t.border,padding:"4px 0"}}>{qtd}</span>
+                              <button onClick={()=>setQtdComb(comb.id,"calcas",tam,Math.max(0,qtd-1))} style={{width:"28px",height:"28px",border:"1px solid "+t.border,backgroundColor:t.bg,color:t.text,cursor:"pointer",fontSize:"16px",display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
+                              <input type="number" min="0" value={qtd===0?"":qtd}
+                                onChange={e=>{const v=parseInt(e.target.value)||0;setQtdComb(comb.id,"calcas",tam,Math.max(0,v));}}
+                                onFocus={e=>e.target.select()}
+                                style={{width:"44px",textAlign:"center",fontSize:"14px",fontWeight:"600",color:t.text,fontFamily:"system-ui",border:"none",borderTop:"1px solid "+t.border,borderBottom:"1px solid "+t.border,padding:"4px 0",backgroundColor:t.bg,outline:"none"}}
+                                placeholder="0"
+                              />
                               <button onClick={()=>setQtdComb(comb.id,"calcas",tam,qtd+1)} style={{width:"28px",height:"28px",border:"1px solid "+t.border,backgroundColor:t.bg,color:t.text,cursor:"pointer",fontSize:"16px",display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
                             </div>
                           </div>
@@ -921,8 +946,13 @@ export default function Personalizado(){
                             <div key={tam} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",border:"1px solid "+t.border,backgroundColor:qtd>0?t.bgSecundario:t.bgCard}}>
                               <span style={{fontSize:"13px",fontWeight:"700",color:t.text,fontFamily:"system-ui"}}>{tam}</span>
                               <div style={{display:"flex",alignItems:"center"}}>
-                                <button onClick={()=>setQtdComb(comb.id,grupo.id,tam,qtd-1)} style={{width:"26px",height:"26px",border:"1px solid "+t.border,backgroundColor:t.bg,color:t.text,cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
-                                <span style={{width:"32px",textAlign:"center",fontSize:"13px",fontWeight:"600",color:t.text,fontFamily:"system-ui",borderTop:"1px solid "+t.border,borderBottom:"1px solid "+t.border,padding:"3px 0"}}>{qtd}</span>
+                                <button onClick={()=>setQtdComb(comb.id,grupo.id,tam,Math.max(0,qtd-1))} style={{width:"26px",height:"26px",border:"1px solid "+t.border,backgroundColor:t.bg,color:t.text,cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
+                                <input type="number" min="0" value={qtd===0?"":qtd}
+                                  onChange={e=>{const v=parseInt(e.target.value)||0;setQtdComb(comb.id,grupo.id,tam,Math.max(0,v));}}
+                                  onFocus={e=>e.target.select()}
+                                  style={{width:"40px",textAlign:"center",fontSize:"13px",fontWeight:"600",color:t.text,fontFamily:"system-ui",border:"none",borderTop:"1px solid "+t.border,borderBottom:"1px solid "+t.border,padding:"3px 0",backgroundColor:t.bg,outline:"none"}}
+                                  placeholder="0"
+                                />
                                 <button onClick={()=>setQtdComb(comb.id,grupo.id,tam,qtd+1)} style={{width:"26px",height:"26px",border:"1px solid "+t.border,backgroundColor:t.bg,color:t.text,cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
                               </div>
                             </div>

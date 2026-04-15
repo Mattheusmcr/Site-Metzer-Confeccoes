@@ -18,10 +18,39 @@ function estimarMotoboy(cidade, estado) {
 }
 
 function estimarCorreios(estado) {
+  // Estimativas baseadas na tabela dos Correios 2024 (pacote ~500g, 15x15x10cm)
+  // Origem: Vila Velha - ES (CEP 29118-180)
   const e = (estado||"").toUpperCase();
-  if (e === "ES") return { pac:"R$ 20–35", sedex:"R$ 35–55", prazo:"3–5 dias úteis" };
-  if (["SP","RJ","MG"].includes(e)) return { pac:"R$ 25–45", sedex:"R$ 45–70", prazo:"5–8 dias úteis" };
-  return { pac:"R$ 35–60", sedex:"R$ 60–95", prazo:"7–12 dias úteis" };
+  const tabela = {
+    "ES": { pac:"R$ 18–28", sedex:"R$ 30–45", prazo:"1–3 dias úteis" },
+    "RJ": { pac:"R$ 22–32", sedex:"R$ 40–58", prazo:"2–4 dias úteis" },
+    "SP": { pac:"R$ 24–36", sedex:"R$ 44–65", prazo:"3–5 dias úteis" },
+    "MG": { pac:"R$ 22–33", sedex:"R$ 40–58", prazo:"2–5 dias úteis" },
+    "BA": { pac:"R$ 26–38", sedex:"R$ 48–70", prazo:"3–6 dias úteis" },
+    "GO": { pac:"R$ 28–40", sedex:"R$ 52–75", prazo:"4–7 dias úteis" },
+    "DF": { pac:"R$ 28–40", sedex:"R$ 52–75", prazo:"4–7 dias úteis" },
+    "PR": { pac:"R$ 28–42", sedex:"R$ 52–78", prazo:"4–7 dias úteis" },
+    "SC": { pac:"R$ 30–44", sedex:"R$ 55–80", prazo:"4–7 dias úteis" },
+    "RS": { pac:"R$ 32–48", sedex:"R$ 58–85", prazo:"5–8 dias úteis" },
+    "MT": { pac:"R$ 32–48", sedex:"R$ 58–88", prazo:"5–9 dias úteis" },
+    "MS": { pac:"R$ 30–44", sedex:"R$ 54–80", prazo:"4–8 dias úteis" },
+    "PA": { pac:"R$ 36–54", sedex:"R$ 65–95", prazo:"6–10 dias úteis" },
+    "AM": { pac:"R$ 40–60", sedex:"R$ 72–105", prazo:"7–12 dias úteis" },
+    "CE": { pac:"R$ 30–45", sedex:"R$ 55–82", prazo:"4–8 dias úteis" },
+    "PE": { pac:"R$ 30–45", sedex:"R$ 55–82", prazo:"4–8 dias úteis" },
+    "MA": { pac:"R$ 33–50", sedex:"R$ 60–88", prazo:"5–9 dias úteis" },
+    "PI": { pac:"R$ 33–50", sedex:"R$ 60–88", prazo:"5–9 dias úteis" },
+    "AL": { pac:"R$ 30–45", sedex:"R$ 55–82", prazo:"4–8 dias úteis" },
+    "SE": { pac:"R$ 28–42", sedex:"R$ 52–78", prazo:"3–7 dias úteis" },
+    "PB": { pac:"R$ 31–47", sedex:"R$ 57–84", prazo:"5–9 dias úteis" },
+    "RN": { pac:"R$ 31–47", sedex:"R$ 57–84", prazo:"5–9 dias úteis" },
+    "TO": { pac:"R$ 34–52", sedex:"R$ 62–92", prazo:"5–9 dias úteis" },
+    "RO": { pac:"R$ 38–57", sedex:"R$ 68–100", prazo:"6–10 dias úteis" },
+    "AC": { pac:"R$ 42–63", sedex:"R$ 75–110", prazo:"7–12 dias úteis" },
+    "RR": { pac:"R$ 42–63", sedex:"R$ 75–110", prazo:"7–12 dias úteis" },
+    "AP": { pac:"R$ 40–60", sedex:"R$ 72–105", prazo:"7–12 dias úteis" },
+  };
+  return tabela[e] || { pac:"R$ 35–55", sedex:"R$ 62–92", prazo:"6–10 dias úteis" };
 }
 
 const t = {
@@ -296,6 +325,7 @@ export default function Pedidos() {
         complemento: cliente.complemento, bairro: cliente.bairro,
         cidade: cliente.cidade, estado: cliente.estado,
         forma_pagamento: "Mercado Pago", observacao: cliente.observacao,
+        frete_tipo: frete.tipo || "retirada", frete_valor: frete.valor || 0,
         itens_input: cart.map(i => ({produto:i.produto.id, tamanho:i.tamanho, quantidade:i.quantidade})),
       });
       // Gerar número de protocolo único
