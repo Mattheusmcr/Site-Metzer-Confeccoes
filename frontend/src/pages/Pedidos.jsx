@@ -285,7 +285,9 @@ export default function Pedidos() {
       const res = await api.post("mp-criar-preferencia/", payload);
       console.log("Resposta MP:", res.data);
 
-      const url = res.data.init_point;
+      const url = import.meta.env.PROD 
+      ? res.data.init_point 
+      : res.data.sandbox_init_point;
       if (!url) throw new Error("URL de pagamento não retornada pelo servidor.");
 
       // Redireciona para o checkout do Mercado Pago

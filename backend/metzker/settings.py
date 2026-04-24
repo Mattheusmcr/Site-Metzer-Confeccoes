@@ -83,14 +83,12 @@ else:
         'default': {
             'ENGINE': 'mssql',
             'NAME': os.environ.get('DB_NAME', 'metzker_db'),
-            'USER': os.environ.get('DB_USER', 'metzker-confeccoes'),
-            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-            'HOST': os.environ.get('DB_HOST', r'DESKTOP-7MP41GP\SQLEXPRESS'),
+            'HOST': os.environ.get('DB_HOST', r'DESKTOP-V0NL51S'),
             'OPTIONS': {
                 'driver': 'ODBC Driver 17 for SQL Server',
                 'trusted_connection': 'yes',
             },
-        },
+        }
     }
 
 AUTH_PASSWORD_VALIDATORS = [
