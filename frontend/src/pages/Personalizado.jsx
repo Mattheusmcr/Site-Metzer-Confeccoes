@@ -60,8 +60,8 @@ const TIPOS_COMUNICACAO = [
 ];
 
 const GRUPOS_TAMANHO = [
-  { id: "adulto",   label: "Adulto",    tamanhos: ["PP","P","M","G","GG","EXG","EXGG","G1","G2","G3"] },
-  { id: "baby",     label: "Baby Look", tamanhos: ["PP","P","M","G","GG","EXG","EXGG","G1","G2","G3"] },
+  { id: "adulto",   label: "Adulto",    tamanhos: ["PP","P","M","G","G1","G2","G3","GG","EXG","EXGG"] },
+  { id: "baby",     label: "Baby Look", tamanhos: ["PP","P","M","G","G1","G2","G3","GG","EXG","EXGG"] },
   { id: "infantil", label: "Infantil",  tamanhos: ["4","6","8","10","12","14"] },
 ];
 const TAMANHOS_CALCAS = ["36","38","40","42","44","46","48","50"];
@@ -1047,12 +1047,12 @@ export default function Personalizado(){
                       ["P", "68 cm","21 cm","50 cm"],
                       ["M", "71 cm","22 cm","52 cm"],
                       ["G", "73 cm","23 cm","55 cm"],
-                      ["GG","75 cm","24.5 cm","58 cm"],
-                      ["EXG","77 cm","26 cm","61 cm"],
-                      ["EXGG","79 cm","27 cm","64 cm"],
                       ["G1","81 cm","28 cm","67 cm"],
                       ["G2","84 cm","29 cm","70 cm"],
                       ["G3","87 cm","30 cm","73 cm"],
+                      ["GG","75 cm","24.5 cm","58 cm"],
+                      ["EXG","77 cm","26 cm","61 cm"],
+                      ["EXGG","79 cm","27 cm","64 cm"],
                     ].map(([tam,...vals], i) => (
                       <tr key={tam} style={{ backgroundColor: i%2===0?t.bgCard:t.bgSecundario }}>
                         <td style={{ padding: "7px 8px", textAlign: "center", fontWeight: "700", color: t.text, borderRight: "1px solid " + t.border, fontFamily: "system-ui" }}>{tam}</td>

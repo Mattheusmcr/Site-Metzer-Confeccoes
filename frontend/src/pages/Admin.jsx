@@ -1193,6 +1193,7 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
   const [tamanhosOriginais, setTamanhosOriginais] = useState({});
   const [novoTamanho, setNovoTamanho] = useState({});
   const [salvando, setSalvando] = useState({});
+  const [categoriaAtiva, setCategoriaAtiva] = useState("todos");
 
   const carregar = useCallback(async () => {
     try {
@@ -1212,140 +1213,235 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
 
   async function removerTamanho(prodId, tamanho) {
     if (tamanhosOriginais[prodId]?.includes(tamanho)) {
-      try { await api.delete("estoques/remover/", { data: { produto: prodId, tamanho } }); setTamanhosOriginais(prev => ({ ...prev, [prodId]: prev[prodId].filter(t => t !== tamanho) })); }
+      try { await api.delete("estoques/remover/", { data: { produto: prodId, tamanho } });
+        setTamanhosOriginais(prev => ({ ...prev, [prodId]: prev[prodId].filter(t => t !== tamanho) })); }
       catch { mostrarToast("Erro ao remover tamanho.", "erro"); return; }
     }
     setValores(prev => { const novo = { ...prev[prodId] }; delete novo[tamanho]; return { ...prev, [prodId]: novo }; });
-    mostrarToast(`Tamanho ${tamanho} removido.`, "sucesso");
+    mostrarToast("Tamanho removido.", "sucesso");
   }
 
   async function salvarEstoque(prodId) {
     setSalvando(prev => ({ ...prev, [prodId]: true }));
     try {
       const entradas = Object.entries(valores[prodId] || {}).filter(([tamanho]) => tamanho && tamanho.trim());
-      if (entradas.length === 0) { mostrarToast("Adicione ao menos um tamanho/formato.", "erro"); return; }
+      if (entradas.length === 0) { mostrarToast("Adicione ao menos um tamanho.", "erro"); return; }
       await Promise.all(entradas.map(([tamanho, quantidade]) =>
         api.post("estoques/atualizar/", { produto: prodId, tamanho: tamanho.trim(), quantidade: parseInt(quantidade) || 0 })
       ));
       mostrarToast("Estoque salvo!", "sucesso"); await carregar();
-    } catch (e) {
-      console.error(e.response?.data);
-      mostrarToast("Erro ao salvar estoque. Verifique os dados.", "erro");
-    }
+    } catch (e) { mostrarToast("Erro ao salvar.", "erro"); }
     finally { setSalvando(prev => ({ ...prev, [prodId]: false })); }
   }
 
   if (loading) return <p style={{ color: subtext }}>Carregando...</p>;
 
+  // Separar por categoria
+  const roupas = produtos.filter(p => p.categoria === "roupas" || !p.categoria);
+  const comunicacao = produtos.filter(p => p.categoria === "comunicacao");
+
+  const produtosFiltrados = categoriaAtiva === "todos" ? produtos
+    : categoriaAtiva === "roupas" ? roupas
+    : comunicacao;
+
+  const abas = [
+    { id: "todos",       label: "Todos (" + produtos.length + ")",        cor: text },
+    { id: "roupas",      label: "👕 Roupas (" + roupas.length + ")",      cor: "#7c3aed" },
+    { id: "comunicacao", label: "🖨️ Comunicação (" + comunicacao.length + ")", cor: "#2563eb" },
+  ];
+
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-2" style={{ color: text }}>Gerenciar Estoque</h2>
-      <p className="text-sm mb-6" style={{ color: subtext }}>
-        Para produtos de <strong>Comunicação Visual</strong>, use os "tamanhos" para informar dimensões (ex: 1,5m x 80cm, A4, A3).
+      <h2 className="text-xl font-semibold mb-1" style={{ color: text }}>Gerenciar Estoque</h2>
+      <p className="text-sm mb-4" style={{ color: subtext }}>
+        Para <strong>Comunicação Visual</strong>, use "tamanhos" para informar dimensões (ex: A4, Banner 1m).
+        Para <strong>Roupas</strong>, use P, M, G, G1, G2, G3, GG, EXG, EXGG.
       </p>
+
+      {/* Filtro por categoria */}
+      <div className="flex gap-2 mb-6 flex-wrap" style={{ borderBottom: "2px solid " + border, paddingBottom: "0" }}>
+        {abas.map(aba => (
+          <button key={aba.id} onClick={() => setCategoriaAtiva(aba.id)}
+            className="px-4 py-2 text-sm font-medium transition"
+            style={{
+              borderBottom: categoriaAtiva === aba.id ? "2px solid " + text : "2px solid transparent",
+              color: categoriaAtiva === aba.id ? text : subtext,
+              backgroundColor: "transparent", marginBottom: "-2px",
+            }}>
+            {aba.label}
+          </button>
+        ))}
+      </div>
+
       <div className="space-y-4">
-        {produtos.map(p => {
+        {produtosFiltrados.map(p => {
           const tams = Object.keys(valores[p.id] || {});
           const isComunicacao = p.categoria === "comunicacao";
+          const totalEstoque = Object.values(valores[p.id] || {}).reduce((s, q) => s + (parseInt(q) || 0), 0);
           return (
             <div key={p.id} className="rounded-xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-3 mb-4 flex-wrap">
                 <p className="font-semibold" style={{ color: text }}>{p.nome}</p>
-                {isComunicacao && (
-                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "#eff6ff", color: "#2563eb" }}>
-                    🖼️ Comunicação Visual
+                <span className="text-xs px-2 py-0.5 rounded-full"
+                  style={{ backgroundColor: isComunicacao ? "#eff6ff" : "#f5f3ff",
+                    color: isComunicacao ? "#2563eb" : "#7c3aed" }}>
+                  {isComunicacao ? "🖨️ Com. Visual" : "👕 Roupa"}
+                </span>
+                {totalEstoque > 0 && (
+                  <span className="text-xs px-2 py-0.5 rounded-full"
+                    style={{ backgroundColor: "#f0fdf4", color: "#16a34a" }}>
+                    {totalEstoque} un. em estoque
                   </span>
                 )}
               </div>
-              {tams.length === 0 && <p className="text-sm mb-4" style={{ color: subtext }}>
-                {isComunicacao ? "Adicione os formatos disponíveis (ex: A4, Banner 1m, etc)" : "Nenhum tamanho cadastrado ainda."}
-              </p>}
+
+              {tams.length === 0 && (
+                <p className="text-sm mb-3" style={{ color: subtext }}>
+                  {isComunicacao ? "Adicione os formatos disponíveis (ex: A4, Banner 1m, 80x60cm)" : "Nenhum tamanho cadastrado ainda."}
+                </p>
+              )}
+
               <div className="flex gap-3 flex-wrap mb-4">
                 {tams.map(tam => (
                   <div key={tam} className="flex flex-col items-center gap-1">
                     <div className="flex items-center gap-1">
                       <span className="text-xs font-bold" style={{ color: subtext }}>{tam}</span>
-                      <button onClick={() => removerTamanho(p.id, tam)} className="text-xs leading-none" style={{ color: "#ef4444" }}>✕</button>
+                      <button onClick={() => removerTamanho(p.id, tam)}
+                        className="text-xs leading-none" style={{ color: "#ef4444" }}>✕</button>
                     </div>
                     <input type="number" min="0" value={valores[p.id]?.[tam] ?? 0}
                       onChange={e => setValores(prev => ({ ...prev, [p.id]: { ...prev[p.id], [tam]: e.target.value } }))}
                       className="text-center text-sm rounded-lg"
-                      style={{ width: "64px", padding: "6px", border: "1px solid " + inputBorder, backgroundColor: inputBg, color: text, outline: "none" }} />
+                      style={{ width: "64px", padding: "6px", border: "1px solid " + inputBorder,
+                        backgroundColor: inputBg, color: text, outline: "none",
+                        borderColor: parseInt(valores[p.id]?.[tam]) === 0 ? "#fca5a5" : inputBorder }} />
+                    {parseInt(valores[p.id]?.[tam]) === 0 && (
+                      <span style={{ fontSize: "9px", color: "#dc2626" }}>sem estoque</span>
+                    )}
                   </div>
                 ))}
               </div>
-              <div className="flex items-center gap-2 mb-4">
+
+              <div className="flex items-center gap-2 mb-4 flex-wrap">
                 <input value={novoTamanho[p.id] || ""}
                   onChange={e => setNovoTamanho(prev => ({ ...prev, [p.id]: e.target.value }))}
-                  onKeyDown={e => { if (e.key === "Enter") { const tam = (novoTamanho[p.id] || "").trim().toUpperCase(); if (!tam || valores[p.id]?.[tam] !== undefined) return; setValores(prev => ({ ...prev, [p.id]: { ...prev[p.id], [tam]: 0 } })); setNovoTamanho(prev => ({ ...prev, [p.id]: "" })); }}}
-                  placeholder={isComunicacao ? "A4, Banner 1m, 80x60cm..." : "P, M, G, XGG, 38..."}
-                  style={{ padding: "6px 10px", border: "1px solid " + inputBorder, backgroundColor: inputBg, color: text, outline: "none", width: "160px", borderRadius: "6px", fontSize: "13px" }} />
-                <button onClick={() => { const tam = (novoTamanho[p.id] || "").trim().toUpperCase(); if (!tam || valores[p.id]?.[tam] !== undefined) return; setValores(prev => ({ ...prev, [p.id]: { ...prev[p.id], [tam]: 0 } })); setNovoTamanho(prev => ({ ...prev, [p.id]: "" })); }}
-                  className="px-3 py-1.5 text-sm rounded-lg font-medium text-white" style={{ backgroundColor: "#374151" }}>
+                  onKeyDown={e => {
+                    if (e.key === "Enter") {
+                      const tam = (novoTamanho[p.id] || "").trim().toUpperCase();
+                      if (!tam || valores[p.id]?.[tam] !== undefined) return;
+                      setValores(prev => ({ ...prev, [p.id]: { ...prev[p.id], [tam]: 0 } }));
+                      setNovoTamanho(prev => ({ ...prev, [p.id]: "" }));
+                    }
+                  }}
+                  placeholder={isComunicacao ? "A4, Banner 1m, 80x60cm..." : "PP, P, M, G, G1..."}
+                  style={{ padding: "6px 10px", border: "1px solid " + inputBorder, backgroundColor: inputBg,
+                    color: text, outline: "none", width: "160px", borderRadius: "6px", fontSize: "13px" }} />
+                <button onClick={() => {
+                    const tam = (novoTamanho[p.id] || "").trim().toUpperCase();
+                    if (!tam || valores[p.id]?.[tam] !== undefined) return;
+                    setValores(prev => ({ ...prev, [p.id]: { ...prev[p.id], [tam]: 0 } }));
+                    setNovoTamanho(prev => ({ ...prev, [p.id]: "" }));
+                  }}
+                  className="px-3 py-1.5 text-sm rounded-lg font-medium text-white"
+                  style={{ backgroundColor: "#374151" }}>
                   + {isComunicacao ? "Formato" : "Tamanho"}
                 </button>
+                {!isComunicacao && (
+                  <div className="flex gap-1 flex-wrap">
+                    {["PP","P","M","G","G1","G2","G3","GG","EXG","EXGG"].map(tam => (
+                      valores[p.id]?.[tam] === undefined ? (
+                        <button key={tam} onClick={() => setValores(prev => ({ ...prev, [p.id]: { ...prev[p.id], [tam]: 0 } }))}
+                          className="px-2 py-0.5 text-xs rounded"
+                          style={{ border: "1px solid " + inputBorder, color: subtext, backgroundColor: "transparent" }}>
+                          {tam}
+                        </button>
+                      ) : null
+                    ))}
+                  </div>
+                )}
               </div>
+
               <button onClick={() => salvarEstoque(p.id)} disabled={salvando[p.id]}
                 className="px-6 py-2 rounded-lg text-sm font-semibold text-white"
-                style={{ backgroundColor: salvando[p.id] ? "#9ca3af" : "#16a34a", cursor: salvando[p.id] ? "not-allowed" : "pointer" }}>
+                style={{ backgroundColor: salvando[p.id] ? "#9ca3af" : "#16a34a",
+                  cursor: salvando[p.id] ? "not-allowed" : "pointer" }}>
                 {salvando[p.id] ? "Salvando..." : "💾 Salvar"}
               </button>
             </div>
           );
         })}
+        {produtosFiltrados.length === 0 && (
+          <p style={{ color: subtext }}>Nenhum produto nesta categoria.</p>
+        )}
       </div>
     </div>
   );
 }
 
 // ─── INFORMAÇÕES & IMAGENS DO SITE ───────────────────────────────────────────
+// Imagens estáticas atuais do site (fallback quando não há imagens no banco)
+const HERO_ESTATICAS = [
+  { id: null, titulo: "hero_01", imagem: "/ImagemPrincipal.jpg",  _static: true },
+  { id: null, titulo: "hero_02", imagem: "/ImagemPrincipal2.jpg", _static: true },
+  { id: null, titulo: "hero_03", imagem: "/ImagemPrincipal3.jpg", _static: true },
+  { id: null, titulo: "hero_04", imagem: "/ImagemPrincipal4.jpg", _static: true },
+];
+const GALERIA_ESTATICAS = [
+  { id: null, titulo: "galeria_01", imagem: "/Galeria1.jpeg", _static: true },
+  { id: null, titulo: "galeria_02", imagem: "/Galeria2.jpeg", _static: true },
+  { id: null, titulo: "galeria_03", imagem: "/Galeria3.jpeg", _static: true },
+];
+
 function EditarInfos({ mostrarToast, dark, estilos }) {
   const { text, subtext, inputBg, inputBorder, cardBg, border } = estilos;
 
-  // ── Estado das imagens ──────────────────────────────────────────────────────
-  const [galeriaItems, setGaleriaItems] = useState([]); // { id, titulo, imagem }
-  const [heroItems, setHeroItems]       = useState([]); // { id, titulo, imagem }
+  const [galeriaItems, setGaleriaItems] = useState(GALERIA_ESTATICAS);
+  const [heroItems, setHeroItems]       = useState(HERO_ESTATICAS);
   const [loading, setLoading]           = useState(true);
-
-  // Upload em progresso: { [tempKey]: true }
-  const [uploading, setUploading] = useState({});
+  const [uploading, setUploading]       = useState({});
 
   const cardStyle = { backgroundColor: cardBg, border: "1px solid " + border, borderRadius: "12px", padding: "20px", marginBottom: "24px" };
-  const inputStyle = { width: "100%", padding: "9px 12px", borderRadius: "8px", border: "1px solid " + inputBorder, backgroundColor: inputBg, color: text, fontSize: "14px", outline: "none", boxSizing: "border-box" };
 
-  // ── Carregar do backend ─────────────────────────────────────────────────────
   async function carregarImagens() {
     try {
       const res = await api.get("institucional/");
       const todos = res.data || [];
-      setGaleriaItems(todos.filter(i => i.titulo?.startsWith("galeria_")).sort((a,b) => a.titulo.localeCompare(b.titulo)));
-      setHeroItems(todos.filter(i => i.titulo?.startsWith("hero_")).sort((a,b) => a.titulo.localeCompare(b.titulo)));
-    } catch { mostrarToast("Erro ao carregar imagens.", "erro"); }
+      const galeriaAPI = todos.filter(i => i.titulo?.startsWith("galeria_") && i.imagem)
+        .sort((a,b) => a.titulo.localeCompare(b.titulo));
+      const heroAPI = todos.filter(i => i.titulo?.startsWith("hero_") && i.imagem)
+        .sort((a,b) => a.titulo.localeCompare(b.titulo));
+      // Usa imagens do banco se existirem, senão mantém as estáticas
+      if (galeriaAPI.length > 0) setGaleriaItems(galeriaAPI);
+      if (heroAPI.length > 0) setHeroItems(heroAPI);
+    } catch {}
     finally { setLoading(false); }
   }
 
   useEffect(() => { carregarImagens(); }, []);
 
-  // ── Upload de imagem (Cloudinary via backend) ───────────────────────────────
-  async function uploadImagem(file, tipo, indexOuId) {
-    const key = tipo + "_" + indexOuId;
+  async function uploadImagem(file, tipo, itemOuNull) {
+    const key = tipo + "_" + (itemOuNull?.titulo || "new");
     setUploading(prev => ({ ...prev, [key]: true }));
     try {
       const fd = new FormData();
       fd.append("imagem", file);
-      // Determina o próximo título disponível ou substitui existente
-      if (typeof indexOuId === "number") {
-        // Nova imagem — cria novo registro
-        const existentes = tipo === "galeria" ? galeriaItems : heroItems;
-        const proxNum = existentes.length + 1;
-        fd.append("titulo", tipo + "_" + String(proxNum).padStart(2, "0"));
-        fd.append("conteudo", "");
-        await api.post("institucional/", fd, { headers: { "Content-Type": "multipart/form-data" } });
+      fd.append("conteudo", "");
+
+      if (itemOuNull && itemOuNull.id) {
+        // Substituir imagem existente no banco
+        fd.append("titulo", itemOuNull.titulo);
+        await api.patch("institucional/" + itemOuNull.id + "/", fd,
+          { headers: { "Content-Type": "multipart/form-data" } });
       } else {
-        // Substituir existente — atualiza registro
-        fd.append("titulo", indexOuId.titulo); // mantém o mesmo titulo
-        fd.append("conteudo", "");
-        await api.patch("institucional/" + indexOuId.id + "/", fd, { headers: { "Content-Type": "multipart/form-data" } });
+        // Nova imagem — determina próximo número
+        const existentes = tipo === "galeria" ? galeriaItems : heroItems;
+        const nums = existentes
+          .map(i => parseInt(i.titulo.split("_")[1] || "0"))
+          .filter(n => !isNaN(n));
+        const proxNum = nums.length > 0 ? Math.max(...nums) + 1 : 1;
+        fd.append("titulo", tipo + "_" + String(proxNum).padStart(2, "0"));
+        await api.post("institucional/", fd,
+          { headers: { "Content-Type": "multipart/form-data" } });
       }
       mostrarToast("Imagem salva com sucesso!", "sucesso");
       await carregarImagens();
@@ -1358,6 +1454,10 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
   }
 
   async function removerImagem(item) {
+    if (item._static) {
+      mostrarToast("Esta é uma imagem original do site. Para remover, envie uma imagem substituta.", "erro");
+      return;
+    }
     if (!confirm("Remover esta imagem do site?")) return;
     try {
       await api.delete("institucional/" + item.id + "/");
@@ -1366,32 +1466,40 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
     } catch { mostrarToast("Erro ao remover.", "erro"); }
   }
 
-  // ── Componente de card de imagem ────────────────────────────────────────────
   function ImageCard({ item, tipo, isNew }) {
-    const key = tipo + "_" + (isNew ? "new" : item?.id);
-    const isUploading = uploading[key] || uploading[tipo + "_" + (isNew ? galeriaItems.length : item?.id)];
+    const key = tipo + "_" + (isNew ? "new" : item?.titulo);
+    const isUploading = uploading[key];
+    const isStatic = item?._static;
 
     return (
       <div className="relative group rounded-xl overflow-hidden"
-        style={{ backgroundColor: dark ? "#374151" : "#f3f4f6", border: "2px dashed " + (item?.imagem ? border : inputBorder), aspectRatio: "1" }}>
+        style={{ backgroundColor: dark ? "#374151" : "#f3f4f6",
+          border: "2px " + (isNew ? "dashed" : "solid") + " " + (item?.imagem ? border : inputBorder),
+          aspectRatio: "1" }}>
         {item?.imagem ? (
           <>
             <img src={item.imagem} alt="" className="w-full h-full object-cover" />
+            {isStatic && (
+              <div className="absolute top-1 left-1">
+                <span style={{ fontSize: "9px", backgroundColor: "rgba(0,0,0,0.6)", color: "white",
+                  padding: "2px 5px", borderRadius: "4px" }}>original</span>
+              </div>
+            )}
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
-              style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
-              {/* Substituir */}
+              style={{ backgroundColor: "rgba(0,0,0,0.65)" }}>
               <label className="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
                 style={{ backgroundColor: "#2563eb" }}>
                 🔄 Substituir
                 <input type="file" accept="image/*" className="hidden"
                   onChange={e => { if (e.target.files[0]) uploadImagem(e.target.files[0], tipo, item); }} />
               </label>
-              {/* Remover */}
-              <button onClick={() => removerImagem(item)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
-                style={{ backgroundColor: "#dc2626" }}>
-                🗑️ Remover
-              </button>
+              {!isStatic && (
+                <button onClick={() => removerImagem(item)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
+                  style={{ backgroundColor: "#dc2626" }}>
+                  🗑️ Remover
+                </button>
+              )}
             </div>
             {isUploading && (
               <div className="absolute inset-0 flex items-center justify-center"
@@ -1414,14 +1522,14 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
               </>
             )}
             <input type="file" accept="image/*" className="hidden"
-              onChange={e => { if (e.target.files[0]) uploadImagem(e.target.files[0], tipo, galeriaItems.length); }} />
+              onChange={e => { if (e.target.files[0]) uploadImagem(e.target.files[0], tipo, null); }} />
           </label>
         )}
       </div>
     );
   }
 
-  if (loading) return <p style={{ color: subtext }}>Carregando...</p>;
+  if (loading) return <p style={{ color: subtext }}>Carregando imagens...</p>;
 
   return (
     <div>
@@ -1429,67 +1537,72 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
 
       {/* ── GALERIA / PROJETOS ENTREGUES ── */}
       <div style={cardStyle}>
-        <h3 className="text-base font-semibold mb-1" style={{ color: text }}>🖼️ Galeria de Projetos Entregues</h3>
+        <div className="flex items-start justify-between mb-1 flex-wrap gap-2">
+          <h3 className="text-base font-semibold" style={{ color: text }}>🖼️ Galeria de Projetos Entregues</h3>
+          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "#f0fdf4", color: "#16a34a" }}>
+            📐 Recomendado: 800×800 px (quadrado)
+          </span>
+        </div>
         <p className="text-sm mb-4" style={{ color: subtext }}>
-          Estas fotos aparecem na seção <strong>"Projetos Entregues"</strong> na página inicial.
-          Passe o mouse sobre uma foto para substituir ou remover. Clique no "+" para adicionar nova.
+          Fotos da seção "Projetos Entregues" na página inicial. Passe o mouse sobre uma foto para substituir.
+          Imagens marcadas como "original" são as imagens iniciais do site.
         </p>
-        <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
           {galeriaItems.map(item => (
-            <ImageCard key={item.id} item={item} tipo="galeria" isNew={false} />
+            <ImageCard key={item.titulo} item={item} tipo="galeria" isNew={false} />
           ))}
-          {/* Card para adicionar nova */}
           <ImageCard item={null} tipo="galeria" isNew={true} />
         </div>
-        {galeriaItems.length === 0 && (
-          <p className="text-sm text-center py-4" style={{ color: subtext }}>
-            Nenhuma foto ainda. Clique no "+" para adicionar a primeira.
-          </p>
-        )}
       </div>
 
-      {/* ── IMAGENS DO BANNER PRINCIPAL ── */}
+      {/* ── BANNER PRINCIPAL ── */}
       <div style={cardStyle}>
-        <h3 className="text-base font-semibold mb-1" style={{ color: text }}>🎨 Banner Principal (topo do site)</h3>
+        <div className="flex items-start justify-between mb-1 flex-wrap gap-2">
+          <h3 className="text-base font-semibold" style={{ color: text }}>🎨 Banner Principal (topo do site)</h3>
+          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "#eff6ff", color: "#2563eb" }}>
+            📐 Recomendado: 1920×900 px (horizontal)
+          </span>
+        </div>
         <p className="text-sm mb-4" style={{ color: subtext }}>
-          Estas imagens aparecem no slideshow do topo do site. Recomendado: fotos horizontais (1920x1080px).
-          Máximo de 4 imagens para manter o desempenho do site.
+          Imagens do slideshow principal do site. Máximo 4 imagens. Fotos horizontais funcionam melhor.
+          Ao substituir, a nova imagem entra imediatamente no site.
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {heroItems.map(item => (
-            <ImageCard key={item.id} item={item} tipo="hero" isNew={false} />
+            <ImageCard key={item.titulo} item={item} tipo="hero" isNew={false} />
           ))}
           {heroItems.length < 4 && (
             <ImageCard item={null} tipo="hero" isNew={true} />
           )}
         </div>
-        <p className="text-xs mt-3" style={{ color: subtext }}>
-          ⚠️ As imagens do banner requerem atualização do código para entrar em funcionamento.
-          Após salvar, avise o desenvolvedor para ativar as novas imagens.
-        </p>
       </div>
 
-      {/* ── FOTO DO SOBRE NÓS ── */}
+      {/* ── FOTO SOBRE NÓS ── */}
       <div style={cardStyle}>
-        <h3 className="text-base font-semibold mb-1" style={{ color: text }}>👤 Foto "Sobre Nós"</h3>
+        <div className="flex items-start justify-between mb-1 flex-wrap gap-2">
+          <h3 className="text-base font-semibold" style={{ color: text }}>👤 Foto "Sobre Nós"</h3>
+          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "#fef9f0", color: "#d97706" }}>
+            📐 Recomendado: 600×700 px (retrato)
+          </span>
+        </div>
         <p className="text-sm mb-4" style={{ color: subtext }}>
-          Foto que aparece na seção "Sobre Nós" da página inicial (ao lado do texto de apresentação).
+          Foto ao lado do texto de apresentação da empresa na página inicial.
         </p>
         {(() => {
           const sobreItem = [...galeriaItems, ...heroItems].find(i => i.titulo === "sobre_nos") || null;
           return (
             <div className="flex items-center gap-4">
-              <div style={{ width: "120px", height: "120px", borderRadius: "12px", overflow: "hidden",
+              <div style={{ width: "120px", height: "140px", borderRadius: "12px", overflow: "hidden",
                 border: "2px dashed " + inputBorder, flexShrink: 0 }}>
                 {sobreItem?.imagem
                   ? <img src={sobreItem.imagem} className="w-full h-full object-cover" alt="" />
-                  : <div className="w-full h-full flex items-center justify-center" style={{ fontSize: "32px" }}>👤</div>
+                  : <img src="/FotoMetkzerepai.jpg" className="w-full h-full object-cover" alt="Foto atual" />
                 }
               </div>
               <div>
                 <label className="cursor-pointer px-4 py-2 rounded-lg text-sm font-semibold text-white inline-block"
                   style={{ backgroundColor: "#1a1a1a" }}>
-                  📸 {sobreItem ? "Substituir foto" : "Adicionar foto"}
+                  📸 {sobreItem ? "Substituir foto" : "Enviar nova foto"}
                   <input type="file" accept="image/*" className="hidden"
                     onChange={async e => {
                       if (!e.target.files[0]) return;
@@ -1498,17 +1611,21 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
                       fd.append("titulo", "sobre_nos");
                       fd.append("conteudo", "");
                       try {
-                        if (sobreItem) {
-                          await api.patch("institucional/" + sobreItem.id + "/", fd, { headers: { "Content-Type": "multipart/form-data" } });
+                        if (sobreItem && sobreItem.id) {
+                          await api.patch("institucional/" + sobreItem.id + "/", fd,
+                            { headers: { "Content-Type": "multipart/form-data" } });
                         } else {
-                          await api.post("institucional/", fd, { headers: { "Content-Type": "multipart/form-data" } });
+                          await api.post("institucional/", fd,
+                            { headers: { "Content-Type": "multipart/form-data" } });
                         }
                         mostrarToast("Foto atualizada!", "sucesso");
                         await carregarImagens();
                       } catch { mostrarToast("Erro ao salvar.", "erro"); }
                     }} />
                 </label>
-                <p className="text-xs mt-2" style={{ color: subtext }}>Formatos: JPG, PNG. Recomendado: foto quadrada ou retrato.</p>
+                <p className="text-xs mt-2" style={{ color: subtext }}>
+                  Foto atual: FotoMetkzerepai.jpg (imagem do pai da empresa)
+                </p>
               </div>
             </div>
           );

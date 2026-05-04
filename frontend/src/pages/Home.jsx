@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const GALERIA_PADRAO = ["/Galeria1.jpeg", "/Galeria2.jpeg", "/Galeria3.jpeg"];
 
-const heroImages = [
+const HERO_PADRAO = [
   { src: "/ImagemPrincipal.jpg",  position: "center center" },
   { src: "/ImagemPrincipal2.jpg", position: "center center" },
   { src: "/ImagemPrincipal3.jpg", position: "center center" },
@@ -30,6 +30,7 @@ function useReveal(threshold = 0.15) {
 export default function Home() {
   const [heroAtual, setHeroAtual] = useState(0);
   const [galeria, setGaleria] = useState(GALERIA_PADRAO);
+  const [heroImages, setHeroImages] = useState(HERO_PADRAO);
   const [galeriaIndex, setGaleriaIndex] = useState(0);
   const FOTOS_POR_SLIDE = 3;
   const totalSlides = Math.ceil(galeria.length / FOTOS_POR_SLIDE);
@@ -45,18 +46,27 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  // Carrega galeria do backend (Cloudinary)
+  // Carrega galeria e hero do backend (Cloudinary)
   useEffect(() => {
-    fetch(import.meta.env.VITE_API_URL + "institucional/")
+    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000/api/";
+    fetch(apiUrl + "institucional/")
       .then(r => r.json())
       .then(data => {
-        const fotos = (data || [])
+        const todos = data || [];
+        // Galeria
+        const fotos = todos
           .filter(i => i.titulo?.startsWith("galeria_") && i.imagem)
           .sort((a, b) => a.titulo.localeCompare(b.titulo))
           .map(i => i.imagem);
         if (fotos.length > 0) setGaleria(fotos);
+        // Hero images (banner principal)
+        const heroAPI = todos
+          .filter(i => i.titulo?.startsWith("hero_") && i.imagem)
+          .sort((a, b) => a.titulo.localeCompare(b.titulo))
+          .map(i => ({ src: i.imagem, position: "center center" }));
+        if (heroAPI.length > 0) setHeroImages(heroAPI);
       })
-      .catch(() => {}); // se falhar, mantém GALERIA_PADRAO
+      .catch(() => {}); // se falhar, mantém imagens estáticas
   }, []);
 
   const servicos = [
