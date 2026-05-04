@@ -1538,8 +1538,8 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
       {/* ── GALERIA / PROJETOS ENTREGUES ── */}
       <div style={cardStyle}>
         <div className="flex items-start justify-between mb-1 flex-wrap gap-2">
-          <h3 className="text-base font-semibold" style={{ color: text }}>🖼️ Galeria de Projetos Entregues</h3>
-          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "#f0fdf4", color: "#16a34a" }}>
+          <h3 className="text-base font-semibold" style={{ color: text }}>Galeria de Projetos Entregues</h3>
+          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "#f0fdf4", color: "#000000" }}>
             📐 Recomendado: 800×800 px (quadrado)
           </span>
         </div>
@@ -1558,8 +1558,8 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
       {/* ── BANNER PRINCIPAL ── */}
       <div style={cardStyle}>
         <div className="flex items-start justify-between mb-1 flex-wrap gap-2">
-          <h3 className="text-base font-semibold" style={{ color: text }}>🎨 Banner Principal (topo do site)</h3>
-          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "#eff6ff", color: "#2563eb" }}>
+          <h3 className="text-base font-semibold" style={{ color: text }}>Banner Principal</h3>
+          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "#eff6ff", color: "#000000" }}>
             📐 Recomendado: 1920×900 px (horizontal)
           </span>
         </div>
@@ -1580,8 +1580,8 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
       {/* ── FOTO SOBRE NÓS ── */}
       <div style={cardStyle}>
         <div className="flex items-start justify-between mb-1 flex-wrap gap-2">
-          <h3 className="text-base font-semibold" style={{ color: text }}>👤 Foto "Sobre Nós"</h3>
-          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "#fef9f0", color: "#d97706" }}>
+          <h3 className="text-base font-semibold" style={{ color: text }}>Imagem "Sobre Nós"</h3>
+          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "#fef9f0", color: "#000000" }}>
             📐 Recomendado: 600×700 px (retrato)
           </span>
         </div>
@@ -1624,7 +1624,7 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
                     }} />
                 </label>
                 <p className="text-xs mt-2" style={{ color: subtext }}>
-                  Foto atual: FotoMetkzerepai.jpg (imagem do pai da empresa)
+                  Foto atual: FotoMetkzerepai.jpg 
                 </p>
               </div>
             </div>
