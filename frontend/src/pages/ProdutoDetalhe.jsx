@@ -82,8 +82,8 @@ export default function ProdutoDetalhe() {
     <div style={{ backgroundColor: t.bg, color: t.text, minHeight: "100vh" }}>
 
       {adicionado && (
-        <div className="fixed top-6 right-6 z-50 px-5 py-4 shadow-2xl text-white text-sm font-medium"
-          style={{ backgroundColor: "#16a34a" }}>
+        <div className="fixed top-[70px] left-1/2 z-[9999] px-5 py-4 shadow-2xl text-white text-sm font-medium rounded-xl"
+          style={{ backgroundColor: "#16a34a", transform: "translateX(-50%)", whiteSpace: "nowrap" }}>
           ✅ Produto adicionado ao carrinho!
         </div>
       )}

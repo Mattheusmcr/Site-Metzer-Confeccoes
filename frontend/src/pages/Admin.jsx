@@ -7,7 +7,7 @@ const GALERIA_KEY = "metzker_galeria_trabalhos";
 function Toast({ mensagem, tipo, onClose }) {
   useEffect(() => { const t = setTimeout(onClose, 3500); return () => clearTimeout(t); }, [onClose]);
   return (
-    <div className="fixed bottom-6 left-1/2 z-50 px-6 py-4 rounded-xl shadow-2xl text-white text-sm font-medium flex items-center gap-3"
+    <div className="fixed top-[70px] left-1/2 z-[9999] px-6 py-4 rounded-xl shadow-2xl text-white text-sm font-medium flex items-center gap-3"
       style={{ transform: "translateX(-50%)", backgroundColor: tipo === "sucesso" ? "#16a34a" : "#dc2626",
         fontFamily: "system-ui", maxWidth: "90vw", whiteSpace: "nowrap" }}>
       {tipo === "sucesso" ? "✅" : "❌"} {mensagem}
@@ -1289,7 +1289,7 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
                 </span>
                 {totalEstoque > 0 && (
                   <span className="text-xs px-2 py-0.5 rounded-full"
-                    style={{ backgroundColor: "#f0fdf4", color: "#16a34a" }}>
+                    style={{ backgroundColor: "#f0fdf4", color: "#000000" }}>
                     {totalEstoque} un. em estoque
                   </span>
                 )}
@@ -1624,7 +1624,7 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
                     }} />
                 </label>
                 <p className="text-xs mt-2" style={{ color: subtext }}>
-                  Foto atual: FotoMetkzerepai.jpg 
+                  Foto atual: FotoMetkzerepai.jpg (imagem do pai da empresa)
                 </p>
               </div>
             </div>
