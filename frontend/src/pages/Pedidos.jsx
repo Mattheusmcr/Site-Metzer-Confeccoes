@@ -107,8 +107,12 @@ export default function Pedidos() {
 
   const total = cart.reduce((a,i) => a + (parseFloat(i.produto?.preco)||0)*i.quantidade, 0);
   const itensComProblema = cart.filter(item => {
-    const est = item.produto.estoques?.find(e => e.tamanho===item.tamanho);
-    return !est || item.quantidade>est.quantidade;
+    // Se estoques não foi carregado (produto adicionado pelo card do catálogo),
+    // não bloqueia o pedido — validação ocorre no servidor
+    if (!item.produto.estoques || item.produto.estoques.length === 0) return false;
+    const est = item.produto.estoques.find(e => e.tamanho === item.tamanho);
+    if (!est) return false; // tamanho não tem registro de estoque = aceita
+    return item.quantidade > est.quantidade;
   });
   const estoqueInsuficiente = itensComProblema.length>0;
 
@@ -285,9 +289,10 @@ export default function Pedidos() {
       const res = await api.post("mp-criar-preferencia/", payload);
       console.log("Resposta MP:", res.data);
 
+      // Em produção usa init_point, em dev usa sandbox para testes
       const url = import.meta.env.PROD 
-      ? res.data.init_point 
-      : res.data.sandbox_init_point;
+        ? res.data.init_point 
+        : res.data.sandbox_init_point;
       if (!url) throw new Error("URL de pagamento não retornada pelo servidor.");
 
       // Redireciona para o checkout do Mercado Pago
@@ -495,7 +500,7 @@ export default function Pedidos() {
             <div className="space-y-3">
               {cart.map((item,i) => {
                 const est = item.produto?.estoques?.find(e=>e.tamanho===item.tamanho);
-                const semEst = !est || item.quantidade>est.quantidade;
+                const semEst = est && item.quantidade > est.quantidade;
                 return (
                   <div key={i} className="rounded-xl p-4 flex justify-between items-center"
                     style={{backgroundColor:t.bgCard,border:"1px solid "+(semEst?"#fecaca":t.border)}}>

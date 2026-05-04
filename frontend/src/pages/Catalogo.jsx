@@ -153,8 +153,9 @@ function Catalogo() {
     <div style={{ backgroundColor: t.bg, color: t.text, minHeight: "100vh" }}>
 
       {toastMsg && (
-        <div className="fixed top-6 right-6 z-50 px-5 py-4 shadow-xl text-white text-sm font-medium flex items-center gap-3"
-          style={{ backgroundColor: toastMsg.sucesso ? "#16a34a" : "#dc2626" }}>
+        <div className="fixed bottom-6 left-1/2 z-50 px-5 py-3 rounded-xl shadow-2xl text-white text-sm font-medium flex items-center gap-3"
+          style={{ transform: "translateX(-50%)", backgroundColor: toastMsg.sucesso ? "#16a34a" : "#dc2626",
+            whiteSpace: "nowrap", maxWidth: "90vw" }}>
           {toastMsg.sucesso ? "✅" : "❌"} {toastMsg.msg}
         </div>
       )}

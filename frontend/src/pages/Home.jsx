@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 
-const GALERIA_KEY = "metzker_galeria_trabalhos";
 const GALERIA_PADRAO = ["/Galeria1.jpeg", "/Galeria2.jpeg", "/Galeria3.jpeg"];
 
 const heroImages = [
@@ -30,10 +29,7 @@ function useReveal(threshold = 0.15) {
 
 export default function Home() {
   const [heroAtual, setHeroAtual] = useState(0);
-  const [galeria, setGaleria] = useState(() => {
-    try { const s = localStorage.getItem(GALERIA_KEY); return s ? JSON.parse(s) : GALERIA_PADRAO; }
-    catch { return GALERIA_PADRAO; }
-  });
+  const [galeria, setGaleria] = useState(GALERIA_PADRAO);
   const [galeriaIndex, setGaleriaIndex] = useState(0);
   const FOTOS_POR_SLIDE = 3;
   const totalSlides = Math.ceil(galeria.length / FOTOS_POR_SLIDE);
@@ -49,10 +45,18 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
+  // Carrega galeria do backend (Cloudinary)
   useEffect(() => {
-    const fn = e => { if (e.key === GALERIA_KEY && e.newValue) { try { setGaleria(JSON.parse(e.newValue)); } catch {} } };
-    window.addEventListener("storage", fn);
-    return () => window.removeEventListener("storage", fn);
+    fetch(import.meta.env.VITE_API_URL + "institucional/")
+      .then(r => r.json())
+      .then(data => {
+        const fotos = (data || [])
+          .filter(i => i.titulo?.startsWith("galeria_") && i.imagem)
+          .sort((a, b) => a.titulo.localeCompare(b.titulo))
+          .map(i => i.imagem);
+        if (fotos.length > 0) setGaleria(fotos);
+      })
+      .catch(() => {}); // se falhar, mantém GALERIA_PADRAO
   }, []);
 
   const servicos = [

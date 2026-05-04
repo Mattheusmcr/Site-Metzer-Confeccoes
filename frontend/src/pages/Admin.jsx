@@ -257,7 +257,7 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium"
                       style={{ backgroundColor: dark ? "#374151" : "#F2EDE6", color: text, border: "1px solid " + border }}>
                       📂 {CATEGORIAS_ADMIN.find(c => c.id === editando.categoria)?.label}
-                      {editando.subcategoria && ` › ${subcatsEdicao.find(s => s.id === editando.subcategoria)?.label}`}
+                      {editando.subcategoria && ` › ${subcatsEdicao.find(sub => sub.id === editando.subcategoria)?.label}`}
                     </div>
                   )}
                   <div className="flex items-center gap-3">
@@ -344,16 +344,14 @@ function Dashboard({ dark, estilos }) {
 
   const totalGeral = pedidos.length + personalizados.length;
   const faturamento = pedidos.reduce((acc, p) => acc + (p.total || 0), 0);
-  const STATUS_LABELS = { novo:"Novo", em_andamento:"Em andamento", concluido:"Concluído", cancelado:"Cancelado" };
+  const STATUS_LABELS = { novo:"Novo", em_andamento:"Em andamento", concluido:"Concluido", cancelado:"Cancelado" };
   const STATUS_CORES_D = { novo:"#2563eb", em_andamento:"#d97706", concluido:"#16a34a", cancelado:"#dc2626" };
 
-  // Contagem por status separada
   const statusCat = {novo:0, em_andamento:0, concluido:0, cancelado:0};
   pedidos.forEach(p => { const s = p.status||"novo"; statusCat[s] = (statusCat[s]||0)+1; });
   const statusPers = {novo:0, em_andamento:0, concluido:0, cancelado:0};
   personalizados.forEach(p => { const s = p.status||"novo"; statusPers[s] = (statusPers[s]||0)+1; });
 
-  // Top produtos
   const contagem = {};
   pedidos.forEach(p => (p.itens||[]).forEach(i => {
     contagem[i.produto_nome] = (contagem[i.produto_nome]||0) + i.quantidade;
@@ -362,8 +360,8 @@ function Dashboard({ dark, estilos }) {
 
   const cards = [
     { label: "Total de pedidos", valor: totalGeral, icone: "📦", cor: "#2563eb" },
-    { label: "Faturamento estimado", valor: `R$ ${faturamento.toFixed(2)}`, icone: "💰", cor: "#16a34a" },
-    { label: "Portfólio / Catálogo", valor: pedidos.length, icone: "🛍️", cor: "#7c3aed" },
+    { label: "Faturamento estimado", valor: "R$ " + faturamento.toFixed(2), icone: "💰", cor: "#16a34a" },
+    { label: "Catalogo", valor: pedidos.length, icone: "🛍️", cor: "#7c3aed" },
     { label: "Personalizados", valor: personalizados.length, icone: "🎨", cor: "#d97706" },
   ];
 
@@ -371,7 +369,6 @@ function Dashboard({ dark, estilos }) {
     <div>
       <h2 className="text-xl font-semibold mb-6" style={{ color: text }}>📈 Dashboard</h2>
 
-      {/* Cards métricas */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {cards.map((c, i) => (
           <div key={i} className="rounded-xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
@@ -382,7 +379,6 @@ function Dashboard({ dark, estilos }) {
         ))}
       </div>
 
-      {/* GOOGLE ANALYTICS */}
       <div className="rounded-xl p-5 mb-6" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"12px" }}>
           <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
@@ -391,90 +387,75 @@ function Dashboard({ dark, estilos }) {
           </div>
           <a href="https://analytics.google.com" target="_blank" rel="noreferrer"
             style={{ fontSize:"12px", color:"#2563eb", fontFamily:"system-ui", fontWeight:"500",
-              textDecoration:"none", padding:"6px 12px", borderRadius:"6px",
-              border:"1px solid #2563eb", display:"inline-block" }}>
+              textDecoration:"none", padding:"6px 12px", borderRadius:"6px", border:"1px solid #2563eb", display:"inline-block" }}>
             Abrir GA →
           </a>
         </div>
-        <p style={{ fontSize:"12px", color: subtext, fontFamily:"system-ui", lineHeight:1.6, marginBottom:"14px" }}>
-          Os dados de visitantes ficam no painel do Google Analytics.
-          Clique nos atalhos abaixo para ir direto a cada relatório.
-        </p>
         <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"8px" }}>
           {[
-            { label:"Tempo real", desc:"Quem está no site agora", url:"https://analytics.google.com", icone:"🟢" },
-            { label:"Usuários", desc:"Visitantes por período", url:"https://analytics.google.com", icone:"👥" },
-            { label:"Páginas", desc:"Páginas mais acessadas", url:"https://analytics.google.com", icone:"📄" },
+            { label:"Tempo real", desc:"Quem esta no site agora", url:"https://analytics.google.com", icone:"🟢" },
+            { label:"Usuarios", desc:"Visitantes por periodo", url:"https://analytics.google.com", icone:"👥" },
+            { label:"Paginas", desc:"Paginas mais acessadas", url:"https://analytics.google.com", icone:"📄" },
           ].map((item, i) => (
             <a key={i} href={item.url} target="_blank" rel="noreferrer"
               style={{ borderRadius:"8px", padding:"12px 10px", textAlign:"center",
-                backgroundColor: dark ? "#374151" : "#f9fafb",
-                border: "1px solid " + border,
-                textDecoration:"none", display:"block", transition:"opacity .15s" }}>
+                backgroundColor: dark ? "#374151" : "#f9fafb", border: "1px solid " + border,
+                textDecoration:"none", display:"block" }}>
               <div style={{ fontSize:"22px", marginBottom:"5px" }}>{item.icone}</div>
               <p style={{ fontSize:"12px", color: text, fontFamily:"system-ui", fontWeight:"600", margin:0 }}>{item.label}</p>
               <p style={{ fontSize:"10px", color: subtext, fontFamily:"system-ui", marginTop:"2px" }}>{item.desc}</p>
             </a>
           ))}
         </div>
-        <p style={{ fontSize:"11px", color: subtext, fontFamily:"system-ui", marginTop:"10px", lineHeight:1.5 }}>
-          💡 Para ver os dados dentro deste painel seria necessário integração com a API do GA (requer Service Account OAuth2). Por enquanto os links acima levam direto para o GA.
-        </p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Top produtos */}
         <div className="rounded-xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
           <p className="font-semibold mb-4" style={{ color: text }}>🏆 Produtos mais pedidos</p>
-          {topProdutos.length === 0 && <p style={{ color: subtext, fontSize: "13px" }}>Nenhum pedido de catálogo ainda.</p>}
+          {topProdutos.length === 0 && <p style={{ color: subtext, fontSize: "13px" }}>Nenhum pedido ainda.</p>}
           {topProdutos.map(([nome, qtd], i) => {
-            const max = topProdutos[0]?.[1] || 1;
+            const maxQtd = topProdutos[0]?.[1] || 1;
+            const pct = Math.round((qtd * 100) / maxQtd);
             return (
               <div key={i} className="mb-3">
                 <div className="flex justify-between mb-1">
-                  <span style={{ fontSize: "13px", color: text, fontFamily: "system-ui" }}>{nome}</span>
+                  <span style={{ fontSize: "13px", color: text }}>{nome}</span>
                   <span style={{ fontSize: "13px", fontWeight: "600", color: text }}>{qtd} un</span>
                 </div>
                 <div style={{ height: "6px", backgroundColor: dark ? "#374151" : "#e5e7eb", borderRadius: "3px" }}>
-                  <div style={{ height: "100%", width: `${(qtd/max)*100}%`, backgroundColor: "#2563eb", borderRadius: "3px" }} />
+                  <div style={{ height: "100%", width: pct + "%", backgroundColor: "#2563eb", borderRadius: "3px" }} />
                 </div>
               </div>
             );
           })}
         </div>
 
-        {/* Status separado por tipo */}
         <div className="rounded-xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
           <p className="font-semibold mb-4" style={{ color: text }}>📊 Status por tipo</p>
-          
-          {/* Portfólio */}
-          <p style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.08em", color: subtext, fontFamily: "system-ui", marginBottom: "8px" }}>
-            🛍️ Portfólio / Catálogo ({pedidos.length})
+          <p style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: subtext, fontFamily: "system-ui", marginBottom: "8px" }}>
+            Catalogo ({pedidos.length})
           </p>
           {Object.entries(statusCat).map(([id, qtd]) => (
             <div key={id} className="flex items-center gap-3 mb-2">
               <div style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: STATUS_CORES_D[id], flexShrink: 0 }} />
-              <span style={{ fontSize: "13px", color: text, fontFamily: "system-ui", flex: 1 }}>{STATUS_LABELS[id]}</span>
+              <span style={{ fontSize: "13px", color: text, flex: 1 }}>{STATUS_LABELS[id]}</span>
               <span style={{ fontSize: "13px", fontWeight: qtd > 0 ? "700" : "400", color: qtd > 0 ? text : subtext }}>{qtd}</span>
             </div>
           ))}
-
           <div style={{ margin: "14px 0", borderTop: "1px solid " + border }} />
-
-          {/* Personalizados */}
-          <p style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.08em", color: subtext, fontFamily: "system-ui", marginBottom: "8px" }}>
-            🎨 Personalizados ({personalizados.length})
+          <p style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: subtext, fontFamily: "system-ui", marginBottom: "8px" }}>
+            Personalizados ({personalizados.length})
           </p>
           {Object.entries(statusPers).map(([id, qtd]) => (
             <div key={id} className="flex items-center gap-3 mb-2">
               <div style={{ width: "10px", height: "10px", borderRadius: "50%", backgroundColor: STATUS_CORES_D[id], flexShrink: 0 }} />
-              <span style={{ fontSize: "13px", color: text, fontFamily: "system-ui", flex: 1 }}>{STATUS_LABELS[id]}</span>
+              <span style={{ fontSize: "13px", color: text, flex: 1 }}>{STATUS_LABELS[id]}</span>
               <span style={{ fontSize: "13px", fontWeight: qtd > 0 ? "700" : "400", color: qtd > 0 ? text : subtext }}>{qtd}</span>
             </div>
           ))}
         </div>
       </div>
-      </div>
+    </div>
   );
 }
 
@@ -554,114 +535,69 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
   }, [carregar]);
 
 
-  // ── GERAR PDF DO PEDIDO (Admin) ─────────────────────────────────────────────
+  // ── GERAR PDF DO PEDIDO (Admin) ─────────────────────────────────────────
   function gerarPDFPedido(p) {
-    const isCat = !p.ramo; // catalog orders don't have ramo
+    const isCat = !p.ramo;
+    const prot = p.protocolo || (isCat ? "MTZ-" + String(p.id).padStart(4,"0") : "MTZ-PERS-" + String(p.id).padStart(4,"0"));
+    const freteLabel = p.frete_tipo === "retirada" ? "Retirada no local (Gratis)"
+      : p.frete_tipo === "motoboy" ? "Motoboy - estimativa R$ " + parseFloat(p.frete_valor||0).toFixed(2) + " (Grande Vitoria/ES)"
+      : p.frete_tipo === "correios" ? "Correios - valor a confirmar"
+      : "Nao informado";
+    const statusTxt = p.status === "concluido" ? "Concluido"
+      : p.status === "cancelado" ? "Cancelado"
+      : p.status === "em_andamento" ? "Em andamento" : "Novo";
     const itensHTML = isCat
-      ? (p.itens || []).map(i =>
-          `<tr style="border-bottom:1px solid #eee">
-            <td style="padding:8px 4px">${i.produto_nome || i.nome || "Produto"}</td>
-            <td style="padding:8px 4px;text-align:center">${i.tamanho}</td>
-            <td style="padding:8px 4px;text-align:center">${i.quantidade}</td>
-            <td style="padding:8px 4px;text-align:right">R$ ${(parseFloat(i.produto_preco || 0) * i.quantidade).toFixed(2)}</td>
-          </tr>`).join("")
-      : `<tr><td colspan="4" style="padding:8px 4px">${p.ramo || "Pedido personalizado"} — ${p.quantidade || "—"} unidades</td></tr>`;
+      ? (p.itens||[]).map(i =>
+          "<tr><td style='padding:8px 4px'>" + (i.produto_nome||"Produto") + "</td>"
+          + "<td style='padding:8px 4px;text-align:center'>" + i.tamanho + "</td>"
+          + "<td style='padding:8px 4px;text-align:center'>" + i.quantidade + "</td>"
+          + "<td style='padding:8px 4px;text-align:right'>R$ " + (parseFloat(i.produto_preco||0)*i.quantidade).toFixed(2) + "</td></tr>"
+        ).join("")
+      : "<tr><td colspan='4' style='padding:8px 4px'>" + (p.ramo||"Pedido personalizado") + " - " + (p.quantidade||"-") + " unidades</td></tr>";
 
-    const freteLabel = p.frete_tipo === "retirada" ? "🏪 Retirada no local (Grátis)"
-      : p.frete_tipo === "motoboy" ? `🛵 Motoboy — estimativa R$ ${parseFloat(p.frete_valor||0).toFixed(2)} (apenas Grande Vitória/ES)`
-      : p.frete_tipo === "correios" ? "📬 Correios — valor a confirmar com o cliente"
-      : "Não informado";
+    const endHTML = p.rua
+      ? "<p>" + p.rua + ", " + (p.numero||"s/n") + (p.complemento?" - "+p.complemento:"") + "</p><p>" + (p.bairro||"") + " - " + (p.cidade||"") + "/" + (p.estado||"") + "</p>"
+      : "<p>Retirada no local</p>";
 
-    const totalProdutos = isCat
-      ? (p.itens || []).reduce((s, i) => s + parseFloat(i.produto_preco || 0) * i.quantidade, 0)
-      : 0;
-
-    const protocolo = p.protocolo || (isCat ? `MTZ-${String(p.id).padStart(4,"0")}` : `MTZ-PERS-${String(p.id).padStart(4,"0")}`);
-
-    const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
-    <title>Pedido ${protocolo}</title>
-    <style>
-      *{box-sizing:border-box}
-      body{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 24px;color:#1a1a1a}
-      .logo{font-size:26px;font-weight:300;letter-spacing:2px;margin-bottom:4px}
-      .logo span{color:#c41e3a;font-weight:700}
-      h2{font-size:18px;font-weight:600;margin:20px 0 6px}
-      .prot{font-family:monospace;font-size:16px;font-weight:700;padding:10px 16px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;display:inline-block;margin-bottom:16px}
-      .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
-      .block{padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px}
-      .block h3{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;margin:0 0 6px;font-weight:700}
-      .block p{font-size:13px;margin:2px 0;line-height:1.5}
-      table{width:100%;border-collapse:collapse;margin:12px 0}
-      th{background:#f3f4f6;padding:8px 4px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;font-weight:700}
-      td{font-size:13px;color:#1a1a1a}
-      .total-row{font-weight:700;font-size:15px;border-top:2px solid #1a1a1a}
-      .frete-block{margin:12px 0;padding:12px 16px;background:#fef9f0;border:1px solid #fde68a;border-radius:6px;font-size:13px}
-      .status{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;margin-bottom:16px;background:${
-        p.status === "concluido" ? "#f0fdf4" : p.status === "cancelado" ? "#fef2f2" : p.status === "em_andamento" ? "#eff6ff" : "#f9fafb"
-      };color:${
-        p.status === "concluido" ? "#16a34a" : p.status === "cancelado" ? "#dc2626" : p.status === "em_andamento" ? "#2563eb" : "#374151"
-      };border:1px solid ${
-        p.status === "concluido" ? "#86efac" : p.status === "cancelado" ? "#fecaca" : p.status === "em_andamento" ? "#bfdbfe" : "#e5e7eb"
-      }}
-      .footer{margin-top:28px;padding-top:14px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af;text-align:center}
-      @media print{body{margin:20px}button{display:none}}
-    </style></head><body>
-      <div class="logo"><span>m</span>etzker soluções</div>
-      <p style="color:#6b7280;font-size:12px;margin:0 0 16px">Vila Velha, ES · (27) 99787-8391 · andremetzkrr@gmail.com</p>
-      <h2>Pedido ${isCat ? "Catálogo" : "Personalizado"}</h2>
-      <div class="prot">🔖 ${protocolo}</div>
-      <div><span class="status">${
-        p.status === "concluido" ? "✅ Concluído" : p.status === "cancelado" ? "❌ Cancelado" : p.status === "em_andamento" ? "⏳ Em andamento" : "🆕 Novo"
-      }</span></div>
-
-      <div class="grid">
-        <div class="block">
-          <h3>Cliente</h3>
-          <p><strong>${p.nome_cliente || "—"}</strong></p>
-          <p>📱 ${p.telefone || "—"}</p>
-          <p>✉️ ${p.email || "—"}</p>
-        </div>
-        <div class="block">
-          <h3>Endereço de entrega</h3>
-          ${p.rua ? `<p>${p.rua}, ${p.numero || "s/n"}${p.complemento ? " — " + p.complemento : ""}</p><p>${p.bairro} — ${p.cidade}/${p.estado}</p><p>CEP: ${p.cep}</p>` : "<p>Retirada no local</p>"}
-        </div>
-        ${isCat ? `<div class="block"><h3>Pagamento</h3><p>${p.forma_pagamento || "—"}</p></div>` : ""}
-        <div class="block">
-          <h3>Data do pedido</h3>
-          <p>${new Date(p.data_pedido).toLocaleDateString("pt-BR")} às ${new Date(p.data_pedido).toLocaleTimeString("pt-BR", {hour:"2-digit",minute:"2-digit"})}</p>
-        </div>
-        ${!isCat ? `<div class="block"><h3>Categoria / Produto</h3><p>${p.ramo || "—"}</p><p><strong>${p.quantidade || "—"} unidades</strong></p></div>` : ""}
-      </div>
-
-      <div class="frete-block">
-        <strong>🚚 Entrega:</strong> ${freteLabel}
-      </div>
-
-      <h2 style="margin-top:20px">${isCat ? "Itens do pedido" : "Detalhes do pedido"}</h2>
-      <table>
-        <thead><tr>
-          <th style="width:45%">Produto</th>
-          ${isCat ? "<th style='text-align:center'>Tamanho</th><th style='text-align:center'>Qtd</th><th style='text-align:right'>Subtotal</th>" : ""}
-        </tr></thead>
-        <tbody>${itensHTML}</tbody>
-        ${isCat && totalProdutos > 0 ? `<tfoot><tr class="total-row"><td colspan="3" style="padding:10px 4px;text-align:right">Total produtos:</td><td style="padding:10px 4px;text-align:right">R$ ${totalProdutos.toFixed(2)}</td></tr></tfoot>` : ""}
-      </table>
-
-      ${p.observacao || p.observacoes ? `<div style="margin-top:16px;padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px"><h3 style="font-size:11px;text-transform:uppercase;color:#6b7280;margin:0 0 6px">Observações</h3><p style="font-size:13px">${p.observacao || p.observacoes}</p></div>` : ""}
-
-      <div class="footer">
-        Metzker Soluções · Polo Têxtil Santa Inês · Vila Velha, ES<br>
-        Pedido gerado em ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}
-      </div>
-      <div style="text-align:center;margin-top:16px">
-        <button onclick="window.print()" style="padding:10px 24px;background:#1a1a1a;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px">🖨️ Imprimir / Salvar PDF</button>
-      </div>
-    </body></html>`;
+    const html = "<!DOCTYPE html><html lang='pt-BR'><head><meta charset='UTF-8'><title>Pedido " + prot + "</title>"
+      + "<style>*{box-sizing:border-box}body{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 24px;color:#1a1a1a}"
+      + ".prot{font-family:monospace;font-size:16px;font-weight:700;padding:10px 16px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;display:inline-block;margin-bottom:16px}"
+      + ".grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}"
+      + ".block{padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px}"
+      + ".block h3{font-size:10px;text-transform:uppercase;color:#6b7280;margin:0 0 6px;font-weight:700}"
+      + ".block p{font-size:13px;margin:2px 0;line-height:1.5}"
+      + "table{width:100%;border-collapse:collapse;margin:12px 0}"
+      + "th{background:#f3f4f6;padding:8px 4px;text-align:left;font-size:11px;text-transform:uppercase;font-weight:700}"
+      + "td{font-size:13px;color:#1a1a1a}"
+      + ".frete{margin:12px 0;padding:12px 16px;background:#fef9f0;border:1px solid #fde68a;border-radius:6px;font-size:13px}"
+      + ".footer{margin-top:28px;padding-top:14px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af;text-align:center}"
+      + "@media print{button{display:none}}</style></head><body>"
+      + "<p style='font-size:22px;font-weight:300;letter-spacing:2px;margin-bottom:4px'><span style='color:#c41e3a;font-weight:700'>m</span>etzker solucoes</p>"
+      + "<p style='color:#6b7280;font-size:12px;margin:0 0 16px'>Vila Velha, ES - (27) 99787-8391</p>"
+      + "<h2 style='font-size:18px;font-weight:600;margin:20px 0 6px'>Pedido " + (isCat ? "Catalogo" : "Personalizado") + "</h2>"
+      + "<div class='prot'>Protocolo: " + prot + "</div><br>"
+      + "<span style='display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;margin-bottom:16px;background:#f9fafb;color:#374151'>" + statusTxt + "</span>"
+      + "<div class='grid'>"
+      + "<div class='block'><h3>Cliente</h3><p><strong>" + (p.nome_cliente||"-") + "</strong></p><p>" + (p.telefone||"-") + "</p><p>" + (p.email||"-") + "</p></div>"
+      + "<div class='block'><h3>Endereco</h3>" + endHTML + "</div>"
+      + (isCat ? "<div class='block'><h3>Pagamento</h3><p>" + (p.forma_pagamento||"-") + "</p></div>" : "")
+      + "<div class='block'><h3>Data</h3><p>" + new Date(p.data_pedido).toLocaleDateString("pt-BR") + "</p></div>"
+      + (!isCat ? "<div class='block'><h3>Produto</h3><p>" + (p.ramo||"-") + "</p><p><strong>" + (p.quantidade||"-") + " unidades</strong></p></div>" : "")
+      + "</div>"
+      + "<div class='frete'><strong>Entrega:</strong> " + freteLabel + "</div>"
+      + "<table><thead><tr><th>Produto</th>"
+      + (isCat ? "<th style='text-align:center'>Tamanho</th><th style='text-align:center'>Qtd</th><th style='text-align:right'>Subtotal</th>" : "")
+      + "</tr></thead><tbody>" + itensHTML + "</tbody></table>"
+      + (p.observacao||p.observacoes ? "<div style='margin-top:16px;padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px'><p style='font-size:13px'>" + (p.observacao||p.observacoes) + "</p></div>" : "")
+      + "<div class='footer'>Metzker Solucoes - Polo Textil Santa Ines - Vila Velha, ES<br>Gerado em " + new Date().toLocaleDateString("pt-BR") + "</div>"
+      + "<div style='text-align:center;margin-top:16px'><button onclick='window.print()' style='padding:10px 24px;background:#1a1a1a;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px'>Imprimir/Salvar PDF</button></div>"
+      + "</body></html>";
 
     const win = window.open("", "_blank");
     win.document.write(html);
     win.document.close();
   }
+
 
   function exportarExcel() {
     // Sanitize: remove quebras de linha, escapa aspas duplas, envolve em aspas se tiver vírgula/ponto-e-vírgula
@@ -842,11 +778,15 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
             });
             return filtrados.length === 0 ? <p style={{ color: subtext }}>Nenhum pedido encontrado.</p> : null;
           })()}
-          {pedidos.filter(p => {
+          {[...pedidos].filter(p => {
             const q = busca.toLowerCase();
             const matchBusca = !q || (p.nome_cliente||"").toLowerCase().includes(q) || (p.email||"").toLowerCase().includes(q);
             const matchStatus = filtroStatus === "todos" || (p.status||"novo") === filtroStatus;
             return matchBusca && matchStatus;
+          }).sort((a, b) => {
+            // Concluído e cancelado vão para o final
+            const peso = s => (s === "concluido" || s === "cancelado") ? 1 : 0;
+            return peso(a.status||"novo") - peso(b.status||"novo");
           }).map(p => {
             const expandido = aberto === `cat-${p.id}`;
             const totalPedido = p.total || p.itens?.reduce((acc, i) => acc + parseFloat(i.produto_preco) * i.quantidade, 0) || 0;
@@ -862,6 +802,11 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                         🔖 {p.protocolo || `MTZ-${String(p.id).padStart(4,"0")}`}
                       </p>
                       <p className="text-xs" style={{ color: subtext }}>{new Date(p.data_pedido).toLocaleString("pt-BR")}</p>
+                      {historicoStatus[`cat-${p.id}`]?.length > 0 && (
+                        <p className="text-xs font-semibold mt-0.5" style={{ color: "#d97706" }}>
+                          🕐 Status: {historicoStatus[`cat-${p.id}`].slice(-1)[0]?.status} — {historicoStatus[`cat-${p.id}`].slice(-1)[0]?.data}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-4">
@@ -885,7 +830,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                             </p>
                             {p.frete_tipo === "motoboy" && (
                               <p className="text-xs mt-1" style={{ color: "#d97706" }}>
-                                ⚠️ Apenas Grande Vitória / ES — confirmar via WhatsApp
+                                ⚠️ Apenas Grande Vitoria/ES — confirmar via WhatsApp
                               </p>
                             )}
                             {p.frete_tipo === "correios" && (
@@ -974,7 +919,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                     )}
 
                     <div className="flex items-center gap-3">
-                      <a href={`https://wa.me/55${p.telefone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
+                      <a href={("https://wa.me/55" + p.telefone.split("").filter(ch => ch >= "0" && ch <= "9").join(""))} target="_blank" rel="noreferrer"
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white"
                         style={{ backgroundColor: "#16a34a" }}>💬 WhatsApp</a>
                       <button onClick={() => setPedidoParaExcluir({ id: p.id, tipo: "catalogo", nome: p.nome_cliente })}
@@ -999,10 +944,13 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
             return (!q || (p.nome_cliente||"").toLowerCase().includes(q) || (p.email||"").toLowerCase().includes(q))
               && (filtroStatus === "todos" || p.status === filtroStatus);
           }).length === 0 && <p style={{ color: subtext }}>Nenhum pedido encontrado.</p>}
-          {personalizados.filter(p => {
+          {[...personalizados].filter(p => {
             const q = busca.toLowerCase();
             return (!q || (p.nome_cliente||"").toLowerCase().includes(q) || (p.email||"").toLowerCase().includes(q))
               && (filtroStatus === "todos" || p.status === filtroStatus);
+          }).sort((a, b) => {
+            const peso = s => (s === "concluido" || s === "cancelado") ? 1 : 0;
+            return peso(a.status||"novo") - peso(b.status||"novo");
           }).map(p => {
             const expandido = aberto === `per-${p.id}`;
             return (
@@ -1017,6 +965,11 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                         🔖 {p.protocolo || `MTZ-PERS-${String(p.id).padStart(4,"0")}`}
                       </p>
                       <p className="text-xs" style={{ color: subtext }}>{new Date(p.data_pedido).toLocaleString("pt-BR")}</p>
+                      {historicoStatus[`pers-${p.id}`]?.length > 0 && (
+                        <p className="text-xs font-semibold mt-0.5" style={{ color: "#d97706" }}>
+                          🕐 Status: {historicoStatus[`pers-${p.id}`].slice(-1)[0]?.status} — {historicoStatus[`pers-${p.id}`].slice(-1)[0]?.data}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -1059,7 +1012,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                     {/* COMBINAÇÕES — exibe o campo referencia formatado */}
                     {p.referencia && (
                       <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
-                        <p className="text-xs font-bold uppercase mb-3" style={{ color: subtext }}>🎨 Combinações / Detalhes</p>
+                        <p className="text-xs font-bold uppercase mb-3" style={{ color: subtext }}>🎨 Combinacoes | Detalhes</p>
                         {p.referencia.includes("#1") ? (
                           p.referencia.split("\n").filter(l => l.trim()).map((linha, i, arr) => {
                             const partes = linha.split("|").map(s => s.trim()).filter(Boolean);
@@ -1169,7 +1122,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
 
                     <div className="flex items-center gap-3 flex-wrap">
                       {p.telefone && (
-                        <a href={`https://wa.me/55${p.telefone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
+                        <a href={("https://wa.me/55" + p.telefone.split("").filter(ch => ch >= "0" && ch <= "9").join(""))} target="_blank" rel="noreferrer"
                           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white"
                           style={{ backgroundColor: "#16a34a" }}>
                           💬 Falar com {p.nome_cliente} pelo WhatsApp
@@ -1345,157 +1298,221 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
   );
 }
 
-// ─── INFORMAÇÕES ───────────────────────────────────────────────────────────
+// ─── INFORMAÇÕES & IMAGENS DO SITE ───────────────────────────────────────────
 function EditarInfos({ mostrarToast, dark, estilos }) {
   const { text, subtext, inputBg, inputBorder, cardBg, border } = estilos;
-  const [form, setForm] = useState({ whatsapp: "", email: "", endereco: "", cidade: "", atendimento: "" });
-  const [galeria, setGaleria] = useState(() => {
-    try { const s = localStorage.getItem(GALERIA_KEY); return s ? JSON.parse(s) : []; } catch { return []; }
-  });
-  const [novaUrl, setNovaUrl] = useState("");
-  const [novoArquivo, setNovoArquivo] = useState(null);
-  const [novoPreview, setNovoPreview] = useState("");
 
-  const inputStyle = { width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid " + inputBorder, backgroundColor: inputBg, color: text, fontSize: "14px", outline: "none", boxSizing: "border-box" };
-  const labelStyle = { display: "block", fontSize: "12px", fontWeight: "600", color: subtext, marginBottom: "4px", textTransform: "uppercase" };
+  // ── Estado das imagens ──────────────────────────────────────────────────────
+  const [galeriaItems, setGaleriaItems] = useState([]); // { id, titulo, imagem }
+  const [heroItems, setHeroItems]       = useState([]); // { id, titulo, imagem }
+  const [loading, setLoading]           = useState(true);
 
-  function salvarGaleria(novaLista) {
-    setGaleria(novaLista);
-    localStorage.setItem(GALERIA_KEY, JSON.stringify(novaLista));
-    // Dispara evento para o Home.jsx atualizar (se estiver aberto em outra aba)
-    window.dispatchEvent(new StorageEvent("storage", { key: GALERIA_KEY, newValue: JSON.stringify(novaLista) }));
+  // Upload em progresso: { [tempKey]: true }
+  const [uploading, setUploading] = useState({});
+
+  const cardStyle = { backgroundColor: cardBg, border: "1px solid " + border, borderRadius: "12px", padding: "20px", marginBottom: "24px" };
+  const inputStyle = { width: "100%", padding: "9px 12px", borderRadius: "8px", border: "1px solid " + inputBorder, backgroundColor: inputBg, color: text, fontSize: "14px", outline: "none", boxSizing: "border-box" };
+
+  // ── Carregar do backend ─────────────────────────────────────────────────────
+  async function carregarImagens() {
+    try {
+      const res = await api.get("institucional/");
+      const todos = res.data || [];
+      setGaleriaItems(todos.filter(i => i.titulo?.startsWith("galeria_")).sort((a,b) => a.titulo.localeCompare(b.titulo)));
+      setHeroItems(todos.filter(i => i.titulo?.startsWith("hero_")).sort((a,b) => a.titulo.localeCompare(b.titulo)));
+    } catch { mostrarToast("Erro ao carregar imagens.", "erro"); }
+    finally { setLoading(false); }
   }
 
-  function adicionarUrl() {
-    if (!novaUrl.trim()) return;
-    salvarGaleria([...galeria, novaUrl.trim()]);
-    setNovaUrl("");
-    mostrarToast("Foto adicionada à galeria!", "sucesso");
+  useEffect(() => { carregarImagens(); }, []);
+
+  // ── Upload de imagem (Cloudinary via backend) ───────────────────────────────
+  async function uploadImagem(file, tipo, indexOuId) {
+    const key = tipo + "_" + indexOuId;
+    setUploading(prev => ({ ...prev, [key]: true }));
+    try {
+      const fd = new FormData();
+      fd.append("imagem", file);
+      // Determina o próximo título disponível ou substitui existente
+      if (typeof indexOuId === "number") {
+        // Nova imagem — cria novo registro
+        const existentes = tipo === "galeria" ? galeriaItems : heroItems;
+        const proxNum = existentes.length + 1;
+        fd.append("titulo", tipo + "_" + String(proxNum).padStart(2, "0"));
+        fd.append("conteudo", "");
+        await api.post("institucional/", fd, { headers: { "Content-Type": "multipart/form-data" } });
+      } else {
+        // Substituir existente — atualiza registro
+        fd.append("titulo", indexOuId.titulo); // mantém o mesmo titulo
+        fd.append("conteudo", "");
+        await api.patch("institucional/" + indexOuId.id + "/", fd, { headers: { "Content-Type": "multipart/form-data" } });
+      }
+      mostrarToast("Imagem salva com sucesso!", "sucesso");
+      await carregarImagens();
+    } catch(e) {
+      console.error(e.response?.data);
+      mostrarToast("Erro ao salvar imagem.", "erro");
+    } finally {
+      setUploading(prev => ({ ...prev, [key]: false }));
+    }
   }
 
-  function adicionarArquivo() {
-    if (!novoArquivo) return;
-    // Converte para base64 e salva (funciona para arquivos locais)
-    const reader = new FileReader();
-    reader.onload = e => {
-      salvarGaleria([...galeria, e.target.result]);
-      setNovoArquivo(null); setNovoPreview("");
-      mostrarToast("Foto adicionada à galeria!", "sucesso");
-    };
-    reader.readAsDataURL(novoArquivo);
+  async function removerImagem(item) {
+    if (!confirm("Remover esta imagem do site?")) return;
+    try {
+      await api.delete("institucional/" + item.id + "/");
+      mostrarToast("Imagem removida!", "sucesso");
+      await carregarImagens();
+    } catch { mostrarToast("Erro ao remover.", "erro"); }
   }
 
-  function removerFoto(idx) {
-    const nova = galeria.filter((_, i) => i !== idx);
-    salvarGaleria(nova);
-    mostrarToast("Foto removida.", "sucesso");
+  // ── Componente de card de imagem ────────────────────────────────────────────
+  function ImageCard({ item, tipo, isNew }) {
+    const key = tipo + "_" + (isNew ? "new" : item?.id);
+    const isUploading = uploading[key] || uploading[tipo + "_" + (isNew ? galeriaItems.length : item?.id)];
+
+    return (
+      <div className="relative group rounded-xl overflow-hidden"
+        style={{ backgroundColor: dark ? "#374151" : "#f3f4f6", border: "2px dashed " + (item?.imagem ? border : inputBorder), aspectRatio: "1" }}>
+        {item?.imagem ? (
+          <>
+            <img src={item.imagem} alt="" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{ backgroundColor: "rgba(0,0,0,0.6)" }}>
+              {/* Substituir */}
+              <label className="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
+                style={{ backgroundColor: "#2563eb" }}>
+                🔄 Substituir
+                <input type="file" accept="image/*" className="hidden"
+                  onChange={e => { if (e.target.files[0]) uploadImagem(e.target.files[0], tipo, item); }} />
+              </label>
+              {/* Remover */}
+              <button onClick={() => removerImagem(item)}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
+                style={{ backgroundColor: "#dc2626" }}>
+                🗑️ Remover
+              </button>
+            </div>
+            {isUploading && (
+              <div className="absolute inset-0 flex items-center justify-center"
+                style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+                <p className="text-white text-xs font-bold">Enviando...</p>
+              </div>
+            )}
+          </>
+        ) : (
+          <label className="flex flex-col items-center justify-center w-full h-full cursor-pointer"
+            style={{ minHeight: "120px" }}>
+            {isUploading ? (
+              <p style={{ color: subtext, fontSize: "12px" }}>Enviando...</p>
+            ) : (
+              <>
+                <span style={{ fontSize: "28px", marginBottom: "6px" }}>➕</span>
+                <span style={{ fontSize: "11px", color: subtext, textAlign: "center", padding: "0 8px" }}>
+                  Clique para adicionar
+                </span>
+              </>
+            )}
+            <input type="file" accept="image/*" className="hidden"
+              onChange={e => { if (e.target.files[0]) uploadImagem(e.target.files[0], tipo, galeriaItems.length); }} />
+          </label>
+        )}
+      </div>
+    );
   }
 
-  function moverFoto(idx, direcao) {
-    const nova = [...galeria];
-    const destino = idx + direcao;
-    if (destino < 0 || destino >= nova.length) return;
-    [nova[idx], nova[destino]] = [nova[destino], nova[idx]];
-    salvarGaleria(nova);
-  }
+  if (loading) return <p style={{ color: subtext }}>Carregando...</p>;
 
   return (
-    <div style={{ maxWidth: "640px" }}>
-      <h2 className="text-xl font-semibold mb-6" style={{ color: text }}>Editar Informações</h2>
+    <div>
+      <h2 className="text-xl font-semibold mb-6" style={{ color: text }}>Gerenciar Imagens do Site</h2>
 
-      {/* DADOS DE CONTATO */}
-      <div className="flex flex-col gap-4 mb-8">
-        {[
-          { key: "whatsapp", label: "WhatsApp", placeholder: "(27) 99885-3043" },
-          { key: "email", label: "E-mail", placeholder: "contato@metzker.com" },
-          { key: "endereco", label: "Endereço", placeholder: "Rua Tobias Barreto, 37" },
-          { key: "cidade", label: "Cidade / Estado", placeholder: "Vila Velha - ES" },
-          { key: "atendimento", label: "Horário de Atendimento", placeholder: "Segunda a Sexta, 9h às 18h" },
-        ].map(({ key, label, placeholder }) => (
-          <div key={key}>
-            <label style={labelStyle}>{label}</label>
-            <input value={form[key]} onChange={e => setForm({ ...form, [key]: e.target.value })} placeholder={placeholder} style={inputStyle} />
-          </div>
-        ))}
-        <button onClick={() => mostrarToast("Informações atualizadas!", "sucesso")}
-          className="py-3 rounded-lg font-semibold text-white" style={{ backgroundColor: "#000000" }}>
-          Salvar Informações
-        </button>
-      </div>
-
-      {/* GALERIA DE TRABALHOS */}
-      <div style={{ borderTop: "2px solid " + (dark ? "#374151" : "#E8E0D5"), paddingTop: "32px" }}>
-        <h3 className="text-lg font-semibold mb-1" style={{ color: text }}>🖼️ Galeria de Trabalhos</h3>
-        <p className="text-sm mb-6" style={{ color: subtext }}>
-          Essas fotos aparecem na seção <strong>"Nossos Trabalhos"</strong> da página inicial.
-          São exibidas em grupos de 3, com navegação.
+      {/* ── GALERIA / PROJETOS ENTREGUES ── */}
+      <div style={cardStyle}>
+        <h3 className="text-base font-semibold mb-1" style={{ color: text }}>🖼️ Galeria de Projetos Entregues</h3>
+        <p className="text-sm mb-4" style={{ color: subtext }}>
+          Estas fotos aparecem na seção <strong>"Projetos Entregues"</strong> na página inicial.
+          Passe o mouse sobre uma foto para substituir ou remover. Clique no "+" para adicionar nova.
         </p>
-
-        {/* ADICIONAR POR URL */}
-        <div className="mb-4">
-          <label style={labelStyle}>Adicionar por URL</label>
-          <div className="flex gap-2">
-            <input value={novaUrl} onChange={e => setNovaUrl(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && adicionarUrl()}
-              placeholder="https://exemplo.com/foto.jpg"
-              style={{ ...inputStyle, flex: 1 }} />
-            <button onClick={adicionarUrl}
-              className="cursor-pointer px-4 py-2 rounded-lg text-sm font-semibold text-white shrink-0"
-              style={{ backgroundColor: "#374151" }}>Adicionar</button>
-          </div>
+        <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
+          {galeriaItems.map(item => (
+            <ImageCard key={item.id} item={item} tipo="galeria" isNew={false} />
+          ))}
+          {/* Card para adicionar nova */}
+          <ImageCard item={null} tipo="galeria" isNew={true} />
         </div>
-
-        {/* ADICIONAR POR ARQUIVO */}
-        <div className="mb-6">
-          <label style={labelStyle}>Adicionar por Arquivo</label>
-          <div className="flex gap-2 items-center">
-            <label className="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg text-sm"
-              style={{ border: "1px dashed " + inputBorder, color: subtext, backgroundColor: dark ? "#374151" : "#F9F7F4" }}>
-              📁 Escolher arquivo
-              <input type="file" accept="image/*" className="hidden"
-                onChange={e => { const f = e.target.files[0]; if (!f) return; setNovoArquivo(f); setNovoPreview(URL.createObjectURL(f)); }} />
-            </label>
-            {novoPreview && (
-              <img src={novoPreview} className="w-12 h-12 object-cover rounded-lg"
-                style={{ border: "1px solid " + inputBorder }} alt="preview" />
-            )}
-            {novoArquivo && (
-              <button onClick={adicionarArquivo}
-                className="cursor-pointer px-4 py-2 rounded-lg text-sm font-semibold text-white"
-                style={{ backgroundColor: "#16a34a" }}>Adicionar</button>
-            )}
-          </div>
-        </div>
-
-        {/* LISTA DE FOTOS */}
-        {galeria.length === 0 && (
-          <p className="text-sm py-6 text-center" style={{ color: subtext }}>
-            Nenhuma foto na galeria ainda. Adicione acima.
+        {galeriaItems.length === 0 && (
+          <p className="text-sm text-center py-4" style={{ color: subtext }}>
+            Nenhuma foto ainda. Clique no "+" para adicionar a primeira.
           </p>
         )}
-        <div className="space-y-2">
-          {galeria.map((url, i) => (
-            <div key={i} className="flex items-center gap-3 p-3 rounded-xl"
-              style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
-              <img src={url} className="w-14 h-14 object-cover rounded-lg shrink-0"
-                style={{ border: "1px solid " + border }} alt={`Trabalho ${i + 1}`} />
-              <span className="flex-1 text-xs truncate" style={{ color: subtext }}>
-                Foto {i + 1}
-              </span>
-              <div className="flex gap-1 shrink-0">
-                <button onClick={() => moverFoto(i, -1)} disabled={i === 0}
-                  className="w-7 h-7 rounded flex items-center justify-center text-sm transition hover:opacity-70"
-                  style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: text, opacity: i === 0 ? 0.3 : 1 }}>↑</button>
-                <button onClick={() => moverFoto(i, 1)} disabled={i === galeria.length - 1}
-                  className="w-7 h-7 rounded flex items-center justify-center text-sm transition hover:opacity-70"
-                  style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: text, opacity: i === galeria.length - 1 ? 0.3 : 1 }}>↓</button>
-                <button onClick={() => removerFoto(i)}
-                  className="w-7 h-7 rounded flex items-center justify-center text-xs transition hover:opacity-70"
-                  style={{ backgroundColor: "#fef2f2", color: "#dc2626" }}>✕</button>
+      </div>
+
+      {/* ── IMAGENS DO BANNER PRINCIPAL ── */}
+      <div style={cardStyle}>
+        <h3 className="text-base font-semibold mb-1" style={{ color: text }}>🎨 Banner Principal (topo do site)</h3>
+        <p className="text-sm mb-4" style={{ color: subtext }}>
+          Estas imagens aparecem no slideshow do topo do site. Recomendado: fotos horizontais (1920x1080px).
+          Máximo de 4 imagens para manter o desempenho do site.
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {heroItems.map(item => (
+            <ImageCard key={item.id} item={item} tipo="hero" isNew={false} />
+          ))}
+          {heroItems.length < 4 && (
+            <ImageCard item={null} tipo="hero" isNew={true} />
+          )}
+        </div>
+        <p className="text-xs mt-3" style={{ color: subtext }}>
+          ⚠️ As imagens do banner requerem atualização do código para entrar em funcionamento.
+          Após salvar, avise o desenvolvedor para ativar as novas imagens.
+        </p>
+      </div>
+
+      {/* ── FOTO DO SOBRE NÓS ── */}
+      <div style={cardStyle}>
+        <h3 className="text-base font-semibold mb-1" style={{ color: text }}>👤 Foto "Sobre Nós"</h3>
+        <p className="text-sm mb-4" style={{ color: subtext }}>
+          Foto que aparece na seção "Sobre Nós" da página inicial (ao lado do texto de apresentação).
+        </p>
+        {(() => {
+          const sobreItem = [...galeriaItems, ...heroItems].find(i => i.titulo === "sobre_nos") || null;
+          return (
+            <div className="flex items-center gap-4">
+              <div style={{ width: "120px", height: "120px", borderRadius: "12px", overflow: "hidden",
+                border: "2px dashed " + inputBorder, flexShrink: 0 }}>
+                {sobreItem?.imagem
+                  ? <img src={sobreItem.imagem} className="w-full h-full object-cover" alt="" />
+                  : <div className="w-full h-full flex items-center justify-center" style={{ fontSize: "32px" }}>👤</div>
+                }
+              </div>
+              <div>
+                <label className="cursor-pointer px-4 py-2 rounded-lg text-sm font-semibold text-white inline-block"
+                  style={{ backgroundColor: "#1a1a1a" }}>
+                  📸 {sobreItem ? "Substituir foto" : "Adicionar foto"}
+                  <input type="file" accept="image/*" className="hidden"
+                    onChange={async e => {
+                      if (!e.target.files[0]) return;
+                      const fd = new FormData();
+                      fd.append("imagem", e.target.files[0]);
+                      fd.append("titulo", "sobre_nos");
+                      fd.append("conteudo", "");
+                      try {
+                        if (sobreItem) {
+                          await api.patch("institucional/" + sobreItem.id + "/", fd, { headers: { "Content-Type": "multipart/form-data" } });
+                        } else {
+                          await api.post("institucional/", fd, { headers: { "Content-Type": "multipart/form-data" } });
+                        }
+                        mostrarToast("Foto atualizada!", "sucesso");
+                        await carregarImagens();
+                      } catch { mostrarToast("Erro ao salvar.", "erro"); }
+                    }} />
+                </label>
+                <p className="text-xs mt-2" style={{ color: subtext }}>Formatos: JPG, PNG. Recomendado: foto quadrada ou retrato.</p>
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })()}
       </div>
     </div>
   );
