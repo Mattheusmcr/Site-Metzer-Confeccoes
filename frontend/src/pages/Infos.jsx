@@ -42,7 +42,7 @@ function Infos() {
           <p className="text-xs uppercase tracking-widest mb-1" style={{ color: t.textSecundario }}>Política</p>
           <h2 className="text-xl font-semibold mb-4" style={{ color: t.text }}>Trocas e Devoluções</h2>
           <ul className="list-disc ml-6 space-y-2" style={{ color: t.textSecundario }}>
-            <li>Trocas podem ser solicitadas em até 7 dias após o recebimento.</li>
+            {/*<li>Trocas podem ser solicitadas em até 7 dias após o recebimento.</li>*/}
             <li>O produto deve estar sem uso e com etiqueta.</li>
             <li>Para solicitar troca ou devolução entre em contato pelo WhatsApp.</li>
           </ul>
