@@ -275,7 +275,7 @@ export default function ProdutoDetalhe() {
             {/* INFO ENTREGA */}
             <div className="p-4 space-y-2" style={{ backgroundColor: t.bgSecundario, border: "1px solid " + t.border }}>
               <p className="text-sm flex items-center gap-2"><span>🚚</span><span style={{ color: t.textSecundario }}>Entrega para todo o Brasil</span></p>
-              <p className="text-sm flex items-center gap-2"><span>🔄</span><span style={{ color: t.textSecundario }}>Trocas em até 7 dias</span></p>
+              {/* <p className="text-sm flex items-center gap-2"><span>🔄</span><span style={{ color: t.textSecundario }}>Trocas em até 7 dias</span></*p> */}
               <p className="text-sm flex items-center gap-2"><span>💬</span><span style={{ color: t.textSecundario }}>Dúvidas? Fale pelo WhatsApp</span></p>
             </div>
           </div>
