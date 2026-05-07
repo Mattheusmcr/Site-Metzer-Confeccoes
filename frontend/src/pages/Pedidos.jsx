@@ -683,7 +683,7 @@ export default function Pedidos() {
                           <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0}}>🛵 Entrega por motoboy</p>
                           <p style={{fontSize:"12px", color:t.textSecundario, marginTop:"3px"}}>
                             {motoInfo
-                              ? `Entrega própria${cidadeLabel} — estimativa de R$ ${motoInfo.min} a R$ ${motoInfo.max}`
+                              ? `Entrega própria pela Grande Vitória — estimativa de R$ ${motoInfo.min} a R$ ${motoInfo.max}`
                               : "Disponível apenas para a região da Grande Vitória / ES"}
                           </p>
                           {motoInfo && <p style={{fontSize:"11px", color:t.textSecundario, marginTop:"2px"}}>Valor final confirmado pela loja pelo WhatsApp</p>}
@@ -787,7 +787,7 @@ export default function Pedidos() {
                       Sem juros
                     </span>
                   </div>
-                  {formaPagamento==="pix" && <p style={{fontSize:"11px", color:"#16a34a", marginTop:"6px", fontWeight:"600"}}>Selecionado</p>}
+                  {formaPagamento==="pix" && <p style={{fontSize:"11px", color:t.textSecundario, marginTop:"6px", fontWeight:"600"}}>Selecionado</p>}
                 </button>
 
                 {/* Cartão */}
@@ -804,7 +804,7 @@ export default function Pedidos() {
                       Juros de 1,99% a 3,99% ao mês no crédito parcelado
                     </p>
                   </div>
-                  {formaPagamento==="cartao" && <p style={{fontSize:"11px", color:"#2563eb", marginTop:"6px", fontWeight:"600"}}>Selecionado</p>}
+                  {formaPagamento==="cartao" && <p style={{fontSize:"11px", color:t.textSecundario, marginTop:"6px", fontWeight:"600"}}>Selecionado</p>}
                 </button>
 
                 {/* Dinheiro */}
@@ -818,7 +818,7 @@ export default function Pedidos() {
                       Pagamento em espécie — na entrega ou retirada
                     </p>
                   </div>
-                  {formaPagamento==="dinheiro" && <p style={{fontSize:"11px", color:"#d97706", marginTop:"6px", fontWeight:"600"}}>Selecionado</p>}
+                  {formaPagamento==="dinheiro" && <p style={{fontSize:"11px", color:t.textSecundario, marginTop:"6px", fontWeight:"600"}}>Selecionado</p>}
                 </button>
               </div>
 
@@ -918,7 +918,7 @@ export default function Pedidos() {
                       style={{flex:1, padding:"12px", borderRadius:"10px", border:"none",
                         backgroundColor: salvando ? "#9ca3af" : "#16a34a", color:"#ffffff",
                         cursor: salvando ? "not-allowed" : "pointer", fontWeight:"700", fontSize:"14px"}}>
-                      {salvando ? "Registrando..." : "Ja paguei — Confirmar"}
+                      {salvando ? "Registrando..." : "Ja paguei"}
                     </button>
                   </div>
                 </div>
