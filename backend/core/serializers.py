@@ -52,7 +52,7 @@ class PedidoSerializer(serializers.ModelSerializer):
             'id', 'nome_cliente', 'telefone', 'email',
             'cep', 'rua', 'numero', 'complemento', 'bairro', 'cidade', 'estado',
             'forma_pagamento', 'observacao', 'data_pedido', 'itens', 'itens_input', 'total',
-            'frete_tipo', 'frete_valor', 'status', 'protocolo',
+            'frete_tipo', 'frete_valor', 'status',
         ]
         extra_kwargs = {
             'email': {'required': False, 'allow_blank': True},

@@ -79,7 +79,7 @@ class Pedido(models.Model):
     bairro = models.CharField(max_length=100, blank=True, default="")
     cidade = models.CharField(max_length=100, blank=True, default="")
     estado = models.CharField(max_length=2, blank=True, default="")
-    forma_pagamento = models.CharField(max_length=50, blank=True, default="")
+    forma_pagamento = models.CharField(max_length=100, blank=True, default="")
     observacao = models.TextField(blank=True, default="")
 
     # Frete

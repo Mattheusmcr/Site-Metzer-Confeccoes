@@ -85,6 +85,36 @@ async function buscarCEP(cep, setCliente) {
 }
 function emailValido(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
 
+
+// ── Gerador de QR Code PIX (formato EMV/BR Code) ─────────────────────────────
+function gerarPayloadPix(chave, nome, cidade, valor) {
+  function f(id, val) {
+    return id + String(val.length).padStart(2, "0") + val;
+  }
+  function crc16(str) {
+    let crc = 0xFFFF;
+    for (let i = 0; i < str.length; i++) {
+      crc ^= str.charCodeAt(i) << 8;
+      for (let j = 0; j < 8; j++) {
+        crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
+      }
+      crc &= 0xFFFF;
+    }
+    return crc.toString(16).toUpperCase().padStart(4, "0");
+  }
+  const gui = f("00", "br.gov.bcb.pix");
+  const key = f("01", chave);
+  const merchant = f("26", gui + key);
+  const nomeLimpo = nome.replace(/[^A-Za-z ]/g, "").trim().substring(0, 25).toUpperCase() || "METZKER SOLUCOES";
+  const cidadeLimpa = cidade.replace(/[^A-Za-z ]/g, "").trim().substring(0, 15).toUpperCase() || "VILA VELHA";
+  const valorStr = valor > 0 ? f("54", valor.toFixed(2)) : "";
+  const txid = f("05", "***");
+  const addData = f("62", txid);
+  const payload = "000201" + merchant + "52040000" + "5303986" + valorStr + "5802BR"
+    + f("59", nomeLimpo) + f("60", cidadeLimpa) + addData + "6304";
+  return payload + crc16(payload);
+}
+
 export default function Pedidos() {
   const { cart, increase, decrease, removeFromCart, setCart } = useContext(CartContext);
   const [cliente, setCliente] = useState({
@@ -883,7 +913,7 @@ export default function Pedidos() {
                   <div style={{display:"inline-block", padding:"10px", backgroundColor:"#ffffff",
                     border:"2px solid #e5e7eb", borderRadius:"12px", marginBottom:"14px"}}>
                     <img
-                      src={"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent("61187869000181")}
+                      src={"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(gerarPayloadPix("61187869000181", "Metzker Solucoes", "Vila Velha", freteValor > 0 ? totalComFrete : total))}
                       alt="QR Code PIX"
                       style={{width:"200px", height:"200px", display:"block"}}
                     />
