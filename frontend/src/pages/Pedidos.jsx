@@ -104,8 +104,12 @@ export default function Pedidos() {
   const [copiado, setCopiado] = useState(false);
   const [frete, setFrete] = useState({ tipo: "", valor: 0 });
   const [calcFrete, setCalcFrete] = useState(false);
+  const [formaPagamento, setFormaPagamento] = useState(""); // "pix" | "cartao" | "dinheiro"
+  const [pedidoEnviado, setPedidoEnviado] = useState(false);
 
   const total = cart.reduce((a,i) => a + (parseFloat(i.produto?.preco)||0)*i.quantidade, 0);
+  const freteValor = frete.tipo === "retirada" ? 0 : (parseFloat(frete.valor) || 0);
+  const totalComFrete = total + freteValor;
   const itensComProblema = cart.filter(item => {
     // Se estoques não foi carregado (produto adicionado pelo card do catálogo),
     // não bloqueia o pedido — validação ocorre no servidor
@@ -234,7 +238,10 @@ export default function Pedidos() {
       `• ${i.nome} | ${i.tamanho} | ${i.qtd}x | R$ ${(i.preco*i.qtd).toFixed(2)}`
     ).join("%0A");
     const obs = c.observacao ? `%0A%0A📝 *Obs:* ${c.observacao}` : "";
-    return `https://wa.me/5527997878391?text=Olá! Fiz um pedido no site:%0A%0A👤 *Nome:* ${c.nome}%0A📱 *Tel:* ${c.telefone}%0A📧 *Email:* ${c.email}%0A%0A🛍️ *Itens:*%0A${itensStr}%0A%0A💰 *Total: R$ ${totalSalvo.toFixed(2)}*%0A%0A📍 *Endereço:*%0A${c.rua}, ${c.numero}${c.complemento?" - "+c.complemento:""}%0A${c.bairro} - ${c.cidade}/${c.estado} | CEP: ${c.cep}%0A%0A💳 *Pagamento:* ${c.formaPagamento}${obs}`;
+    const freteInfo = dados.frete_tipo && dados.frete_tipo !== "retirada"
+      ? `%0A🚚 *Frete:* ${dados.frete_tipo === "motoboy" ? "Motoboy" : "Correios"}`
+      : "%0A🏪 *Retirada no local*";
+    return `https://wa.me/5527997878391?text=Olá! Fiz um pedido no site:%0A%0A👤 *Nome:* ${c.nome}%0A📱 *Tel:* ${c.telefone}%0A📧 *Email:* ${c.email}%0A%0A🛍️ *Itens:*%0A${itensStr}%0A%0A💰 *Total: R$ ${totalSalvo.toFixed(2)}*${freteInfo}%0A%0A📍 *Endereço:*%0A${c.rua}, ${c.numero}${c.complemento?" - "+c.complemento:""}%0A${c.bairro} - ${c.cidade}/${c.estado} | CEP: ${c.cep}%0A%0A💳 *Pagamento:* ${c.formaPagamento}${obs}`;
   }
 
   function verificarEstoque() {
@@ -310,6 +317,11 @@ export default function Pedidos() {
     setMensagemEstoque("");
     setErroPedido("");
 
+    if (!formaPagamento) {
+      setErroPedido("Selecione uma forma de pagamento antes de continuar.");
+      window.scrollTo({top:0,behavior:"smooth"});
+      return;
+    }
     if (estoqueInsuficiente) {
       const nomes = itensComProblema.map(i=>i.produto.nome).join(", ");
       setMensagemEstoque(`⚠️ Estoque insuficiente: ${nomes}. Ajuste as quantidades.`);
@@ -319,10 +331,12 @@ export default function Pedidos() {
     if (!validar()) { window.scrollTo({top:0,behavior:"smooth"}); return; }
 
     // Salvar snapshot antes de limpar carrinho
+    const formaPagLabel = formaPagamento === "pix" ? "PIX" :
+      formaPagamento === "cartao" ? "Cartão na maquininha" : "Dinheiro";
     const snapshot = {
       itens: cart.map(i => ({nome:i.produto.nome, tamanho:i.tamanho, qtd:i.quantidade, preco:parseFloat(i.produto.preco)})),
-      totalSalvo: total,
-      c: {...cliente},
+      totalSalvo: totalComFrete,
+      c: {...cliente, formaPagamento: formaPagLabel},
     };
 
     try {
@@ -331,7 +345,10 @@ export default function Pedidos() {
         cep: cliente.cep, rua: cliente.rua, numero: cliente.numero,
         complemento: cliente.complemento, bairro: cliente.bairro,
         cidade: cliente.cidade, estado: cliente.estado,
-        forma_pagamento: "Mercado Pago", observacao: cliente.observacao,
+        forma_pagamento: formaPagamento === "pix" ? "PIX (CNPJ: 61.187.869/0001-81)" :
+          formaPagamento === "cartao" ? "Cartão na maquininha" :
+          "Dinheiro",
+        observacao: cliente.observacao,
         frete_tipo: frete.tipo || "retirada", frete_valor: frete.valor || 0,
         itens_input: cart.map(i => ({produto:i.produto.id, tamanho:i.tamanho, quantidade:i.quantidade})),
       });
@@ -421,7 +438,7 @@ export default function Pedidos() {
             style={{backgroundColor:t.btnPrimarioBg, color:t.btnPrimarioText, fontFamily:"system-ui", cursor:"pointer"}}>
             📄 Salvar / Imprimir PDF
           </button>
-          <a href={montarMsgWA(pedidoSalvo)} target="_blank" rel="noreferrer"
+          <a href={montarMsgWA({...pedidoSalvo, frete_tipo: frete.tipo})} target="_blank" rel="noreferrer"
             className="px-6 py-3 font-semibold text-white rounded-lg"
             style={{backgroundColor:"#22c55e", fontFamily:"system-ui", cursor:"pointer"}}>
             💬 Enviar pelo WhatsApp
@@ -703,19 +720,150 @@ export default function Pedidos() {
                 style={{...inputStyle("observacao"), resize:"none"}} />
             </div>
 
-            {/* BOTÃO */}
-            {/* Info sobre pagamento */}
-            <div style={{backgroundColor:t.bgSecundario, border:"1px solid "+t.border, borderRadius:"10px", padding:"14px 16px"}}>
-              <p style={{fontSize:"13px", color:t.textSecundario, fontFamily:"system-ui", margin:0}}>
-                🔒 Pagamento processado com segurança pelo <strong style={{color:t.text}}>Mercado Pago</strong>. Ao confirmar, você será redirecionado para concluir o pagamento.
+            {/* ── FORMA DE PAGAMENTO ── */}
+            <div style={{backgroundColor:t.bgCard, border:"1px solid "+t.border, borderRadius:"12px", padding:"24px"}}>
+              <h2 className="text-lg font-semibold mb-1" style={{color:t.text}}>💳 Forma de Pagamento *</h2>
+              <p className="text-sm mb-4" style={{color:t.textSecundario}}>
+                O pagamento é realizado na entrega ou na retirada do produto.
               </p>
+
+              {/* Resumo do valor */}
+              <div className="rounded-lg p-4 mb-4" style={{backgroundColor:t.bgSecundario, border:"1px solid "+t.border}}>
+                <div className="flex justify-between mb-1">
+                  <span style={{fontSize:"13px", color:t.textSecundario}}>Subtotal produtos:</span>
+                  <span style={{fontSize:"13px", color:t.text}}>R$ {total.toFixed(2)}</span>
+                </div>
+                {frete.tipo && frete.tipo !== "retirada" && (
+                  <div className="flex justify-between mb-1">
+                    <span style={{fontSize:"13px", color:t.textSecundario}}>
+                      Frete ({frete.tipo === "motoboy" ? "Motoboy" : "Correios"}):
+                    </span>
+                    <span style={{fontSize:"13px", color:t.text}}>
+                      {freteValor > 0 ? "R$ " + freteValor.toFixed(2) : "A confirmar"}
+                    </span>
+                  </div>
+                )}
+                {frete.tipo === "retirada" && (
+                  <div className="flex justify-between mb-1">
+                    <span style={{fontSize:"13px", color:t.textSecundario}}>Frete:</span>
+                    <span style={{fontSize:"13px", color:"#16a34a", fontWeight:"600"}}>Grátis</span>
+                  </div>
+                )}
+                <div className="flex justify-between pt-2 mt-1" style={{borderTop:"2px solid "+t.border}}>
+                  <span style={{fontSize:"15px", fontWeight:"700", color:t.text}}>Total:</span>
+                  <span style={{fontSize:"15px", fontWeight:"700", color:t.text}}>
+                    {freteValor > 0 ? "R$ " + totalComFrete.toFixed(2) : "R$ " + total.toFixed(2) + (frete.tipo && frete.tipo !== "retirada" ? " + frete" : "")}
+                  </span>
+                </div>
+              </div>
+
+              {/* Opções */}
+              <div className="flex flex-col gap-3">
+                {/* PIX */}
+                <button onClick={() => setFormaPagamento("pix")}
+                  style={{padding:"14px 16px", borderRadius:"10px", textAlign:"left", cursor:"pointer",
+                    border:"2px solid "+(formaPagamento==="pix" ? "#16a34a" : t.border),
+                    backgroundColor: formaPagamento==="pix" ? "#f0fdf4" : t.bgCard}}>
+                  <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                    <div>
+                      <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0}}>📱 PIX</p>
+                      <p style={{fontSize:"12px", color:t.textSecundario, marginTop:"3px"}}>
+                        Pague com PIX — aprovação imediata
+                      </p>
+                    </div>
+                    <span style={{fontWeight:"700", fontSize:"12px", color:"#16a34a", whiteSpace:"nowrap", marginLeft:"12px"}}>
+                      Chave CNPJ
+                    </span>
+                  </div>
+                  {formaPagamento==="pix" && <p style={{fontSize:"11px", color:"#16a34a", marginTop:"8px", fontWeight:"600"}}>✅ Selecionado</p>}
+                </button>
+
+                {/* Cartão na maquininha */}
+                <button onClick={() => setFormaPagamento("cartao")}
+                  style={{padding:"14px 16px", borderRadius:"10px", textAlign:"left", cursor:"pointer",
+                    border:"2px solid "+(formaPagamento==="cartao" ? "#2563eb" : t.border),
+                    backgroundColor: formaPagamento==="cartao" ? "#eff6ff" : t.bgCard}}>
+                  <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                    <div>
+                      <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0}}>💳 Cartão (maquininha)</p>
+                      <p style={{fontSize:"12px", color:t.textSecundario, marginTop:"3px"}}>
+                        Débito ou crédito — na entrega ou retirada
+                      </p>
+                    </div>
+                  </div>
+                  {formaPagamento==="cartao" && <p style={{fontSize:"11px", color:"#2563eb", marginTop:"8px", fontWeight:"600"}}>✅ Selecionado</p>}
+                </button>
+
+                {/* Dinheiro */}
+                <button onClick={() => setFormaPagamento("dinheiro")}
+                  style={{padding:"14px 16px", borderRadius:"10px", textAlign:"left", cursor:"pointer",
+                    border:"2px solid "+(formaPagamento==="dinheiro" ? "#d97706" : t.border),
+                    backgroundColor: formaPagamento==="dinheiro" ? "#fef9f0" : t.bgCard}}>
+                  <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
+                    <div>
+                      <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0}}>💵 Dinheiro</p>
+                      <p style={{fontSize:"12px", color:t.textSecundario, marginTop:"3px"}}>
+                        Pagamento em espécie — na entrega ou retirada
+                      </p>
+                    </div>
+                  </div>
+                  {formaPagamento==="dinheiro" && <p style={{fontSize:"11px", color:"#d97706", marginTop:"8px", fontWeight:"600"}}>✅ Selecionado</p>}
+                </button>
+              </div>
+
+              {/* QR Code PIX — aparece quando PIX selecionado */}
+              {formaPagamento==="pix" && (
+                <div className="mt-4 rounded-xl p-5 text-center" style={{backgroundColor:t.bgSecundario, border:"2px solid #86efac"}}>
+                  <p style={{fontSize:"13px", fontWeight:"600", color:t.text, marginBottom:"12px"}}>
+                    📱 Escaneie o QR Code ou copie a chave PIX
+                  </p>
+                  <div style={{display:"inline-block", padding:"12px", backgroundColor:"#ffffff", borderRadius:"12px", marginBottom:"12px"}}>
+                    <img
+                      src={"https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=" + encodeURIComponent("61187869000181")}
+                      alt="QR Code PIX"
+                      style={{width:"180px", height:"180px", display:"block"}}
+                      onError={e => { e.target.style.display="none"; }}
+                    />
+                  </div>
+                  <p style={{fontSize:"11px", color:t.textSecundario, marginBottom:"8px"}}>Chave PIX (CNPJ):</p>
+                  <div className="flex items-center justify-center gap-2 flex-wrap">
+                    <code style={{fontSize:"15px", fontWeight:"700", color:t.text, letterSpacing:"1px",
+                      backgroundColor:"#ffffff", padding:"8px 14px", borderRadius:"8px", border:"1px solid "+t.border}}>
+                      61.187.869/0001-81
+                    </code>
+                    <button onClick={() => {
+                      navigator.clipboard.writeText("61187869000181");
+                      alert("Chave PIX copiada!");
+                    }} style={{padding:"8px 14px", backgroundColor:t.btnPrimarioBg, color:t.btnPrimarioText,
+                      border:"none", borderRadius:"8px", cursor:"pointer", fontSize:"12px", fontWeight:"600"}}>
+                      📋 Copiar
+                    </button>
+                  </div>
+                  <p className="mt-3" style={{fontSize:"12px", color:"#16a34a", fontWeight:"600"}}>
+                    Valor a pagar: R$ {freteValor > 0 ? totalComFrete.toFixed(2) : total.toFixed(2)}
+                    {freteValor === 0 && frete.tipo && frete.tipo !== "retirada" ? " + frete a confirmar" : ""}
+                  </p>
+                  <p style={{fontSize:"11px", color:t.textSecundario, marginTop:"4px"}}>
+                    Após pagar, envie o comprovante pelo WhatsApp para confirmar seu pedido.
+                  </p>
+                </div>
+              )}
+
+              {!formaPagamento && tentouEnviar && (
+                <p style={{fontSize:"12px", color:"#dc2626", marginTop:"12px"}}>⚠️ Selecione uma forma de pagamento.</p>
+              )}
             </div>
 
-            <button onClick={pagarComMP}
+            {/* BOTÃO CONFIRMAR */}
+            <button onClick={finalizarPedido}
               className="cursor-pointer w-full py-5 font-bold text-lg hover:opacity-90 transition"
-              style={{backgroundColor:t.btnPrimarioBg, color:t.btnPrimarioText, cursor:"pointer",
+              style={{backgroundColor: formaPagamento ? t.btnPrimarioBg : "#9ca3af",
+                color:t.btnPrimarioText, cursor: formaPagamento ? "pointer" : "not-allowed",
                 fontFamily:"system-ui", borderRadius:"12px", fontSize:"16px"}}>
-              ✅ Confirmar Pedido
+              {formaPagamento==="pix" ? "✅ Confirmar Pedido (PIX)" :
+               formaPagamento==="cartao" ? "✅ Confirmar Pedido (Cartão)" :
+               formaPagamento==="dinheiro" ? "✅ Confirmar Pedido (Dinheiro)" :
+               "Selecione a forma de pagamento"}
             </button>
           </div>
         )}
