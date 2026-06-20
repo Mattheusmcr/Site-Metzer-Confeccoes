@@ -24,6 +24,16 @@ function Toast({ mensagem, tipo, onClose }) {
   );
 }
 
+function IconBadge({ Icone, cor, size = 13 }) {
+  return (
+    <span style={{ display: "flex", alignItems: "center", justifyContent: "center",
+      width: "24px", height: "24px", borderRadius: "8px",
+      backgroundColor: cor + "1f", color: cor, flexShrink: 0 }}>
+      <Icone size={size} strokeWidth={1.8} />
+    </span>
+  );
+}
+
 const CATEGORIAS_ADMIN = [
   {
     id: "roupas", label: "Item de Roupa",
@@ -820,10 +830,10 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                   <div className="px-5 pb-5 space-y-4" style={{ borderTop: "1px solid " + border }}>
                     <div className="grid md:grid-cols-3 gap-4 pt-4">
                       {[
-                        { titulo: "Cliente", Icone: UserIcon, conteudo: <><p className="font-semibold text-sm" style={{ color: text }}>{p.nome_cliente}</p><p className="text-sm mt-1 flex items-center gap-1.5" style={{ color: subtext }}><PhoneIcon size={13} strokeWidth={1.6} />{p.telefone}</p></> },
-                        { titulo: "Endereço", Icone: PinIcon, conteudo: p.rua ? <div className="text-sm space-y-0.5" style={{ color: text }}><p>{p.rua}, {p.numero}</p><p>{p.bairro} — {p.cidade}/{p.estado}</p></div> : <p className="text-sm" style={{ color: subtext }}>Retirada no local</p> },
-                        { titulo: "Pagamento", Icone: CardIcon, conteudo: <p className="font-semibold text-sm" style={{ color: text }}>{p.forma_pagamento || "Não informado"}</p> },
-                        { titulo: "Entrega", Icone: TruckIcon, conteudo: (
+                        { titulo: "Cliente", Icone: UserIcon, cor: "#2563eb", conteudo: <><p className="font-semibold text-sm" style={{ color: text }}>{p.nome_cliente}</p><p className="text-sm mt-1 flex items-center gap-1.5" style={{ color: subtext }}><PhoneIcon size={13} strokeWidth={1.6} />{p.telefone}</p></> },
+                        { titulo: "Endereço", Icone: PinIcon, cor: "#c41e3a", conteudo: p.rua ? <div className="text-sm space-y-0.5" style={{ color: text }}><p>{p.rua}, {p.numero}</p><p>{p.bairro} — {p.cidade}/{p.estado}</p></div> : <p className="text-sm" style={{ color: subtext }}>Retirada no local</p> },
+                        { titulo: "Pagamento", Icone: CardIcon, cor: "#16a34a", conteudo: <p className="font-semibold text-sm" style={{ color: text }}>{p.forma_pagamento || "Não informado"}</p> },
+                        { titulo: "Entrega", Icone: TruckIcon, cor: "#d97706", conteudo: (
                           <div>
                             <p className="font-semibold text-sm flex items-center gap-1.5" style={{ color: text }}>
                               {p.frete_tipo === "retirada" ? <><StoreIcon size={14} strokeWidth={1.6} />Retirada no local</> :
@@ -850,9 +860,12 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                             )}
                           </div>
                         ) },
-                      ].map(({ titulo, Icone, conteudo }) => (
+                      ].map(({ titulo, Icone, cor, conteudo }) => (
                         <div key={titulo} className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
-                          <p className="text-xs font-bold uppercase mb-3 flex items-center gap-1.5" style={{ color: subtext }}><Icone size={13} strokeWidth={1.6} />{titulo}</p>
+                          <div className="flex items-center gap-2 mb-3">
+                            <IconBadge Icone={Icone} cor={cor} />
+                            <p className="text-xs font-bold uppercase" style={{ color: subtext }}>{titulo}</p>
+                          </div>
                           {conteudo}
                         </div>
                       ))}
@@ -989,7 +1002,10 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
 
                       {/* CONTATO */}
                       <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
-                        <p className="text-xs font-bold uppercase mb-2 flex items-center gap-1.5" style={{ color: subtext }}><UserIcon size={13} strokeWidth={1.6} />Contato</p>
+                        <div className="flex items-center gap-2 mb-1">
+                          <IconBadge Icone={UserIcon} cor="#2563eb" />
+                          <p className="text-xs font-bold uppercase" style={{ color: subtext }}>Contato</p>
+                        </div>
                         <p className="font-semibold text-sm" style={{ color: text }}>{p.nome_cliente}</p>
                         {p.telefone && <p className="text-sm flex items-center gap-1.5" style={{ color: subtext }}><PhoneIcon size={13} strokeWidth={1.6} />{p.telefone}</p>}
                         {p.email && <p className="text-sm flex items-center gap-1.5" style={{ color: subtext }}><MailIcon size={13} strokeWidth={1.6} />{p.email}</p>}
@@ -1002,7 +1018,10 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
 
                       {/* CATEGORIA E TIPO */}
                       <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
-                        <p className="text-xs font-bold uppercase mb-2 flex items-center gap-1.5" style={{ color: subtext }}><PackageIcon size={13} strokeWidth={1.6} />Pedido</p>
+                        <div className="flex items-center gap-2 mb-1">
+                          <IconBadge Icone={PackageIcon} cor="#7c3aed" />
+                          <p className="text-xs font-bold uppercase" style={{ color: subtext }}>Pedido</p>
+                        </div>
                         <p className="text-sm font-semibold flex items-center gap-1.5" style={{ color: text }}>
                           {p.estilo === "roupas" ? <><ShirtIcon size={15} strokeWidth={1.6} />Item de Roupa</> : p.estilo === "comunicacao" ? <><ImageIcon size={15} strokeWidth={1.6} />Comunicação Visual</> : p.ramo}
                         </p>
@@ -1014,7 +1033,10 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                     {/* COMBINAÇÕES — exibe o campo referencia formatado */}
                     {p.referencia && (
                       <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
-                        <p className="text-xs font-bold uppercase mb-3 flex items-center gap-1.5" style={{ color: subtext }}><PaletteIcon size={13} strokeWidth={1.6} />Combinações | Detalhes</p>
+                        <div className="flex items-center gap-2 mb-3">
+                          <IconBadge Icone={PaletteIcon} cor="#c41e3a" />
+                          <p className="text-xs font-bold uppercase" style={{ color: subtext }}>Combinações | Detalhes</p>
+                        </div>
                         {p.referencia.includes("#1") ? (
                           p.referencia.split("\n").filter(l => l.trim()).map((linha, i, arr) => {
                             const partes = linha.split("|").map(s => s.trim()).filter(Boolean);

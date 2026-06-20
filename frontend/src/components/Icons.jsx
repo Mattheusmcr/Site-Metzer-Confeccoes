@@ -385,10 +385,10 @@ export function PaletteIcon({ size = 20, strokeWidth = 1.6, ...props }) {
   return (
     <svg {...base(props, size, strokeWidth)}>
       <path d="M12 3.5a8.5 8.5 0 1 0 0 17c1 0 1.7-.8 1.7-1.7 0-.45-.17-.85-.45-1.15-.28-.3-.45-.7-.45-1.15 0-.9.77-1.7 1.7-1.7H16a4 4 0 0 0 4-4c0-4.4-3.6-7.3-8-7.3Z" />
-      <circle cx="7.3" cy="10.3" r="1.1" fill="currentColor" stroke="none" />
-      <circle cx="9.8" cy="6.8" r="1.1" fill="currentColor" stroke="none" />
-      <circle cx="14.4" cy="6.8" r="1.1" fill="currentColor" stroke="none" />
-      <circle cx="16.8" cy="10.3" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="7.3" cy="10.3" r="1.3" fill="#2563eb" stroke="none" />
+      <circle cx="9.8" cy="6.8" r="1.3" fill="#d97706" stroke="none" />
+      <circle cx="14.4" cy="6.8" r="1.3" fill="#16a34a" stroke="none" />
+      <circle cx="16.8" cy="10.3" r="1.3" fill="#c41e3a" stroke="none" />
     </svg>
   );
 }

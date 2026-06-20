@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { WhatsAppIcon } from "../components/Icons";
 
 const GALERIA_PADRAO = ["/Galeria1.jpeg", "/Galeria2.jpeg", "/Galeria3.jpeg"];
 
@@ -93,10 +94,14 @@ export default function Home() {
     <div style={{ backgroundColor: t.bg, color: t.text, fontFamily: "Georgia, serif", overflowX: "hidden" }}>
 
       {/* ══ HERO ══ */}
-      <section ref={heroRef} className="relative overflow-hidden" style={{ height: "100vh", minHeight: "600px" }}>
+      {/* Altura limitada a no máximo 900px: em monitores grandes/ultrawide, imagens em
+          background-size:cover esticam demais e perdem nitidez quando o container é
+          maior que a resolução real do arquivo. Limitar a altura reduz esse esticamento. */}
+      <section ref={heroRef} className="relative overflow-hidden" style={{ height: "clamp(600px, 92vh, 900px)" }}>
         {heroImages.map((img, i) => (
           <div key={i} className="absolute inset-0 transition-opacity duration-1000"
-            style={{ opacity: heroAtual === i ? 1 : 0, backgroundImage: `url(${img.src})`, backgroundSize: "cover", backgroundPosition: img.position }} />
+            style={{ opacity: heroAtual === i ? 1 : 0, backgroundImage: `url(${img.src})`, backgroundSize: "cover",
+              backgroundPosition: img.position, backgroundRepeat: "no-repeat", imageRendering: "auto" }} />
         ))}
         <div className="absolute inset-0" style={{ backgroundColor: "rgba(10,10,10,0.6)" }} />
 
@@ -120,9 +125,9 @@ export default function Home() {
               Ver Portfólio
             </Link>
             <a href="https://wa.me/5527997878391" target="_blank" rel="noreferrer"
-              className="px-6 py-3 text-xs uppercase tracking-widest font-medium transition hover:bg-white hover:text-black whitespace-nowrap"
+              className="px-6 py-3 text-xs uppercase tracking-widest font-medium transition hover:bg-white hover:text-black whitespace-nowrap inline-flex items-center gap-2"
               style={{ border: "1px solid rgba(255,255,255,0.6)", color: "white", letterSpacing: "0.12em", fontFamily: "system-ui" }}>
-              WhatsApp
+              <WhatsAppIcon size={14} strokeWidth={1.8} /> WhatsApp
             </a>
           </div>
         </div>
@@ -305,10 +310,12 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Botão flutuante WhatsApp — agora circular, só ícone */}
       <a href="https://wa.me/5527997878391" target="_blank" rel="noreferrer"
-        className="fixed bottom-6 right-6 text-white px-5 py-3 rounded-full shadow-xl font-medium z-40 hover:opacity-90 transition"
-        style={{ backgroundColor: "#22c55e", fontFamily: "system-ui, sans-serif" }}>
-        WhatsApp
+        aria-label="Fale pelo WhatsApp"
+        className="fixed bottom-6 right-6 flex items-center justify-center text-white shadow-xl z-40 hover:opacity-90 hover:scale-105 transition"
+        style={{ backgroundColor: "#22c55e", width: "56px", height: "56px", borderRadius: "50%" }}>
+        <WhatsAppIcon size={26} strokeWidth={1.7} />
       </a>
     </div>
   );
