@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 import api from "../services/api";
+import { WhatsAppIcon, CartIcon } from "../components/Icons";
 
 const t = {
   bg: "#FAF8F5", bgSecundario: "#F2EDE6", bgCard: "#FFFFFF",
@@ -258,8 +259,8 @@ export default function ProdutoDetalhe() {
                 style={{ backgroundColor: t.text, cursor: "pointer" }}>Comprar agora</button>
               <button onClick={handleAdicionar}
                 className="cursor-pointer w-full py-4 font-semibold transition hover:opacity-80"
-                style={{ backgroundColor: t.bgSecundario, color: t.text, border: "1px solid " + t.border, cursor: "pointer" }}>
-                Adicionar ao carrinho
+                style={{ backgroundColor: t.bgSecundario, color: t.text, border: "1px solid " + t.border, cursor: "pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px" }}>
+                <CartIcon size={16} strokeWidth={1.7} /> Adicionar ao carrinho
               </button>
             </div>
 
@@ -276,7 +277,7 @@ export default function ProdutoDetalhe() {
             <div className="p-4 space-y-2" style={{ backgroundColor: t.bgSecundario, border: "1px solid " + t.border }}>
               <p className="text-sm flex items-center gap-2"><span>🚚</span><span style={{ color: t.textSecundario }}>Entrega para todo o Brasil</span></p>
               {/* <p className="text-sm flex items-center gap-2"><span>🔄</span><span style={{ color: t.textSecundario }}>Trocas em até 7 dias</span></*p> */}
-              <p className="text-sm flex items-center gap-2"><span>💬</span><span style={{ color: t.textSecundario }}>Dúvidas? Fale pelo WhatsApp</span></p>
+              <p className="text-sm flex items-center gap-2"><span style={{ color: "#22c55e" }}><WhatsAppIcon size={16} strokeWidth={1.6} /></span><span style={{ color: t.textSecundario }}>Dúvidas? Fale pelo WhatsApp</span></p>
             </div>
           </div>
         </div>

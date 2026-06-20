@@ -2,6 +2,7 @@ import { useState, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
+import { CartIcon, UserIcon, CloseIcon, AdminIcon, ShirtIcon } from "./Icons";
 
 const t = {
   bg: "#FAF8F5", bgSecundario: "#F2EDE6", bgCard: "#FFFFFF",
@@ -56,7 +57,11 @@ function Navbar() {
                   {l.label}
                 </Link>
               ))}
-              {isAdmin && <Link to="/admin" style={{ color: "#dc2626" }} className="hover:opacity-70 transition">ADMIN</Link>}
+              {isAdmin && (
+                <Link to="/admin" style={{ color: "#dc2626" }} className="hover:opacity-70 transition inline-flex items-center gap-1.5">
+                  <AdminIcon size={14} strokeWidth={1.8} /> ADMIN
+                </Link>
+              )}
             </nav>
           </div>
 
@@ -66,14 +71,17 @@ function Navbar() {
             <div className="hidden md:flex items-center gap-4">
               {isAdmin
                 ? <button onClick={logout} className="cursor-pointer text-sm hover:opacity-70 transition" style={{ color: "#dc2626" }}>Sair</button>
-                : <Link to="/admin-login" className="hover:opacity-50 transition" style={{ color: t.text, fontSize: "20px" }}>👤</Link>
+                : <Link to="/admin-login" className="hover:opacity-50 transition flex items-center" style={{ color: t.text }} aria-label="Área admin">
+                    <UserIcon size={19} strokeWidth={1.5} />
+                  </Link>
               }
             </div>
 
             {/* Carrinho */}
             <button onClick={() => { setCarrinhoAberto(true); setMenuAberto(false); }}
-              className="cursor-pointer relative hover:opacity-70 transition" style={{ fontSize: "20px" }}>
-              🛒
+              className="cursor-pointer relative hover:opacity-70 transition flex items-center" style={{ color: t.text }}
+              aria-label="Abrir carrinho">
+              <CartIcon size={21} strokeWidth={1.5} />
               {totalItens > 0 && (
                 <span className="absolute -top-2 -right-2 text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold"
                   style={{ backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText }}>
@@ -115,16 +123,18 @@ function Navbar() {
             ))}
             {isAdmin && (
               <Link to="/admin" onClick={fecharTudo}
-                className="py-3 text-sm font-semibold tracking-widest border-b hover:opacity-70 transition"
+                className="py-3 text-sm font-semibold tracking-widest border-b hover:opacity-70 transition inline-flex items-center gap-2"
                 style={{ color: "#dc2626", borderColor: t.border }}>
-                ADMIN
+                <AdminIcon size={15} strokeWidth={1.8} /> ADMIN
               </Link>
             )}
             {/* Login mobile */}
             <div className="pt-3">
               {isAdmin
                 ? <button onClick={() => { logout(); fecharTudo(); }} className="cursor-pointer text-sm" style={{ color: "#dc2626" }}>Sair da conta</button>
-                : <Link to="/admin-login" onClick={fecharTudo} className="text-sm" style={{ color: t.textSecundario }}>👤 Área admin</Link>
+                : <Link to="/admin-login" onClick={fecharTudo} className="text-sm inline-flex items-center gap-2" style={{ color: t.textSecundario }}>
+                    <UserIcon size={16} strokeWidth={1.5} /> Área admin
+                  </Link>
               }
             </div>
           </nav>
@@ -145,13 +155,15 @@ function Navbar() {
           <h2 className="text-base font-semibold" style={{ color: t.text }}>
             Carrinho <span style={{ color: t.textSecundario, fontWeight: 400 }}>({totalItens})</span>
           </h2>
-          <button onClick={() => setCarrinhoAberto(false)} className="cursor-pointer hover:opacity-50 transition text-xl" style={{ color: t.text }}>✕</button>
+          <button onClick={() => setCarrinhoAberto(false)} className="cursor-pointer hover:opacity-50 transition" style={{ color: t.text }} aria-label="Fechar carrinho">
+            <CloseIcon size={20} strokeWidth={1.6} />
+          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 md:p-6 space-y-5">
           {cart.length === 0 && (
             <div className="text-center mt-16">
-              <p style={{ fontSize: "40px" }} className="mb-4">🛒</p>
+              <p style={{ color: t.textSecundario }} className="mb-4 flex justify-center"><CartIcon size={40} strokeWidth={1.2} /></p>
               <p className="text-sm" style={{ color: t.textSecundario }}>Seu carrinho está vazio.</p>
               <Link to="/catalogo" onClick={() => setCarrinhoAberto(false)}
                 className="inline-block mt-6 text-sm underline" style={{ color: t.textSecundario }}>
@@ -166,7 +178,7 @@ function Navbar() {
                   ? <img src={item.produto.imagens[0].imagem} alt={item.produto.nome} className="w-full h-full object-cover" />
                   : item.produto.imagem
                   ? <img src={item.produto.imagem} alt={item.produto.nome} className="w-full h-full object-cover" />
-                  : <div className="w-full h-full flex items-center justify-center text-xl">👕</div>}
+                  : <div className="w-full h-full flex items-center justify-center" style={{ color: t.textSecundario }}><ShirtIcon size={24} strokeWidth={1.4} /></div>}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm truncate" style={{ color: t.text }}>{item.produto.nome}</p>

@@ -1,4 +1,5 @@
 import { useEffect, useState, useContext } from "react";
+import { CartIcon } from "../components/Icons";
 import api from "../services/api";
 import { CartContext } from "../context/CartContext";
 import { Link } from "react-router-dom";
@@ -359,8 +360,8 @@ function Catalogo() {
                         mostrarToast(`"${produto.nome}" (x${qtd}) adicionado!`, true);
                       }}
                       className="w-full py-2 text-xs font-semibold uppercase tracking-wide transition hover:opacity-70 mt-1"
-                      style={{ backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText }}>
-                      Adicionar ao Carrinho
+                      style={{ backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText, display:"flex", alignItems:"center", justifyContent:"center", gap:"7px" }}>
+                      <CartIcon size={15} strokeWidth={1.8} /> Adicionar ao Carrinho
                     </button>
                   </div>
                 </div>

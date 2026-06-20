@@ -1,6 +1,7 @@
 import { useContext, useState } from "react";
 import { CartContext } from "../context/CartContext";
 import api from "../services/api";
+import { WhatsAppIcon, PrinterIcon, CartIcon, PixIcon, CardIcon, CashIcon, StoreIcon, TruckIcon, MailIcon } from "../components/Icons";
 
 // ── CÁLCULO DE FRETE ─────────────────────────────────────────────────────────
 const REGIAO_METRO_ES = ["vitoria","vila velha","cariacica","serra","viana","guarapari","fundao"];
@@ -476,14 +477,16 @@ export default function Pedidos() {
 
         <div className="flex gap-3 justify-center flex-wrap">
           <button onClick={() => gerarPDF(pedidoSalvo)}
-            className="px-6 py-3 font-semibold rounded-lg"
+            className="px-6 py-3 font-semibold rounded-lg inline-flex items-center gap-2"
             style={{backgroundColor:t.btnPrimarioBg, color:t.btnPrimarioText, fontFamily:"system-ui", cursor:"pointer"}}>
-            📄 Salvar / Imprimir PDF
+            <PrinterIcon size={17} strokeWidth={1.6} />
+            Salvar / Imprimir PDF
           </button>
           <a href={montarMsgWA({...pedidoSalvo, frete_tipo: frete.tipo})} target="_blank" rel="noreferrer"
-            className="px-6 py-3 font-semibold text-white rounded-lg"
+            className="px-6 py-3 font-semibold text-white rounded-lg inline-flex items-center gap-2"
             style={{backgroundColor:"#22c55e", fontFamily:"system-ui", cursor:"pointer"}}>
-            💬 Enviar pelo WhatsApp
+            <WhatsAppIcon size={17} strokeWidth={1.6} />
+            Enviar pelo WhatsApp
           </a>
           <button onClick={() => { setPedidoConcluido(false); setPedidoSalvo(null); }}
             className="px-6 py-3 font-semibold rounded-lg"
@@ -555,7 +558,9 @@ export default function Pedidos() {
         {/* ITENS */}
         {cart.length>0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4" style={{color:t.text}}>🛍️ Seus Itens</h2>
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2" style={{color:t.text}}>
+              <CartIcon size={20} strokeWidth={1.6} /> Seus Itens
+            </h2>
             <div className="space-y-3">
               {cart.map((item,i) => {
                 const est = item.produto?.estoques?.find(e=>e.tamanho===item.tamanho);
@@ -691,7 +696,7 @@ export default function Pedidos() {
                         backgroundColor: frete.tipo==="retirada" ? "#f0fdf4" : t.bgCard }}>
                       <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
                         <div>
-                          <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0}}>🏪 Retirada no local</p>
+                          <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0, display:"flex", alignItems:"center", gap:"7px"}}><StoreIcon size={16} strokeWidth={1.6} />Retirada no local</p>
                           <p style={{fontSize:"12px", color:t.textSecundario, marginTop:"3px"}}>Polo Têxtil Santa Inês — Vila Velha, ES</p>
                           <p style={{fontSize:"11px", color:t.textSecundario, marginTop:"2px"}}>Combinamos o dia e horário pelo WhatsApp</p>
                         </div>
@@ -710,7 +715,7 @@ export default function Pedidos() {
                         opacity: motoInfo ? 1 : 0.5 }}>
                       <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
                         <div>
-                          <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0}}>🛵 Entrega por motoboy</p>
+                          <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0, display:"flex", alignItems:"center", gap:"7px"}}><TruckIcon size={16} strokeWidth={1.6} />Entrega por motoboy</p>
                           <p style={{fontSize:"12px", color:t.textSecundario, marginTop:"3px"}}>
                             {motoInfo
                               ? `Entrega própria pela Grande Vitória — estimativa de R$ ${motoInfo.min} a R$ ${motoInfo.max}`
@@ -732,7 +737,7 @@ export default function Pedidos() {
                         backgroundColor: frete.tipo==="correios" ? "#f5f3ff" : t.bgCard }}>
                       <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start"}}>
                         <div style={{flex:1}}>
-                          <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0}}>📬 Correios (PAC ou SEDEX)</p>
+                          <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0, display:"flex", alignItems:"center", gap:"7px"}}><MailIcon size={16} strokeWidth={1.6} />Correios (PAC ou SEDEX)</p>
                           <p style={{fontSize:"12px", color:t.textSecundario, marginTop:"3px"}}>Envio para qualquer cidade do Brasil</p>
                           <div style={{display:"flex", gap:"16px", marginTop:"6px"}}>
                             <span style={{fontSize:"12px", color:t.textSecundario}}>PAC: <strong style={{color:t.text}}>{corInfo.pac}</strong></span>
@@ -808,7 +813,7 @@ export default function Pedidos() {
                     backgroundColor: formaPagamento==="pix" ? "#f0fdf4" : t.bgCard}}>
                   <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
                     <div>
-                      <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0}}>PIX</p>
+                      <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0, display:"flex", alignItems:"center", gap:"7px"}}><PixIcon size={16} strokeWidth={1.6} />PIX</p>
                       <p style={{fontSize:"12px", color:t.textSecundario, marginTop:"3px"}}>
                         Chave CNPJ — sem taxas adicionais
                       </p>
@@ -826,7 +831,7 @@ export default function Pedidos() {
                     border:"2px solid "+(formaPagamento==="cartao" ? "#2563eb" : t.border),
                     backgroundColor: formaPagamento==="cartao" ? "#eff6ff" : t.bgCard}}>
                   <div>
-                    <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0}}>Cartão (maquininha)</p>
+                    <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0, display:"flex", alignItems:"center", gap:"7px"}}><CardIcon size={16} strokeWidth={1.6} />Cartão (maquininha)</p>
                     <p style={{fontSize:"12px", color:t.textSecundario, marginTop:"3px"}}>
                       Débito: sem juros · Crédito: consulte as parcelas com a loja
                     </p>
@@ -843,7 +848,7 @@ export default function Pedidos() {
                     border:"2px solid "+(formaPagamento==="dinheiro" ? "#d97706" : t.border),
                     backgroundColor: formaPagamento==="dinheiro" ? "#fef9f0" : t.bgCard}}>
                   <div>
-                    <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0}}>Dinheiro</p>
+                    <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0, display:"flex", alignItems:"center", gap:"7px"}}><CashIcon size={16} strokeWidth={1.6} />Dinheiro</p>
                     <p style={{fontSize:"12px", color:t.textSecundario, marginTop:"3px"}}>
                       Pagamento em espécie — na entrega ou retirada
                     </p>

@@ -8,8 +8,10 @@ function ScrollToTop() {
   }, [pathname]);
   return null;
 }
+
 import Personalizado from "./pages/Personalizado";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Catalogo from "./pages/Catalogo";
 import Pedidos from "./pages/Pedidos";
@@ -27,9 +29,10 @@ function App() {
       <AuthProvider>
         <CartProvider>
           <BrowserRouter basename="/">
-            <div style={{ overflowX: "hidden", maxWidth: "100vw" }}>
+            <div style={{ overflowX: "hidden", maxWidth: "100vw", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
             <ScrollToTop />
             <Navbar />
+            <div style={{ flex: 1 }}>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/catalogo" element={<Catalogo />} />
@@ -46,6 +49,8 @@ function App() {
                 }
               />
             </Routes>
+            </div>
+            <Footer />
             </div>
           </BrowserRouter>
         </CartProvider>
