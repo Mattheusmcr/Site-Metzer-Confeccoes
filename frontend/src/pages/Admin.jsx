@@ -1681,7 +1681,7 @@ export default function Admin() {
   const props = { mostrarToast, dark, estilos };
 
   return (
-    <div style={{ backgroundColor: bg, color: text, minHeight: "100vh" }}>
+    <div style={{ backgroundColor: bg, color: text }}>
       {toast && <Toast mensagem={toast.mensagem} tipo={toast.tipo} onClose={() => setToast(null)} />}
       <div className="max-w-5xl mx-auto px-6 py-10">
         <h1 className="text-3xl font-bold mb-8" style={{ color: text }}>Painel Administrativo</h1>

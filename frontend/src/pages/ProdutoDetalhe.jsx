@@ -39,13 +39,13 @@ export default function ProdutoDetalhe() {
   }, [id]);
 
   if (loading) return (
-    <div style={{ backgroundColor: t.bg, minHeight: "100vh" }} className="flex items-center justify-center">
+    <div style={{ backgroundColor: t.bg, minHeight: "50vh" }} className="flex items-center justify-center">
       <p style={{ color: t.textSecundario }}>Carregando produto...</p>
     </div>
   );
 
   if (!produto) return (
-    <div style={{ backgroundColor: t.bg, minHeight: "100vh" }} className="flex items-center justify-center">
+    <div style={{ backgroundColor: t.bg, minHeight: "50vh" }} className="flex items-center justify-center">
       <p style={{ color: t.textSecundario }}>Produto não encontrado.</p>
     </div>
   );
@@ -80,7 +80,7 @@ export default function ProdutoDetalhe() {
   }
 
   return (
-    <div style={{ backgroundColor: t.bg, color: t.text, minHeight: "100vh" }}>
+    <div style={{ backgroundColor: t.bg, color: t.text }}>
 
       {adicionado && (
         <div className="fixed top-[70px] left-1/2 z-[9999] px-5 py-4 shadow-2xl text-white text-sm font-medium rounded-xl"

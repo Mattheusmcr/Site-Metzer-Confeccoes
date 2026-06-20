@@ -94,14 +94,11 @@ export default function Home() {
     <div style={{ backgroundColor: t.bg, color: t.text, fontFamily: "Georgia, serif", overflowX: "hidden" }}>
 
       {/* ══ HERO ══ */}
-      {/* Altura limitada a no máximo 900px: em monitores grandes/ultrawide, imagens em
-          background-size:cover esticam demais e perdem nitidez quando o container é
-          maior que a resolução real do arquivo. Limitar a altura reduz esse esticamento. */}
-      <section ref={heroRef} className="relative overflow-hidden" style={{ height: "clamp(600px, 92vh, 900px)" }}>
+      <section ref={heroRef} className="relative overflow-hidden" style={{ height: "100vh", minHeight: "600px" }}>
         {heroImages.map((img, i) => (
           <div key={i} className="absolute inset-0 transition-opacity duration-1000"
             style={{ opacity: heroAtual === i ? 1 : 0, backgroundImage: `url(${img.src})`, backgroundSize: "cover",
-              backgroundPosition: img.position, backgroundRepeat: "no-repeat", imageRendering: "auto" }} />
+              backgroundPosition: img.position, backgroundRepeat: "no-repeat" }} />
         ))}
         <div className="absolute inset-0" style={{ backgroundColor: "rgba(10,10,10,0.6)" }} />
 

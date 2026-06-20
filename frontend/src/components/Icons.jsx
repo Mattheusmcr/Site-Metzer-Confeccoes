@@ -1,4 +1,3 @@
-// ─── ÍCONES — set minimalista, traço fino, consistente em todo o site ──────
 // Todos aceitam { size = 20, color = "currentColor", strokeWidth = 1.6, ...props }
 
 function base(props, size, strokeWidth) {
@@ -447,6 +446,63 @@ export function PhoneIcon({ size = 20, strokeWidth = 1.6, ...props }) {
   return (
     <svg {...base(props, size, strokeWidth)}>
       <path d="M5.3 4h3l1.4 4-2 1.6a11.5 11.5 0 0 0 6.7 6.7l1.6-2 4 1.4v3a1.5 1.5 0 0 1-1.6 1.5A16 16 0 0 1 3.8 5.6 1.5 1.5 0 0 1 5.3 4Z" />
+    </svg>
+  );
+}
+
+export function RulerIcon({ size = 20, strokeWidth = 1.6, ...props }) {
+  return (
+    <svg {...base(props, size, strokeWidth)}>
+      <path d="M3.5 8.5 8.5 3.5l12 12-5 5Z" />
+      <path d="m7 7 1.8 1.8M10 4l1.8 1.8M9.5 9.5l1.8 1.8M12.5 6.5l1.8 1.8M12 12l1.8 1.8M15 9l1.8 1.8" />
+    </svg>
+  );
+}
+
+export function PaperclipIcon({ size = 20, strokeWidth = 1.6, ...props }) {
+  return (
+    <svg {...base(props, size, strokeWidth)}>
+      <path d="M17.5 8.5 9.8 16.2a3 3 0 0 1-4.2-4.2l8.4-8.4a2 2 0 0 1 2.9 2.9l-8.1 8.1a1 1 0 0 1-1.4-1.4l7.4-7.4" />
+    </svg>
+  );
+}
+
+export function CopyIcon({ size = 20, strokeWidth = 1.6, ...props }) {
+  return (
+    <svg {...base(props, size, strokeWidth)}>
+      <rect x="8.5" y="8.5" width="11" height="11" rx="1.8" />
+      <path d="M5.5 15.5h-1A1.8 1.8 0 0 1 2.7 13.7V5.5a1.8 1.8 0 0 1 1.8-1.8h8.2a1.8 1.8 0 0 1 1.8 1.8v1" />
+    </svg>
+  );
+}
+
+export function InfoIcon({ size = 20, strokeWidth = 1.6, ...props }) {
+  return (
+    <svg {...base(props, size, strokeWidth)}>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 11v5.5" />
+      <circle cx="12" cy="7.7" r="0.9" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+export function ThreadIcon({ size = 20, strokeWidth = 1.6, ...props }) {
+  return (
+    <svg {...base(props, size, strokeWidth)}>
+      <ellipse cx="12" cy="6" rx="6.5" ry="2.5" />
+      <path d="M5.5 6v12c0 1.4 2.9 2.5 6.5 2.5s6.5-1.1 6.5-2.5V6" />
+      <path d="M5.5 11c0 1.4 2.9 2.5 6.5 2.5s6.5-1.1 6.5-2.5M5.5 15.5c0 1.4 2.9 2.5 6.5 2.5s6.5-1.1 6.5-2.5" />
+    </svg>
+  );
+}
+
+export function PartyIcon({ size = 20, strokeWidth = 1.6, ...props }) {
+  return (
+    <svg {...base(props, size, strokeWidth)}>
+      <path d="m4 20 3-10 8 3.5Z" />
+      <path d="M10.5 4.5 12 8M16 3l.8 2.3M19 8l-2.3.8M6.5 8.5 9 7" />
+      <circle cx="18" cy="14" r="0.9" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="17.5" r="0.9" fill="currentColor" stroke="none" />
     </svg>
   );
 }

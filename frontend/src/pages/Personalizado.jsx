@@ -1,5 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  ShirtIcon, ImageIcon, PaletteIcon, ThreadIcon, RulerIcon, CheckIcon,
+  WarningIcon, PaperclipIcon, DocIcon, TruckIcon, StoreIcon, MailIcon,
+  InfoIcon, PartyIcon, TagIcon, CopyIcon, PrinterIcon, CloseIcon,
+} from "../components/Icons";
 
 // ── CÁLCULO DE FRETE ─────────────────────────────────────────────────────────
 const REGIAO_METRO_ES_P = ["vitoria","vila velha","cariacica","serra","viana","guarapari","fundao"];
@@ -44,8 +49,8 @@ const t = {
 };
 
 const CATEGORIAS = [
-  { id: "roupas",      label: "Item de Roupa",      emoji: "👕" },
-  { id: "comunicacao", label: "Comunicação Visual", emoji: "🖨️" },
+  { id: "roupas",      label: "Item de Roupa",      Icone: ShirtIcon, cor: "#2563eb" },
+  { id: "comunicacao", label: "Comunicação Visual", Icone: ImageIcon, cor: "#7c3aed" },
 ];
 
 const TIPOS_ROUPA = [
@@ -96,6 +101,16 @@ function validarTel(v){ const n=v.replace(/\D/g,""); if(!n) return "Obrigatório
 function formatTel(v){ const n=v.replace(/\D/g,"").slice(0,11); if(n.length<=2) return n; if(n.length<=6) return `(${n.slice(0,2)}) ${n.slice(2)}`; if(n.length<=10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`; return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`; }
 function formatCEP(v){ const n=v.replace(/\D/g,"").slice(0,8); return n.length>5?`${n.slice(0,5)}-${n.slice(5)}`:n; }
 async function buscarCEP(cep,setForm){ const n=cep.replace(/\D/g,""); if(n.length!==8) return; try{ const r=await fetch(`https://viacep.com.br/ws/${n}/json/`); const d=await r.json(); if(!d.erro) setForm(p=>({...p,cidade:d.localidade||p.cidade,estado:d.uf||p.estado,rua:d.logradouro||p.rua,bairro:d.bairro||p.bairro})); }catch{} }
+
+function IconBadge({ Icone, cor, size = 13, box = 24 }) {
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center",
+      width: box + "px", height: box + "px", borderRadius: "8px",
+      backgroundColor: cor + "1f", color: cor, flexShrink: 0 }}>
+      <Icone size={size} strokeWidth={1.8} />
+    </span>
+  );
+}
 
 // Uma "combinação" = { id, tipoId, cor, material, quantidades: {adulto:{P:2}, baby:{M:1}} ou {calcas:{36:2}} }
 function novaCombinacao(tipoId, idx){ return { id: `${tipoId}-${idx}-${Date.now()}`, tipoId, cor: "", material: tipoId==="calcas" ? "" : "", quantidades: {} }; }
@@ -152,9 +167,6 @@ export default function Personalizado(){
   }
   function totalComb(comb){ return Object.values(comb.quantidades).reduce((a,g)=>a+Object.values(g).reduce((x,y)=>x+y,0),0); }
   const totalGeral = form.combinacoes.reduce((a,c)=>a+totalComb(c),0);
-
-  // Tipos ativos (que têm pelo menos 1 combinação)
-  const tiposAtivos = [...new Set(form.combinacoes.map(c=>c.tipoId))];
 
   // ── validação ──
   const etapa1Valida = (()=>{
@@ -226,9 +238,9 @@ export default function Personalizado(){
       <div class="logo"><span>m</span>etzker soluções</div>
       <p style="color:#6b7280;font-size:12px;margin:0 0 20px">Vila Velha, ES · (27) 99787-8391 · andremetzkrr@gmail.com</p>
       <h2>Comprovante de Pedido Personalizado</h2>
-      <span class="badge">🎨 Pedido personalizado registrado</span>
+      <span class="badge">Pedido personalizado registrado</span>
       <div style="margin:12px 0;padding:12px 16px;background:#fef9f0;border:1px solid #fde68a;border-radius:8px;font-family:monospace;font-size:18px;font-weight:700;letter-spacing:0.05em">
-        🔖 ${protocolo}
+        ${protocolo}
       </div>
 
       <div class="info-grid">
@@ -246,13 +258,13 @@ export default function Personalizado(){
         </div>
         <div class="info-block">
           <h3>Categoria</h3>
-          <p>${form.categoria === "roupas" ? "👕 Item de Roupa" : "🖨️ Comunicação Visual"}</p>
+          <p>${form.categoria === "roupas" ? "Item de Roupa" : "Comunicação Visual"}</p>
           ${form.categoria === "roupas" ? `<p>Total: <strong>${totalGeral} unidades</strong></p>` : `<p>Dimensões: ${form.dimensoes}</p>`}
         </div>
         <div class="info-block">
           <h3>Entrega</h3>
-          <p><strong>${form.frete_tipo === "retirada" ? "🏪 Retirada no local" : form.frete_tipo === "motoboy" ? "🛵 Motoboy" : form.frete_tipo === "correios" ? "📬 Correios (PAC/SEDEX)" : "A confirmar"}</strong></p>
-          ${form.frete_tipo === "motoboy" ? `<p style="color:#d97706;font-size:12px">⚠️ Apenas Grande Vitória / ES</p>` : ""}
+          <p><strong>${form.frete_tipo === "retirada" ? "Retirada no local" : form.frete_tipo === "motoboy" ? "Motoboy" : form.frete_tipo === "correios" ? "Correios (PAC/SEDEX)" : "A confirmar"}</strong></p>
+          ${form.frete_tipo === "motoboy" ? `<p style="color:#d97706;font-size:12px">Apenas Grande Vitória / ES</p>` : ""}
           ${form.frete_tipo === "correios" ? `<p style="color:#6b7280;font-size:12px">Valor confirmado pela loja</p>` : ""}
           ${form.frete_tipo === "retirada" ? `<p style="color:#16a34a;font-weight:600">Grátis</p>` : ""}
         </div>
@@ -269,7 +281,7 @@ export default function Personalizado(){
       ${form.observacoes ? `<div style="margin-top:8px;padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;font-size:13px"><strong>Observações:</strong> ${form.observacoes}</div>` : ""}
 
       <div class="aviso">
-        ⚠️ <strong>Atenção:</strong> o valor não está incluído neste comprovante. O orçamento será confirmado pela equipe Metzker pelo WhatsApp após análise do pedido.
+        <strong>Atenção:</strong> o valor não está incluído neste comprovante. O orçamento será confirmado pela equipe Metzker pelo WhatsApp após análise do pedido.
       </div>
       <div class="footer">
         Guarde este comprovante. Nossa equipe entrará em contato para confirmar detalhes e orçamento.<br/>
@@ -373,7 +385,7 @@ export default function Personalizado(){
       const tipo=TIPOS_COMUNICACAO.find(t=>t.id===form.tipoComunicacao);
       detalhes=`*${tipo?.label}*\nDimensões: ${form.dimensoes}`;
     }
-    const msg=`🎨 *PEDIDO PERSONALIZADO — METZKER*\n\n📦 *Categoria:* ${form.categoria==="roupas"?"Item de Roupa":"Comunicação Visual"}\n\n${detalhes}\n\n📝 *Descrição:* ${form.descricao||"—"}\n📝 *Obs:* ${form.observacoes||"—"}\n\n👤 ${form.nomeCliente}\n📱 ${form.telefone}\n📧 ${form.email}\n📍 ${form.rua}, ${form.numero}${form.complemento?" — "+form.complemento:""}\n   ${form.bairro} — ${form.cidade}/${form.estado} — CEP: ${form.cep}`;
+    const msg=`*PEDIDO PERSONALIZADO — METZKER*\n\n*Categoria:* ${form.categoria==="roupas"?"Item de Roupa":"Comunicação Visual"}\n\n${detalhes}\n\n*Descrição:* ${form.descricao||"—"}\n*Obs:* ${form.observacoes||"—"}\n\n${form.nomeCliente}\n${form.telefone}\n${form.email}\n${form.rua}, ${form.numero}${form.complemento?" — "+form.complemento:""}\n   ${form.bairro} — ${form.cidade}/${form.estado} — CEP: ${form.cep}`;
     return encodeURIComponent(msg);
   }
 
@@ -382,14 +394,19 @@ export default function Personalizado(){
   if(enviado) return (
     <div style={{backgroundColor:t.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center"}}>
       <div className="text-center px-6" style={{maxWidth:"480px"}}>
-        <div style={{fontSize:"64px",marginBottom:"24px"}}>🎉</div>
+        <div style={{display:"flex", justifyContent:"center", marginBottom:"24px"}}>
+          <span style={{display:"flex", alignItems:"center", justifyContent:"center",
+            width:"72px", height:"72px", borderRadius:"50%", backgroundColor:"#fef9f0", color:"#d97706"}}>
+            <PartyIcon size={36} strokeWidth={1.4} />
+          </span>
+        </div>
         <h2 style={{fontSize:"2rem",fontWeight:"300",color:t.text,marginBottom:"16px",fontFamily:"Georgia, serif"}}>Pedido recebido!</h2>
         <p style={{color:t.textSecundario,lineHeight:1.8,marginBottom:"20px",fontFamily:"system-ui"}}>Seu pedido foi registrado. Nossa equipe entrará em contato em breve pelo WhatsApp para confirmar detalhes e orçamento.</p>
 
         {/* PROTOCOLO */}
         <div style={{backgroundColor:t.bgSecundario, border:"2px solid "+t.borderForte, padding:"20px", marginBottom:"24px"}}>
-          <p style={{fontSize:"11px", fontWeight:"700", textTransform:"uppercase", letterSpacing:"0.1em", color:t.textSecundario, fontFamily:"system-ui", marginBottom:"10px"}}>
-            🔖 Número do Protocolo
+          <p style={{fontSize:"11px", fontWeight:"700", textTransform:"uppercase", letterSpacing:"0.1em", color:t.textSecundario, fontFamily:"system-ui", marginBottom:"10px", display:"flex", alignItems:"center", justifyContent:"center", gap:"6px"}}>
+            <TagIcon size={13} strokeWidth={1.8} /> Número do Protocolo
           </p>
           <div style={{display:"flex", alignItems:"center", justifyContent:"center", gap:"12px", flexWrap:"wrap"}}>
             <span style={{fontSize:"1.5rem", fontWeight:"700", fontFamily:"monospace", letterSpacing:"0.05em", color:t.text}}>
@@ -399,8 +416,8 @@ export default function Personalizado(){
               onClick={() => { navigator.clipboard.writeText(protocolo).then(() => { setCopiado(true); setTimeout(()=>setCopiado(false),2500); }); }}
               style={{padding:"6px 16px", backgroundColor:copiado?"#16a34a":t.btnPrimarioBg, color:t.btnPrimarioText,
                 border:"none", cursor:"pointer", fontFamily:"system-ui", fontSize:"12px", fontWeight:"600",
-                borderRadius:"6px", transition:"background 0.3s"}}>
-              {copiado ? "✅ Copiado!" : "📋 Copiar"}
+                borderRadius:"6px", transition:"background 0.3s", display:"inline-flex", alignItems:"center", gap:"6px"}}>
+              {copiado ? <><CheckIcon size={14} strokeWidth={2.2} />Copiado!</> : <><CopyIcon size={14} strokeWidth={1.8} />Copiar</>}
             </button>
           </div>
           <p style={{fontSize:"11px", color:t.textSecundario, fontFamily:"system-ui", marginTop:"8px"}}>
@@ -409,8 +426,8 @@ export default function Personalizado(){
         </div>
         <div style={{display:"flex",gap:"12px",justifyContent:"center",flexWrap:"wrap"}}>
           <button onClick={gerarPDFPersonalizado}
-            style={{padding:"12px 24px",backgroundColor:t.btnPrimarioBg,color:t.btnPrimarioText,border:"none",cursor:"pointer",fontFamily:"system-ui"}}>
-            📄 Salvar / Imprimir PDF
+            style={{padding:"12px 24px",backgroundColor:t.btnPrimarioBg,color:t.btnPrimarioText,border:"none",cursor:"pointer",fontFamily:"system-ui",display:"inline-flex",alignItems:"center",gap:"8px"}}>
+            <PrinterIcon size={16} strokeWidth={1.6} /> Salvar / Imprimir PDF
           </button>
           <button onClick={()=>navigate("/")} style={{padding:"12px 24px",border:"1px solid "+t.border,color:t.text,backgroundColor:t.bg,cursor:"pointer",fontFamily:"system-ui"}}>Voltar ao início</button>
           <button onClick={()=>{setEnviado(false);setEtapa(1);setForm(FORM_INICIAL);}} style={{padding:"12px 24px",backgroundColor:t.bgSecundario,color:t.text,border:"1px solid "+t.border,cursor:"pointer",fontFamily:"system-ui"}}>Novo pedido</button>
@@ -423,7 +440,7 @@ export default function Personalizado(){
   const getComb = (id) => form.combinacoes.find(c=>c.id===id);
 
   return (
-    <div style={{backgroundColor:t.bg,color:t.text,minHeight:"100vh",overflowX:"hidden"}}>
+    <div style={{backgroundColor:t.bg,color:t.text,overflowX:"hidden"}}>
       <div style={{maxWidth:"680px",margin:"0 auto",padding:"48px 20px"}}>
 
         {/* HEADER */}
@@ -454,13 +471,18 @@ export default function Personalizado(){
             <div>
               <label style={labelStyle}>O que você precisa? *</label>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px"}}>
-                {CATEGORIAS.map(cat=>(
-                  <button key={cat.id} onClick={()=>setForm(p=>({...p,categoria:cat.id,combinacoes:[],tipoComunicacao:"",dimensoes:""}))}
-                    style={{padding:"20px 16px",cursor:"pointer",textAlign:"center",fontFamily:"system-ui",border:"2px solid "+(form.categoria===cat.id?t.text:t.border),backgroundColor:form.categoria===cat.id?t.text:t.bgCard,color:form.categoria===cat.id?t.btnPrimarioText:t.text}}>
-                    <div style={{fontSize:"28px",marginBottom:"8px"}}>{cat.emoji}</div>
-                    <div style={{fontWeight:"600",fontSize:"13px"}}>{cat.label}</div>
-                  </button>
-                ))}
+                {CATEGORIAS.map(cat=>{
+                  const sel = form.categoria === cat.id;
+                  return (
+                    <button key={cat.id} onClick={()=>setForm(p=>({...p,categoria:cat.id,combinacoes:[],tipoComunicacao:"",dimensoes:""}))}
+                      style={{padding:"20px 16px",cursor:"pointer",textAlign:"center",fontFamily:"system-ui",border:"2px solid "+(sel?cat.cor:t.border),backgroundColor:sel?cat.cor:t.bgCard,color:sel?"#ffffff":t.text}}>
+                      <div style={{display:"flex",justifyContent:"center",marginBottom:"8px",color: sel ? "#ffffff" : cat.cor}}>
+                        <cat.Icone size={26} strokeWidth={1.5} />
+                      </div>
+                      <div style={{fontWeight:"600",fontSize:"13px"}}>{cat.label}</div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -487,7 +509,7 @@ export default function Personalizado(){
                             {total>0&&<span style={{color:t.textSecundario,fontWeight:"400"}}> ({total} un)</span>}
                           </span>
                         </div>
-                        <button onClick={()=>removeCombinacao(comb.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#ef4444",fontSize:"18px",lineHeight:1}}>✕</button>
+                        <button onClick={()=>removeCombinacao(comb.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#ef4444",display:"flex"}}><CloseIcon size={16} strokeWidth={2} /></button>
                       </div>
 
                       <div style={{padding:"14px 16px",display:"flex",flexDirection:"column",gap:"12px"}}>
@@ -502,7 +524,7 @@ export default function Personalizado(){
                             </div>
                           ) : (
                             <button onClick={()=>setModalCores(comb.id)} style={{display:"inline-flex",alignItems:"center",gap:"6px",padding:"7px 12px",border:"1px dashed "+t.borderForte,backgroundColor:t.bgCard,color:t.text,cursor:"pointer",fontSize:"12px",fontFamily:"system-ui"}}>
-                              🎨 Selecionar cor
+                              <PaletteIcon size={14} strokeWidth={1.6} /> Selecionar cor
                             </button>
                           )}
                         </div>
@@ -533,7 +555,7 @@ export default function Personalizado(){
                               </div>
                             ) : (
                               <button onClick={()=>setModalMaterial(comb.id)} style={{display:"inline-flex",alignItems:"center",gap:"6px",padding:"7px 12px",border:"1px dashed "+t.borderForte,backgroundColor:t.bgCard,color:t.text,cursor:"pointer",fontSize:"12px",fontFamily:"system-ui"}}>
-                                🧵 Selecionar material
+                                <ThreadIcon size={14} strokeWidth={1.6} /> Selecionar material
                               </button>
                             )}
                           </div>
@@ -543,7 +565,7 @@ export default function Personalizado(){
                         <div>
                           <label style={{...labelStyle,marginBottom:"6px"}}>Tamanhos e quantidades *</label>
                           <button onClick={()=>setModalTamanhos(comb.id)} style={{display:"inline-flex",alignItems:"center",gap:"8px",padding:"8px 14px",border:"1px solid "+t.borderForte,backgroundColor:t.bgCard,color:t.text,cursor:"pointer",fontSize:"12px",fontFamily:"system-ui"}}>
-                            📐 {total>0?`Editar tamanhos (${total} un)`:"Selecionar tamanhos e quantidades"}
+                            <RulerIcon size={14} strokeWidth={1.6} /> {total>0?`Editar tamanhos (${total} un)`:"Selecionar tamanhos e quantidades"}
                           </button>
                           {total>0 && (
                             <div style={{marginTop:"8px",display:"flex",flexDirection:"column",gap:"3px"}}>
@@ -589,15 +611,17 @@ export default function Personalizado(){
 
                 {/* Link tabela de medidas */}
                 <button onClick={() => setTabelaAberta(true)}
-                  style={{ background: "none", border: "none", cursor: "pointer", color: t.textSecundario, fontSize: "12px", fontFamily: "system-ui", textDecoration: "underline", padding: 0, textAlign: "left" }}>
-                  📏 Ver tabela de medidas
+                  style={{ background: "none", border: "none", cursor: "pointer", color: t.textSecundario, fontSize: "12px", fontFamily: "system-ui", textDecoration: "underline", padding: 0, textAlign: "left", display:"inline-flex", alignItems:"center", gap:"5px" }}>
+                  <RulerIcon size={13} strokeWidth={1.6} /> Ver tabela de medidas
                 </button>
 
                 {/* Contador e checklist */}
                 {form.combinacoes.length>0 && (
                   <div style={{backgroundColor:totalGeral>0?"#f0fdf4":"#fef9f0",border:"1px solid "+(totalGeral>0?"#86efac":"#fde68a"),padding:"14px"}}>
-                    <p style={{fontSize:"13px",fontWeight:"600",fontFamily:"system-ui",marginBottom:"6px",color:totalGeral>0?"#16a34a":"#92400e"}}>
-                      {totalGeral>0?`✅ ${totalGeral} unidade${totalGeral>1?"s":""} selecionada${totalGeral>1?"s":""}`:`⚠️ Selecione ao menos 1 unidade`}
+                    <p style={{fontSize:"13px",fontWeight:"600",fontFamily:"system-ui",marginBottom:"6px",color:totalGeral>0?"#16a34a":"#92400e",display:"flex",alignItems:"center",gap:"6px"}}>
+                      {totalGeral>0
+                        ? <><CheckIcon size={15} strokeWidth={2.2} />{totalGeral} unidade{totalGeral>1?"s":""} selecionada{totalGeral>1?"s":""}</>
+                        : <><WarningIcon size={15} strokeWidth={1.8} />Selecione ao menos 1 unidade</>}
                     </p>
                     {(()=>{
                       const itens=[];
@@ -626,12 +650,16 @@ export default function Personalizado(){
                 <div>
                   <label style={labelStyle}>Tipo de serviço *</label>
                   <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
-                    {TIPOS_COMUNICACAO.map(tipo=>(
-                      <button key={tipo.id} onClick={()=>setForm(p=>({...p,tipoComunicacao:tipo.id}))}
-                        style={{display:"flex",alignItems:"center",gap:"12px",padding:"14px 16px",cursor:"pointer",textAlign:"left",fontFamily:"system-ui",fontSize:"14px",border:"2px solid "+(form.tipoComunicacao===tipo.id?t.text:t.border),backgroundColor:form.tipoComunicacao===tipo.id?t.bgSecundario:t.bgCard,color:t.text,fontWeight:form.tipoComunicacao===tipo.id?"600":"400"}}>
-                        {form.tipoComunicacao===tipo.id?"✓":"○"} {tipo.label}
-                      </button>
-                    ))}
+                    {TIPOS_COMUNICACAO.map(tipo=>{
+                      const sel = form.tipoComunicacao===tipo.id;
+                      return (
+                        <button key={tipo.id} onClick={()=>setForm(p=>({...p,tipoComunicacao:tipo.id}))}
+                          style={{display:"flex",alignItems:"center",gap:"12px",padding:"14px 16px",cursor:"pointer",textAlign:"left",fontFamily:"system-ui",fontSize:"14px",border:"2px solid "+(sel?t.text:t.border),backgroundColor:sel?t.bgSecundario:t.bgCard,color:t.text,fontWeight:sel?"600":"400"}}>
+                          {sel ? <CheckIcon size={15} strokeWidth={2.2} style={{color:"#16a34a"}} /> : <span style={{width:"15px",height:"15px",borderRadius:"50%",border:"1.5px solid "+t.border,display:"inline-block"}} />}
+                          {tipo.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
                 {form.tipoComunicacao && (
@@ -643,8 +671,8 @@ export default function Personalizado(){
                     <input value={form.dimensoes} onChange={e=>setForm(p=>({...p,dimensoes:e.target.value}))}
                       placeholder="Ex: 1,2m × 0,8m — largura × altura" style={inputStyle}/>
                     {form.dimensoes && (
-                      <p style={{ fontSize:"11px", color:"#16a34a", fontFamily:"system-ui", marginTop:"4px" }}>
-                        ✅ Dimensões: {form.dimensoes}
+                      <p style={{ fontSize:"11px", color:"#16a34a", fontFamily:"system-ui", marginTop:"4px", display:"flex", alignItems:"center", gap:"5px" }}>
+                        <CheckIcon size={12} strokeWidth={2.2} /> Dimensões: {form.dimensoes}
                       </p>
                     )}
                   </div>
@@ -664,7 +692,7 @@ export default function Personalizado(){
                 <div>
                   <label style={labelStyle}>{form.categoria==="roupas"?"Artes e estampas (opcional — até 5)":"Arquivos de referência (opcional — até 5)"}</label>
                   <label style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"28px",cursor:"pointer",border:"2px dashed "+t.borderForte,backgroundColor:t.bgCard}}>
-                    <span style={{fontSize:"28px",marginBottom:"8px"}}>📎</span>
+                    <span style={{marginBottom:"8px",color:t.textSecundario}}><PaperclipIcon size={26} strokeWidth={1.4} /></span>
                     <span style={{fontSize:"13px",fontWeight:"500",color:t.text,fontFamily:"system-ui"}}>Clique para selecionar arquivos</span>
                     <span style={{fontSize:"11px",color:t.textSecundario,marginTop:"4px",fontFamily:"system-ui"}}>PNG, JPG, PDF — até 5 arquivos</span>
                     <input type="file" multiple accept="image/*,.pdf" style={{display:"none"}} onChange={e=>{const files=Array.from(e.target.files).slice(0,5);setForm(p=>({...p,fotos:files.map(f=>({file:f,url:f.type.startsWith("image/")?URL.createObjectURL(f):null,name:f.name}))}));}}/>
@@ -674,7 +702,10 @@ export default function Personalizado(){
                       {form.fotos.map((foto,i)=>(
                         <div key={i} style={{position:"relative"}}>
                           {foto.url?<img src={foto.url} alt="" style={{width:"72px",height:"72px",objectFit:"cover",border:"1px solid "+t.border}}/>
-                            :<div style={{width:"72px",height:"72px",display:"flex",alignItems:"center",justifyContent:"center",backgroundColor:t.bgSecundario,border:"1px solid "+t.border,fontSize:"11px",color:t.textSecundario}}>📄 {foto.name.split(".").pop().toUpperCase()}</div>}
+                            :<div style={{width:"72px",height:"72px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",backgroundColor:t.bgSecundario,border:"1px solid "+t.border,color:t.textSecundario,gap:"3px"}}>
+                                <DocIcon size={20} strokeWidth={1.5} />
+                                <span style={{fontSize:"9px"}}>{foto.name.split(".").pop().toUpperCase()}</span>
+                              </div>}
                           <button onClick={()=>setForm(p=>({...p,fotos:p.fotos.filter((_,j)=>j!==i)}))} style={{position:"absolute",top:"-5px",right:"-5px",width:"18px",height:"18px",borderRadius:"50%",backgroundColor:"#ef4444",color:"white",border:"none",cursor:"pointer",fontSize:"10px"}}>✕</button>
                         </div>
                       ))}
@@ -697,7 +728,10 @@ export default function Personalizado(){
             <div style={{border:"1px solid "+t.border,padding:"20px",backgroundColor:t.bgCard}}>
               <p style={{fontSize:"11px",textTransform:"uppercase",letterSpacing:"0.1em",color:t.textSecundario,fontFamily:"system-ui",marginBottom:"14px"}}>Resumo do pedido</p>
               <div style={{padding:"8px 0",borderBottom:"1px solid "+t.border}}>
-                <p style={{fontSize:"13px",fontWeight:"600",color:t.text,fontFamily:"system-ui"}}>{form.categoria==="roupas"?"👕 Item de Roupa":"🖨️ Comunicação Visual"}</p>
+                <p style={{fontSize:"13px",fontWeight:"600",color:t.text,fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"7px"}}>
+                  {form.categoria==="roupas" ? <ShirtIcon size={15} strokeWidth={1.7} style={{color:"#2563eb"}} /> : <ImageIcon size={15} strokeWidth={1.7} style={{color:"#7c3aed"}} />}
+                  {form.categoria==="roupas"?"Item de Roupa":"Comunicação Visual"}
+                </p>
                 {form.categoria==="roupas"&&<p style={{fontSize:"12px",color:t.textSecundario,fontFamily:"system-ui"}}>Total: {totalGeral} unidades em {form.combinacoes.length} combinação{form.combinacoes.length!==1?"ões":""}</p>}
               </div>
 
@@ -732,7 +766,7 @@ export default function Personalizado(){
               {form.categoria==="comunicacao"&&(
                 <div style={{padding:"10px 0",borderBottom:"1px solid "+t.border}}>
                   <p style={{fontSize:"13px",fontWeight:"600",color:t.text,fontFamily:"system-ui"}}>{TIPOS_COMUNICACAO.find(t=>t.id===form.tipoComunicacao)?.label}</p>
-                  {form.dimensoes&&<p style={{fontSize:"12px",color:t.textSecundario,fontFamily:"system-ui"}}>📐 Dimensões: <strong style={{color:t.text}}>{form.dimensoes}</strong></p>}
+                  {form.dimensoes&&<p style={{fontSize:"12px",color:t.textSecundario,fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"5px"}}><RulerIcon size={12} strokeWidth={1.6} /> Dimensões: <strong style={{color:t.text}}>{form.dimensoes}</strong></p>}
                 </div>
               )}
 
@@ -752,18 +786,18 @@ export default function Personalizado(){
                 <div>
                   <label style={labelStyle}>Telefone / WhatsApp *</label>
                   <input value={form.telefone} onChange={e=>setForm(p=>({...p,telefone:formatTel(e.target.value)}))} placeholder="(27) 99999-9999" maxLength={15} inputMode="tel" style={{...inputStyle,borderColor:form.telefone&&validarTel(form.telefone)?"#ef4444":t.border}}/>
-                  {form.telefone&&validarTel(form.telefone)&&<p style={{fontSize:"11px",color:"#ef4444",marginTop:"4px",fontFamily:"system-ui"}}>⚠️ {validarTel(form.telefone)}</p>}
+                  {form.telefone&&validarTel(form.telefone)&&<p style={{fontSize:"11px",color:"#ef4444",marginTop:"4px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"4px"}}><WarningIcon size={12} strokeWidth={1.8} /> {validarTel(form.telefone)}</p>}
                 </div>
                 <div>
                   <label style={labelStyle}>E-mail *</label>
                   <input value={form.email} type="email" onChange={e=>setForm(p=>({...p,email:e.target.value}))} placeholder="Ex: joao@email.com" style={{...inputStyle,borderColor:form.email&&!emailValido(form.email)?"#ef4444":t.border}}/>
-                  {form.email&&!emailValido(form.email)&&<p style={{fontSize:"11px",color:"#ef4444",marginTop:"4px",fontFamily:"system-ui"}}>⚠️ E-mail inválido</p>}
-                  {form.email&&emailValido(form.email)&&<p style={{fontSize:"11px",color:"#16a34a",marginTop:"4px",fontFamily:"system-ui"}}>✅ E-mail válido</p>}
+                  {form.email&&!emailValido(form.email)&&<p style={{fontSize:"11px",color:"#ef4444",marginTop:"4px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"4px"}}><WarningIcon size={12} strokeWidth={1.8} /> E-mail inválido</p>}
+                  {form.email&&emailValido(form.email)&&<p style={{fontSize:"11px",color:"#16a34a",marginTop:"4px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"4px"}}><CheckIcon size={12} strokeWidth={2.2} /> E-mail válido</p>}
                 </div>
                 <div>
                   <label style={labelStyle}>CEP *</label>
                   <input value={form.cep} onChange={e=>{const fmt=formatCEP(e.target.value);setForm(p=>({...p,cep:fmt}));if(fmt.replace(/\D/g,"").length===8)buscarCEP(fmt,setForm);}} placeholder="29000-000" maxLength={9} inputMode="numeric" style={{...inputStyle,borderColor:form.cep&&form.cep.replace(/\D/g,"").length<8?"#ef4444":t.border}}/>
-                  {form.cep&&form.cep.replace(/\D/g,"").length===8&&form.cidade&&<p style={{fontSize:"11px",color:"#16a34a",marginTop:"4px",fontFamily:"system-ui"}}>✅ {form.cidade}/{form.estado}</p>}
+                  {form.cep&&form.cep.replace(/\D/g,"").length===8&&form.cidade&&<p style={{fontSize:"11px",color:"#16a34a",marginTop:"4px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"4px"}}><CheckIcon size={12} strokeWidth={2.2} /> {form.cidade}/{form.estado}</p>}
                 </div>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 80px",gap:"12px"}}>
                   <div><label style={labelStyle}>Cidade *</label><input value={form.cidade} onChange={e=>setForm(p=>({...p,cidade:e.target.value}))} placeholder="Vila Velha" style={inputStyle}/></div>
@@ -786,7 +820,7 @@ export default function Personalizado(){
                   const cidadeL = form.cidade ? ` para ${form.cidade}` : "";
                   return (
                     <div>
-                      <label style={{...labelStyle, marginBottom:"10px", display:"block"}}>🚚 Como deseja receber? *</label>
+                      <label style={{...labelStyle, marginBottom:"10px", display:"flex", alignItems:"center", gap:"6px"}}><TruckIcon size={14} strokeWidth={1.7} /> Como deseja receber? *</label>
                       <p style={{fontSize:"12px",color:t.textSecundario,fontFamily:"system-ui",marginBottom:"10px",lineHeight:1.5}}>
                         Escolha uma opção. Os valores de motoboy e Correios são estimativas — confirmamos o valor exato pelo WhatsApp.
                       </p>
@@ -799,12 +833,12 @@ export default function Personalizado(){
                             backgroundColor:form.frete_tipo==="retirada"?"#f0fdf4":t.bgCard}}>
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                             <div>
-                              <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0}}>🏪 Retirada no local</p>
+                              <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0,display:"flex",alignItems:"center",gap:"6px"}}><StoreIcon size={14} strokeWidth={1.7} /> Retirada no local</p>
                               <p style={{fontSize:"11px",color:t.textSecundario,margin:"3px 0 0"}}>Polo Têxtil Santa Inês — Vila Velha, ES</p>
                             </div>
                             <span style={{fontSize:"13px",fontWeight:"700",color:"#16a34a",whiteSpace:"nowrap",marginLeft:"12px"}}>Grátis</span>
                           </div>
-                          {form.frete_tipo==="retirada" && <p style={{fontSize:"11px",color:"#16a34a",marginTop:"6px",fontWeight:"600"}}>✅ Selecionado</p>}
+                          {form.frete_tipo==="retirada" && <p style={{fontSize:"11px",color:"#16a34a",marginTop:"6px",fontWeight:"600",display:"flex",alignItems:"center",gap:"4px"}}><CheckIcon size={12} strokeWidth={2.2} /> Selecionado</p>}
                         </button>
 
                         {/* Motoboy — sempre visível, desativado se fora da região */}
@@ -815,7 +849,7 @@ export default function Personalizado(){
                             opacity: motoP ? 1 : 0.45}}>
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                             <div style={{flex:1}}>
-                              <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0}}>🛵 Entrega por motoboy</p>
+                              <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0,display:"flex",alignItems:"center",gap:"6px"}}><TruckIcon size={14} strokeWidth={1.7} /> Entrega por motoboy</p>
                               <p style={{fontSize:"11px",color:t.textSecundario,margin:"3px 0 0"}}>
                                 {motoP
                                   ? `Entrega própria${cidadeL} — estimativa de R$ ${motoP.min} a R$ ${motoP.max}`
@@ -826,7 +860,7 @@ export default function Personalizado(){
                               {motoP ? `~R$ ${motoP.min}–${motoP.max}` : "Indisponível"}
                             </span>
                           </div>
-                          {form.frete_tipo==="motoboy" && <p style={{fontSize:"11px",color:"#1d4ed8",marginTop:"6px",fontWeight:"600"}}>✅ Selecionado</p>}
+                          {form.frete_tipo==="motoboy" && <p style={{fontSize:"11px",color:"#1d4ed8",marginTop:"6px",fontWeight:"600",display:"flex",alignItems:"center",gap:"4px"}}><CheckIcon size={12} strokeWidth={2.2} /> Selecionado</p>}
                         </button>
 
                         {/* Correios — sempre visível */}
@@ -835,7 +869,7 @@ export default function Personalizado(){
                             border:"2px solid "+(form.frete_tipo==="correios"?"#7c3aed":t.border),
                             backgroundColor:form.frete_tipo==="correios"?"#f5f3ff":t.bgCard}}>
                           <div>
-                            <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0}}>📬 Correios (PAC ou SEDEX)</p>
+                            <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0,display:"flex",alignItems:"center",gap:"6px"}}><MailIcon size={14} strokeWidth={1.7} /> Correios (PAC ou SEDEX)</p>
                             <p style={{fontSize:"11px",color:t.textSecundario,margin:"3px 0 0"}}>Para qualquer cidade do Brasil</p>
                             <div style={{display:"flex",gap:"14px",marginTop:"5px"}}>
                               <span style={{fontSize:"11px",color:t.textSecundario}}>PAC: <strong style={{color:t.text}}>{corP.pac}</strong></span>
@@ -843,7 +877,7 @@ export default function Personalizado(){
                             </div>
                             <p style={{fontSize:"10px",color:t.textSecundario,marginTop:"3px"}}>Prazo: {corP.prazo} · Valor confirmado pela loja</p>
                           </div>
-                          {form.frete_tipo==="correios" && <p style={{fontSize:"11px",color:"#7c3aed",marginTop:"6px",fontWeight:"600"}}>✅ Selecionado</p>}
+                          {form.frete_tipo==="correios" && <p style={{fontSize:"11px",color:"#7c3aed",marginTop:"6px",fontWeight:"600",display:"flex",alignItems:"center",gap:"4px"}}><CheckIcon size={12} strokeWidth={2.2} /> Selecionado</p>}
                         </button>
 
                       </div>
@@ -854,16 +888,17 @@ export default function Personalizado(){
               </div>
             </div>
 
-            <div style={{backgroundColor:t.bgSecundario,border:"1px solid "+t.border,padding:"14px"}}>
-              <p style={{fontSize:"13px",color:t.textSecundario,lineHeight:1.7,fontFamily:"system-ui"}}>
-                ℹ️ Ao confirmar o pedido, nossa equipe entrará em contato pelo WhatsApp para confirmar detalhes, prazo e orçamento.
+            <div style={{backgroundColor:t.bgSecundario,border:"1px solid "+t.border,padding:"14px",display:"flex",gap:"10px",alignItems:"flex-start"}}>
+              <span style={{color:t.textSecundario, marginTop:"1px", flexShrink:0}}><InfoIcon size={16} strokeWidth={1.7} /></span>
+              <p style={{fontSize:"13px",color:t.textSecundario,lineHeight:1.7,fontFamily:"system-ui",margin:0}}>
+                Ao confirmar o pedido, nossa equipe entrará em contato pelo WhatsApp para confirmar detalhes, prazo e orçamento.
                 {form.fotos.length>0&&" As imagens de referência enviadas serão salvas junto ao pedido."}
               </p>
             </div>
 
             {!finalizacaoValida&&(
               <div style={{backgroundColor:"#fef9f0",border:"1px solid #fde68a",padding:"14px"}}>
-                <p style={{fontSize:"12px",fontWeight:"600",color:"#92400e",marginBottom:"8px",fontFamily:"system-ui"}}>⚠️ Preencha os campos obrigatórios para finalizar:</p>
+                <p style={{fontSize:"12px",fontWeight:"600",color:"#92400e",marginBottom:"8px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"6px"}}><WarningIcon size={14} strokeWidth={1.8} /> Preencha os campos obrigatórios para finalizar:</p>
                 <ul style={{fontSize:"12px",color:"#92400e",fontFamily:"system-ui",lineHeight:1.8,paddingLeft:"16px",margin:0}}>
                   {!form.nomeCliente.trim()&&<li>Nome completo</li>}
                   {validarTel(form.telefone)&&<li>Telefone válido</li>}
@@ -878,14 +913,14 @@ export default function Personalizado(){
               </div>
             )}
 
-            {erro&&<div style={{backgroundColor:"#fef2f2",border:"1px solid #fecaca",padding:"12px",color:"#dc2626",fontSize:"13px",fontFamily:"system-ui"}}>⚠️ {erro}</div>}
+            {erro&&<div style={{backgroundColor:"#fef2f2",border:"1px solid #fecaca",padding:"12px",color:"#dc2626",fontSize:"13px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"6px"}}><WarningIcon size={14} strokeWidth={1.8} /> {erro}</div>}
 
             <div style={{display:"flex",gap:"12px"}}>
               <button onClick={()=>setEtapa(1)} style={{flex:1,padding:"14px",border:"1px solid "+t.border,color:t.text,backgroundColor:t.bg,cursor:"pointer",fontFamily:"system-ui",fontWeight:"600"}}>← Voltar</button>
             </div>
             <button onClick={salvarNoBanco} disabled={salvando||!finalizacaoValida}
-              style={{ cursor: "pointer",...btnP(!salvando&&finalizacaoValida),width:"100%",padding:"18px",fontSize:"16px"}}>
-              {salvando?"Salvando...":"✅ Confirmar Pedido"}
+              style={{ cursor: "pointer",...btnP(!salvando&&finalizacaoValida),width:"100%",padding:"18px",fontSize:"16px",display:"flex",alignItems:"center",justifyContent:"center",gap:"8px"}}>
+              {salvando ? "Salvando..." : <><CheckIcon size={17} strokeWidth={2.2} /> Confirmar Pedido</>}
             </button>
           </div>
         )}
@@ -905,7 +940,7 @@ export default function Personalizado(){
                   <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Georgia, serif"}}>{tipo?.label} {cor?"— "+cor.label:""}</h3>
                   <p style={{fontSize:"12px",color:t.textSecundario,fontFamily:"system-ui",marginTop:"2px"}}>Total: {totalComb(comb)} unidades</p>
                 </div>
-                <button onClick={()=>setModalTamanhos(null)} style={{background:"none",border:"none",cursor:"pointer",fontSize:"20px",color:t.text}}>✕</button>
+                <button onClick={()=>setModalTamanhos(null)} style={{background:"none",border:"none",cursor:"pointer",color:t.text,display:"flex"}}><CloseIcon size={20} strokeWidth={1.8} /></button>
               </div>
               <div style={{padding:"16px 20px"}}>
                 {isCalca ? (
@@ -973,8 +1008,8 @@ export default function Personalizado(){
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" style={{backgroundColor:"rgba(0,0,0,0.5)"}} onClick={e=>{if(e.target===e.currentTarget)setModalCores(null);}}>
           <div style={{backgroundColor:t.bgCard,width:"100%",maxWidth:"480px",maxHeight:"80vh",overflowY:"auto",borderTop:"2px solid "+t.borderForte}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 16px",borderBottom:"1px solid "+t.border}}>
-              <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Georgia, serif"}}>🎨 Selecionar cor</h3>
-              <button onClick={()=>setModalCores(null)} style={{background:"none",border:"none",cursor:"pointer",fontSize:"20px",color:t.text}}>✕</button>
+              <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Georgia, serif",display:"flex",alignItems:"center",gap:"8px"}}><PaletteIcon size={18} strokeWidth={1.5} /> Selecionar cor</h3>
+              <button onClick={()=>setModalCores(null)} style={{background:"none",border:"none",cursor:"pointer",color:t.text,display:"flex"}}><CloseIcon size={20} strokeWidth={1.8} /></button>
             </div>
             <div style={{padding:"16px",display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"8px"}}>
               {CORES_OPCOES.map(cor=>{
@@ -984,7 +1019,7 @@ export default function Personalizado(){
                     style={{display:"flex",alignItems:"center",gap:"10px",padding:"12px 14px",cursor:"pointer",textAlign:"left",fontFamily:"system-ui",fontSize:"13px",border:"2px solid "+(sel?t.text:t.border),backgroundColor:sel?t.bgSecundario:t.bgCard,color:t.text}}>
                     <span style={{width:"20px",height:"20px",borderRadius:"50%",flexShrink:0,display:"inline-block",backgroundColor:cor.hex||"transparent",border:cor.hex?"1px solid "+t.border:"2px dashed "+t.border}}/>
                     <span style={{fontWeight:sel?"600":"400"}}>{cor.label}</span>
-                    {sel&&<span style={{marginLeft:"auto"}}>✓</span>}
+                    {sel&&<span style={{marginLeft:"auto",color:"#16a34a",display:"flex"}}><CheckIcon size={15} strokeWidth={2.2} /></span>}
                   </button>
                 );
               })}
@@ -998,8 +1033,8 @@ export default function Personalizado(){
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" style={{backgroundColor:"rgba(0,0,0,0.5)"}} onClick={e=>{if(e.target===e.currentTarget)setModalMaterial(null);}}>
           <div style={{backgroundColor:t.bgCard,width:"100%",maxWidth:"480px",maxHeight:"80vh",overflowY:"auto",borderTop:"2px solid "+t.borderForte}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 16px",borderBottom:"1px solid "+t.border}}>
-              <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Georgia, serif"}}>🧵 Selecionar material</h3>
-              <button onClick={()=>setModalMaterial(null)} style={{background:"none",border:"none",cursor:"pointer",fontSize:"20px",color:t.text}}>✕</button>
+              <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Georgia, serif",display:"flex",alignItems:"center",gap:"8px"}}><ThreadIcon size={18} strokeWidth={1.5} /> Selecionar material</h3>
+              <button onClick={()=>setModalMaterial(null)} style={{background:"none",border:"none",cursor:"pointer",color:t.text,display:"flex"}}><CloseIcon size={20} strokeWidth={1.8} /></button>
             </div>
             <div style={{padding:"16px",display:"flex",flexDirection:"column",gap:"8px"}}>
               {MATERIAIS_OPCOES.map(mat=>{
@@ -1007,7 +1042,7 @@ export default function Personalizado(){
                 return (
                   <button key={mat.id} onClick={()=>{updateComb(modalMaterial,"material",mat.id);setModalMaterial(null);}}
                     style={{display:"flex",flexDirection:"column",alignItems:"flex-start",padding:"14px 16px",cursor:"pointer",textAlign:"left",fontFamily:"system-ui",border:"2px solid "+(sel?t.text:t.border),backgroundColor:sel?t.bgSecundario:t.bgCard}}>
-                    <span style={{fontSize:"13px",fontWeight:"600",color:t.text}}>{mat.label} {sel?"✓":""}</span>
+                    <span style={{fontSize:"13px",fontWeight:"600",color:t.text,display:"flex",alignItems:"center",gap:"6px"}}>{mat.label} {sel && <CheckIcon size={13} strokeWidth={2.2} style={{color:"#16a34a"}} />}</span>
                     <span style={{fontSize:"11px",color:t.textSecundario,marginTop:"2px"}}>{mat.descricao}</span>
                   </button>
                 );
@@ -1024,8 +1059,8 @@ export default function Personalizado(){
           onClick={e => { if (e.target === e.currentTarget) setTabelaAberta(false); }}>
           <div style={{ backgroundColor: t.bgCard, width: "100%", maxWidth: "520px", maxHeight: "90vh", overflowY: "auto", borderTop: "2px solid " + t.borderForte }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 20px 16px", borderBottom: "1px solid " + t.border }}>
-              <h3 style={{ fontSize: "16px", fontWeight: "600", color: t.text, fontFamily: "Georgia, serif" }}>📏 Tabela de Medidas</h3>
-              <button onClick={() => setTabelaAberta(false)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "20px", color: t.text }}>✕</button>
+              <h3 style={{ fontSize: "16px", fontWeight: "600", color: t.text, fontFamily: "Georgia, serif", display:"flex", alignItems:"center", gap:"8px" }}><RulerIcon size={18} strokeWidth={1.5} /> Tabela de Medidas</h3>
+              <button onClick={() => setTabelaAberta(false)} style={{ background: "none", border: "none", cursor: "pointer", color: t.text, display:"flex" }}><CloseIcon size={20} strokeWidth={1.8} /></button>
             </div>
             <div style={{ padding: "20px" }}>
               <p style={{ fontSize: "12px", color: t.textSecundario, fontFamily: "system-ui", marginBottom: "16px" }}>Medidas em centímetros (cm) da peça plana.</p>

@@ -430,7 +430,7 @@ export default function Pedidos() {
 
   // ── TELA DE SUCESSO ──
   if (pedidoConcluido && pedidoSalvo) return (
-    <div style={{backgroundColor:t.bg, minHeight:"100vh"}}>
+    <div style={{backgroundColor:t.bg}}>
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
         <div style={{fontSize:"64px",marginBottom:"20px"}}>🎉</div>
         <h1 className="text-3xl font-bold mb-4" style={{color:t.text}}>Pedido confirmado!</h1>
@@ -499,7 +499,7 @@ export default function Pedidos() {
   );
 
   return (
-    <div style={{backgroundColor:t.bg, color:t.text, minHeight:"100vh"}}>
+    <div style={{backgroundColor:t.bg, color:t.text}}>
       <div className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8" style={{color:t.text}}>Finalizar Pedido</h1>
 
