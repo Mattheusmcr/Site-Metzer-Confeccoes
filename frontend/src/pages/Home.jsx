@@ -94,7 +94,7 @@ export default function Home() {
     <div style={{ backgroundColor: t.bg, color: t.text, fontFamily: "Georgia, serif", overflowX: "hidden" }}>
 
       {/* ══ HERO ══ */}
-      <section ref={heroRef} className="relative overflow-hidden" style={{ height: "100vh", minHeight: "600px" }}>
+      <section ref={heroRef} className="relative overflow-hidden" style={{ height: "85vh", minHeight: "550px" }}>
         {heroImages.map((img, i) => (
           <div key={i} className="absolute inset-0 transition-opacity duration-1000"
             style={{ opacity: heroAtual === i ? 1 : 0, backgroundImage: `url(${img.src})`, backgroundSize: "cover",
