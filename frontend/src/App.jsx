@@ -9,6 +9,12 @@ function ScrollToTop() {
   return null;
 }
 
+function FooterGate() {
+  const { pathname } = useLocation();
+  // Rodapé completo só na Home; nas demais páginas, versão compacta (só créditos)
+  return <Footer compacto={pathname !== "/"} />;
+}
+
 import Personalizado from "./pages/Personalizado";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -50,7 +56,7 @@ function App() {
               />
             </Routes>
             </div>
-            <Footer />
+            <FooterGate />
             </div>
           </BrowserRouter>
         </CartProvider>

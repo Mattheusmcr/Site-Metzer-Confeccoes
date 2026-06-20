@@ -4,7 +4,35 @@ const t = {
   border: "#D5C9BC", borderForte: "#C4B5A5",
 };
 
-export default function Footer() {
+function Creditos() {
+  return (
+    <div style={{ borderTop: "1px solid " + t.borderForte, padding: "16px 24px" }}
+      className="flex flex-col md:flex-row items-center justify-between gap-2">
+      <p className="text-xs" style={{ color: t.textSecundario, fontFamily: "system-ui", letterSpacing: "0.1em" }}>
+        &copy; {new Date().getFullYear()} Metzker Soluções
+      </p>
+      <p className="text-xs" style={{ color: t.textSecundario, fontFamily: "system-ui", letterSpacing: "0.05em" }}>
+        Desenvolvido por{" "}
+        <a href="https://github.com/Mattheusmcr" target="_blank" rel="noreferrer"
+          style={{ color: t.text, fontWeight: "600", textDecoration: "none", borderBottom: "1px solid " + t.border }}>
+          Matheus Costa Rodrigues
+        </a>
+      </p>
+    </div>
+  );
+}
+
+export default function Footer({ compacto = false }) {
+  // Versão compacta — usada em todas as páginas exceto a Home
+  if (compacto) {
+    return (
+      <footer style={{ backgroundColor: t.bgSecundario, borderTop: "2px solid " + t.borderForte }}>
+        <Creditos />
+      </footer>
+    );
+  }
+
+  // Versão completa — usada apenas na Home
   return (
     <footer style={{ backgroundColor: t.bgSecundario, borderTop: "2px solid " + t.borderForte }}>
       <div className="px-6 md:px-24 py-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
@@ -28,19 +56,7 @@ export default function Footer() {
           <p style={{ color: t.text, fontFamily: "system-ui" }}>Polo Têxtil Santa Inês</p>
         </div>
       </div>
-      <div style={{ borderTop: "1px solid " + t.borderForte, padding: "16px 24px" }}
-        className="flex flex-col md:flex-row items-center justify-between gap-2">
-        <p className="text-xs" style={{ color: t.textSecundario, fontFamily: "system-ui", letterSpacing: "0.1em" }}>
-          &copy; {new Date().getFullYear()} Metzker Soluções
-        </p>
-        <p className="text-xs" style={{ color: t.textSecundario, fontFamily: "system-ui", letterSpacing: "0.05em" }}>
-          Desenvolvido por{" "}
-          <a href="https://github.com/Mattheusmcr" target="_blank" rel="noreferrer"
-            style={{ color: t.text, fontWeight: "600", textDecoration: "none", borderBottom: "1px solid " + t.border }}>
-            Matheus Costa Rodrigues
-          </a>
-        </p>
-      </div>
+      <Creditos />
     </footer>
   );
 }
