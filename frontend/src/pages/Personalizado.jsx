@@ -835,8 +835,8 @@ export default function Personalizado(){
                         {/* Retirada */}
                         <button onClick={()=>setForm(p=>({...p,frete_tipo:"retirada",frete_valor:0}))}
                           style={{padding:"12px 14px",borderRadius:"10px",textAlign:"left",cursor:"pointer",
-                            border:"2px solid "+(form.frete_tipo==="retirada"?"#16a34a":t.border),
-                            backgroundColor:form.frete_tipo==="retirada"?"#f0fdf4":t.bgCard}}>
+                            border:"2px solid "+(form.frete_tipo==="retirada"?t.text:t.border),
+                            backgroundColor:form.frete_tipo==="retirada"?t.bgSecundario:t.bgCard}}>
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                             <div>
                               <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0,display:"flex",alignItems:"center",gap:"8px"}}><IconBadge Icone={StoreIcon} cor="#16a34a" size={12} box={22} /> Retirada no local</p>
@@ -844,14 +844,14 @@ export default function Personalizado(){
                             </div>
                             <span style={{fontSize:"13px",fontWeight:"700",color:"#16a34a",whiteSpace:"nowrap",marginLeft:"12px"}}>Grátis</span>
                           </div>
-                          {form.frete_tipo==="retirada" && <p style={{fontSize:"11px",color:"#16a34a",marginTop:"6px",fontWeight:"600",display:"flex",alignItems:"center",gap:"4px"}}><CheckIcon size={12} strokeWidth={2.2} /> Selecionado</p>}
+                          {form.frete_tipo==="retirada" && <p style={{fontSize:"11px",color:t.text,marginTop:"6px",fontWeight:"600",display:"flex",alignItems:"center",gap:"4px"}}><CheckIcon size={12} strokeWidth={2.2} /> Selecionado</p>}
                         </button>
 
                         {/* Motoboy — sempre visível, desativado se fora da região */}
                         <button onClick={()=>{ if(motoP) setForm(p=>({...p,frete_tipo:"motoboy",frete_valor:motoP.min})); }}
                           style={{padding:"12px 14px",borderRadius:"10px",textAlign:"left",cursor: motoP?"pointer":"default",
-                            border:"2px solid "+(form.frete_tipo==="motoboy"?"#1d4ed8":t.border),
-                            backgroundColor:form.frete_tipo==="motoboy"?"#eff6ff":t.bgCard,
+                            border:"2px solid "+(form.frete_tipo==="motoboy"?t.text:t.border),
+                            backgroundColor:form.frete_tipo==="motoboy"?t.bgSecundario:t.bgCard,
                             opacity: motoP ? 1 : 0.45}}>
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                             <div style={{flex:1}}>
@@ -866,14 +866,14 @@ export default function Personalizado(){
                               {motoP ? `~R$ ${motoP.min}–${motoP.max}` : "Indisponível"}
                             </span>
                           </div>
-                          {form.frete_tipo==="motoboy" && <p style={{fontSize:"11px",color:"#1d4ed8",marginTop:"6px",fontWeight:"600",display:"flex",alignItems:"center",gap:"4px"}}><CheckIcon size={12} strokeWidth={2.2} /> Selecionado</p>}
+                          {form.frete_tipo==="motoboy" && <p style={{fontSize:"11px",color:t.text,marginTop:"6px",fontWeight:"600",display:"flex",alignItems:"center",gap:"4px"}}><CheckIcon size={12} strokeWidth={2.2} /> Selecionado</p>}
                         </button>
 
                         {/* Correios — sempre visível */}
                         <button onClick={()=>setForm(p=>({...p,frete_tipo:"correios",frete_valor:0}))}
                           style={{padding:"12px 14px",borderRadius:"10px",textAlign:"left",cursor:"pointer",
-                            border:"2px solid "+(form.frete_tipo==="correios"?"#7c3aed":t.border),
-                            backgroundColor:form.frete_tipo==="correios"?"#f5f3ff":t.bgCard}}>
+                            border:"2px solid "+(form.frete_tipo==="correios"?t.text:t.border),
+                            backgroundColor:form.frete_tipo==="correios"?t.bgSecundario:t.bgCard}}>
                           <div>
                             <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0,display:"flex",alignItems:"center",gap:"8px"}}><IconBadge Icone={MailIcon} cor="#7c3aed" size={12} box={22} /> Correios (PAC ou SEDEX)</p>
                             <p style={{fontSize:"11px",color:t.textSecundario,margin:"3px 0 0"}}>Para qualquer cidade do Brasil</p>
@@ -883,7 +883,7 @@ export default function Personalizado(){
                             </div>
                             <p style={{fontSize:"10px",color:t.textSecundario,marginTop:"3px"}}>Prazo: {corP.prazo} · Valor confirmado pela loja</p>
                           </div>
-                          {form.frete_tipo==="correios" && <p style={{fontSize:"11px",color:"#7c3aed",marginTop:"6px",fontWeight:"600",display:"flex",alignItems:"center",gap:"4px"}}><CheckIcon size={12} strokeWidth={2.2} /> Selecionado</p>}
+                          {form.frete_tipo==="correios" && <p style={{fontSize:"11px",color:t.text,marginTop:"6px",fontWeight:"600",display:"flex",alignItems:"center",gap:"4px"}}><CheckIcon size={12} strokeWidth={2.2} /> Selecionado</p>}
                         </button>
 
                       </div>
