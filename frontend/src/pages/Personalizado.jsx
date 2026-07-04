@@ -4,6 +4,7 @@ import {
   ShirtIcon, ImageIcon, PaletteIcon, ThreadIcon, RulerIcon, CheckIcon,
   WarningIcon, PaperclipIcon, DocIcon, TruckIcon, StoreIcon, MailIcon,
   InfoIcon, PartyIcon, TagIcon, CopyIcon, PrinterIcon, CloseIcon,
+  UserIcon, ListIcon,
 } from "../components/Icons";
 
 // ── CÁLCULO DE FRETE ─────────────────────────────────────────────────────────
@@ -405,8 +406,8 @@ export default function Personalizado(){
 
         {/* PROTOCOLO */}
         <div style={{backgroundColor:t.bgSecundario, border:"2px solid "+t.borderForte, padding:"20px", marginBottom:"24px"}}>
-          <p style={{fontSize:"11px", fontWeight:"700", textTransform:"uppercase", letterSpacing:"0.1em", color:t.textSecundario, fontFamily:"system-ui", marginBottom:"10px", display:"flex", alignItems:"center", justifyContent:"center", gap:"6px"}}>
-            <TagIcon size={13} strokeWidth={1.8} /> Número do Protocolo
+          <p style={{fontSize:"11px", fontWeight:"700", textTransform:"uppercase", letterSpacing:"0.1em", color:t.textSecundario, fontFamily:"system-ui", marginBottom:"10px", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px"}}>
+            <IconBadge Icone={TagIcon} cor="#c41e3a" size={11} box={20} /> Número do Protocolo
           </p>
           <div style={{display:"flex", alignItems:"center", justifyContent:"center", gap:"12px", flexWrap:"wrap"}}>
             <span style={{fontSize:"1.5rem", fontWeight:"700", fontFamily:"monospace", letterSpacing:"0.05em", color:t.text}}>
@@ -503,6 +504,7 @@ export default function Personalizado(){
                       {/* Header combinação */}
                       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 16px",backgroundColor:t.bgSecundario,borderBottom:"1px solid "+t.border}}>
                         <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
+                          <IconBadge Icone={ShirtIcon} cor="#2563eb" size={12} box={22} />
                           {corObj?.hex && <span style={{width:"14px",height:"14px",borderRadius:"50%",backgroundColor:corObj.hex,border:"1px solid "+t.border,display:"inline-block",flexShrink:0}}/>}
                           <span style={{fontWeight:"600",fontSize:"13px",color:t.text,fontFamily:"system-ui"}}>
                             {tipo?.label}{corObj?" — "+corObj.label:""}
@@ -692,7 +694,7 @@ export default function Personalizado(){
                 <div>
                   <label style={labelStyle}>{form.categoria==="roupas"?"Artes e estampas (opcional — até 5)":"Arquivos de referência (opcional — até 5)"}</label>
                   <label style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"28px",cursor:"pointer",border:"2px dashed "+t.borderForte,backgroundColor:t.bgCard}}>
-                    <span style={{marginBottom:"8px",color:t.textSecundario}}><PaperclipIcon size={26} strokeWidth={1.4} /></span>
+                    <span style={{marginBottom:"10px"}}><IconBadge Icone={PaperclipIcon} cor="#0891b2" size={20} box={44} /></span>
                     <span style={{fontSize:"13px",fontWeight:"500",color:t.text,fontFamily:"system-ui"}}>Clique para selecionar arquivos</span>
                     <span style={{fontSize:"11px",color:t.textSecundario,marginTop:"4px",fontFamily:"system-ui"}}>PNG, JPG, PDF — até 5 arquivos</span>
                     <input type="file" multiple accept="image/*,.pdf" style={{display:"none"}} onChange={e=>{const files=Array.from(e.target.files).slice(0,5);setForm(p=>({...p,fotos:files.map(f=>({file:f,url:f.type.startsWith("image/")?URL.createObjectURL(f):null,name:f.name}))}));}}/>
@@ -726,7 +728,9 @@ export default function Personalizado(){
 
             {/* RESUMO */}
             <div style={{border:"1px solid "+t.border,padding:"20px",backgroundColor:t.bgCard}}>
-              <p style={{fontSize:"11px",textTransform:"uppercase",letterSpacing:"0.1em",color:t.textSecundario,fontFamily:"system-ui",marginBottom:"14px"}}>Resumo do pedido</p>
+              <p style={{fontSize:"11px",textTransform:"uppercase",letterSpacing:"0.1em",color:t.textSecundario,fontFamily:"system-ui",marginBottom:"14px",display:"flex",alignItems:"center",gap:"8px"}}>
+                <IconBadge Icone={ListIcon} cor="#7a7065" size={12} box={22} /> Resumo do pedido
+              </p>
               <div style={{padding:"8px 0",borderBottom:"1px solid "+t.border}}>
                 <p style={{fontSize:"13px",fontWeight:"600",color:t.text,fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"7px"}}>
                   {form.categoria==="roupas" ? <ShirtIcon size={15} strokeWidth={1.7} style={{color:"#2563eb"}} /> : <ImageIcon size={15} strokeWidth={1.7} style={{color:"#7c3aed"}} />}
@@ -780,7 +784,9 @@ export default function Personalizado(){
 
             {/* CONTATO + ENDEREÇO */}
             <div style={{borderTop:"2px solid "+t.borderForte,paddingTop:"20px"}}>
-              <p style={{fontSize:"13px",fontWeight:"600",color:t.text,fontFamily:"system-ui",marginBottom:"16px"}}>Seus dados para contato *</p>
+              <p style={{fontSize:"13px",fontWeight:"600",color:t.text,fontFamily:"system-ui",marginBottom:"16px",display:"flex",alignItems:"center",gap:"8px"}}>
+                <IconBadge Icone={UserIcon} cor="#2563eb" size={12} box={22} /> Seus dados para contato *
+              </p>
               <div style={{display:"flex",flexDirection:"column",gap:"14px"}}>
                 <div><label style={labelStyle}>Nome completo *</label><input value={form.nomeCliente} onChange={e=>setForm(p=>({...p,nomeCliente:e.target.value}))} placeholder="Ex: João Silva" style={inputStyle}/></div>
                 <div>
@@ -820,7 +826,7 @@ export default function Personalizado(){
                   const cidadeL = form.cidade ? ` para ${form.cidade}` : "";
                   return (
                     <div>
-                      <label style={{...labelStyle, marginBottom:"10px", display:"flex", alignItems:"center", gap:"6px"}}><TruckIcon size={14} strokeWidth={1.7} /> Como deseja receber? *</label>
+                      <label style={{...labelStyle, marginBottom:"10px", display:"flex", alignItems:"center", gap:"8px"}}><IconBadge Icone={TruckIcon} cor="#7a7065" size={11} box={20} /> Como deseja receber? *</label>
                       <p style={{fontSize:"12px",color:t.textSecundario,fontFamily:"system-ui",marginBottom:"10px",lineHeight:1.5}}>
                         Escolha uma opção. Os valores de motoboy e Correios são estimativas — confirmamos o valor exato pelo WhatsApp.
                       </p>
@@ -833,7 +839,7 @@ export default function Personalizado(){
                             backgroundColor:form.frete_tipo==="retirada"?"#f0fdf4":t.bgCard}}>
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                             <div>
-                              <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0,display:"flex",alignItems:"center",gap:"6px"}}><StoreIcon size={14} strokeWidth={1.7} /> Retirada no local</p>
+                              <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0,display:"flex",alignItems:"center",gap:"8px"}}><IconBadge Icone={StoreIcon} cor="#16a34a" size={12} box={22} /> Retirada no local</p>
                               <p style={{fontSize:"11px",color:t.textSecundario,margin:"3px 0 0"}}>Polo Têxtil Santa Inês — Vila Velha, ES</p>
                             </div>
                             <span style={{fontSize:"13px",fontWeight:"700",color:"#16a34a",whiteSpace:"nowrap",marginLeft:"12px"}}>Grátis</span>
@@ -849,7 +855,7 @@ export default function Personalizado(){
                             opacity: motoP ? 1 : 0.45}}>
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                             <div style={{flex:1}}>
-                              <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0,display:"flex",alignItems:"center",gap:"6px"}}><TruckIcon size={14} strokeWidth={1.7} /> Entrega por motoboy</p>
+                              <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0,display:"flex",alignItems:"center",gap:"8px"}}><IconBadge Icone={TruckIcon} cor="#1d4ed8" size={12} box={22} /> Entrega por motoboy</p>
                               <p style={{fontSize:"11px",color:t.textSecundario,margin:"3px 0 0"}}>
                                 {motoP
                                   ? `Entrega própria${cidadeL} — estimativa de R$ ${motoP.min} a R$ ${motoP.max}`
@@ -869,7 +875,7 @@ export default function Personalizado(){
                             border:"2px solid "+(form.frete_tipo==="correios"?"#7c3aed":t.border),
                             backgroundColor:form.frete_tipo==="correios"?"#f5f3ff":t.bgCard}}>
                           <div>
-                            <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0,display:"flex",alignItems:"center",gap:"6px"}}><MailIcon size={14} strokeWidth={1.7} /> Correios (PAC ou SEDEX)</p>
+                            <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0,display:"flex",alignItems:"center",gap:"8px"}}><IconBadge Icone={MailIcon} cor="#7c3aed" size={12} box={22} /> Correios (PAC ou SEDEX)</p>
                             <p style={{fontSize:"11px",color:t.textSecundario,margin:"3px 0 0"}}>Para qualquer cidade do Brasil</p>
                             <div style={{display:"flex",gap:"14px",marginTop:"5px"}}>
                               <span style={{fontSize:"11px",color:t.textSecundario}}>PAC: <strong style={{color:t.text}}>{corP.pac}</strong></span>
@@ -1008,7 +1014,7 @@ export default function Personalizado(){
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" style={{backgroundColor:"rgba(0,0,0,0.5)"}} onClick={e=>{if(e.target===e.currentTarget)setModalCores(null);}}>
           <div style={{backgroundColor:t.bgCard,width:"100%",maxWidth:"480px",maxHeight:"80vh",overflowY:"auto",borderTop:"2px solid "+t.borderForte}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 16px",borderBottom:"1px solid "+t.border}}>
-              <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Georgia, serif",display:"flex",alignItems:"center",gap:"8px"}}><PaletteIcon size={18} strokeWidth={1.5} /> Selecionar cor</h3>
+              <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Georgia, serif",display:"flex",alignItems:"center",gap:"10px"}}><IconBadge Icone={PaletteIcon} cor="#c41e3a" size={15} box={28} /> Selecionar cor</h3>
               <button onClick={()=>setModalCores(null)} style={{background:"none",border:"none",cursor:"pointer",color:t.text,display:"flex"}}><CloseIcon size={20} strokeWidth={1.8} /></button>
             </div>
             <div style={{padding:"16px",display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"8px"}}>
@@ -1033,7 +1039,7 @@ export default function Personalizado(){
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" style={{backgroundColor:"rgba(0,0,0,0.5)"}} onClick={e=>{if(e.target===e.currentTarget)setModalMaterial(null);}}>
           <div style={{backgroundColor:t.bgCard,width:"100%",maxWidth:"480px",maxHeight:"80vh",overflowY:"auto",borderTop:"2px solid "+t.borderForte}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 16px",borderBottom:"1px solid "+t.border}}>
-              <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Georgia, serif",display:"flex",alignItems:"center",gap:"8px"}}><ThreadIcon size={18} strokeWidth={1.5} /> Selecionar material</h3>
+              <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Georgia, serif",display:"flex",alignItems:"center",gap:"10px"}}><IconBadge Icone={ThreadIcon} cor="#d97706" size={15} box={28} /> Selecionar material</h3>
               <button onClick={()=>setModalMaterial(null)} style={{background:"none",border:"none",cursor:"pointer",color:t.text,display:"flex"}}><CloseIcon size={20} strokeWidth={1.8} /></button>
             </div>
             <div style={{padding:"16px",display:"flex",flexDirection:"column",gap:"8px"}}>
@@ -1059,7 +1065,7 @@ export default function Personalizado(){
           onClick={e => { if (e.target === e.currentTarget) setTabelaAberta(false); }}>
           <div style={{ backgroundColor: t.bgCard, width: "100%", maxWidth: "520px", maxHeight: "90vh", overflowY: "auto", borderTop: "2px solid " + t.borderForte }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 20px 16px", borderBottom: "1px solid " + t.border }}>
-              <h3 style={{ fontSize: "16px", fontWeight: "600", color: t.text, fontFamily: "Georgia, serif", display:"flex", alignItems:"center", gap:"8px" }}><RulerIcon size={18} strokeWidth={1.5} /> Tabela de Medidas</h3>
+              <h3 style={{ fontSize: "16px", fontWeight: "600", color: t.text, fontFamily: "Georgia, serif", display:"flex", alignItems:"center", gap:"10px" }}><IconBadge Icone={RulerIcon} cor="#2563eb" size={15} box={28} /> Tabela de Medidas</h3>
               <button onClick={() => setTabelaAberta(false)} style={{ background: "none", border: "none", cursor: "pointer", color: t.text, display:"flex" }}><CloseIcon size={20} strokeWidth={1.8} /></button>
             </div>
             <div style={{ padding: "20px" }}>
