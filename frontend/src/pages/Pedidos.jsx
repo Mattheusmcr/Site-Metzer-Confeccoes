@@ -1,7 +1,7 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { CartContext } from "../context/CartContext";
 import api from "../services/api";
-import { WhatsAppIcon, PrinterIcon, CartIcon, PixIcon, CardIcon, CashIcon, StoreIcon, TruckIcon, MailIcon } from "../components/Icons";
+import { WhatsAppIcon, PrinterIcon, CartIcon, CardIcon, StoreIcon, TruckIcon, MailIcon } from "../components/Icons";
 
 // ── CÁLCULO DE FRETE ─────────────────────────────────────────────────────────
 const REGIAO_METRO_ES = ["vitoria","vila velha","cariacica","serra","viana","guarapari","fundao"];
@@ -87,46 +87,24 @@ async function buscarCEP(cep, setCliente) {
 function emailValido(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
 
 
-// ── Gerador de QR Code PIX (formato EMV/BR Code) ─────────────────────────────
-function gerarPayloadPix(chave, nome, cidade, valor) {
-  function f(id, val) {
-    return id + String(val.length).padStart(2, "0") + val;
-  }
-  function crc16(str) {
-    let crc = 0xFFFF;
-    for (let i = 0; i < str.length; i++) {
-      crc ^= str.charCodeAt(i) << 8;
-      for (let j = 0; j < 8; j++) {
-        crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
-      }
-      crc &= 0xFFFF;
-    }
-    return crc.toString(16).toUpperCase().padStart(4, "0");
-  }
-  const gui = f("00", "br.gov.bcb.pix");
-  const key = f("01", chave);
-  const merchant = f("26", gui + key);
-  const nomeLimpo = nome.replace(/[^A-Za-z ]/g, "").trim().substring(0, 25).toUpperCase() || "METZKER SOLUCOES";
-  const cidadeLimpa = cidade.replace(/[^A-Za-z ]/g, "").trim().substring(0, 15).toUpperCase() || "VILA VELHA";
-  const valorStr = valor > 0 ? f("54", valor.toFixed(2)) : "";
-  const txid = f("05", "***");
-  const addData = f("62", txid);
-  const payload = "000201" + merchant + "52040000" + "5303986" + valorStr + "5802BR"
-    + f("59", nomeLimpo) + f("60", cidadeLimpa) + addData + "6304";
-  return payload + crc16(payload);
+// Extrai o valor mínimo de uma faixa estimada tipo "R$ 18–28" → 18
+function parseValorMinimo(faixaStr) {
+  const m = (faixaStr || "").match(/\d+/);
+  return m ? parseFloat(m[0]) : 0;
 }
+
+const CHECKOUT_SNAPSHOT_KEY = "metzker_mp_checkout";
 
 export default function Pedidos() {
   const { cart, increase, decrease, removeFromCart, setCart } = useContext(CartContext);
   const [cliente, setCliente] = useState({
     nome:"", telefone:"", email:"", cep:"", rua:"", numero:"",
-    complemento:"", bairro:"", cidade:"", estado:"", formaPagamento:"", observacao:"",
+    complemento:"", bairro:"", cidade:"", estado:"", observacao:"",
   });
   const [erros, setErros] = useState({});
   const [tentouEnviar, setTentouEnviar] = useState(false);
   const [mensagemEstoque, setMensagemEstoque] = useState("");
   const [erroPedido, setErroPedido] = useState("");
-  const [pedidoConcluido, setPedidoConcluido] = useState(false);
   const [pedidoSalvo, setPedidoSalvo] = useState(null);
   // Verificar retorno do Mercado Pago via URL params
   const urlParams = new URLSearchParams(window.location.search);
@@ -135,10 +113,32 @@ export default function Pedidos() {
   const [copiado, setCopiado] = useState(false);
   const [frete, setFrete] = useState({ tipo: "", valor: 0 });
   const [calcFrete, setCalcFrete] = useState(false);
-  const [formaPagamento, setFormaPagamento] = useState(""); // "pix" | "cartao" | "dinheiro"
-  const [pedidoEnviado, setPedidoEnviado] = useState(false);
   const [salvando, setSalvando] = useState(false);
-  const [mostrarPixModal, setMostrarPixModal] = useState(false);
+
+  // O redirecionamento para o Mercado Pago recarrega a página e perde o estado em
+  // memória (carrinho, dados do cliente). Por isso salvamos um snapshot antes de
+  // sair e restauramos aqui ao voltar, conforme o status do pagamento.
+  useEffect(() => {
+    const raw = sessionStorage.getItem(CHECKOUT_SNAPSHOT_KEY);
+    if (!raw) return;
+    let snap;
+    try { snap = JSON.parse(raw); } catch { return; }
+
+    if (mpStatus === 'aprovado') {
+      const paymentId = urlParams.get('payment_id') || urlParams.get('collection_id');
+      const prot = paymentId ? `MTZ-MP-${paymentId}` : `MTZ-MP-${Date.now().toString().slice(-6)}`;
+      setProtocolo(prot);
+      setPedidoSalvo({ ...snap, protocolo: prot });
+      setCart([]);
+      sessionStorage.removeItem(CHECKOUT_SNAPSHOT_KEY);
+    } else if (mpStatus === 'pendente' || mpStatus === 'falhou') {
+      setCart(snap.cartRestore || []);
+      setCliente(snap.c || cliente);
+      setFrete(snap.frete || frete);
+      if (mpStatus === 'falhou') sessionStorage.removeItem(CHECKOUT_SNAPSHOT_KEY);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const total = cart.reduce((a,i) => a + (parseFloat(i.produto?.preco)||0)*i.quantidade, 0);
   const freteValor = frete.tipo === "retirada" ? 0 : (parseFloat(frete.valor) || 0);
@@ -235,7 +235,7 @@ export default function Pedidos() {
         </div>
         <div class="info-block">
           <h3>Pagamento</h3>
-          <p>${c.formaPagamento}</p>
+          <p>Mercado Pago</p>
         </div>
         <div class="info-block">
           <h3>Data</h3>
@@ -274,7 +274,7 @@ export default function Pedidos() {
     const freteInfo = dados.frete_tipo && dados.frete_tipo !== "retirada"
       ? `%0A🚚 *Frete:* ${dados.frete_tipo === "motoboy" ? "Motoboy" : "Correios"}`
       : "%0A🏪 *Retirada no local*";
-    return `https://wa.me/5527997878391?text=Olá! Fiz um pedido no site:%0A%0A👤 *Nome:* ${c.nome}%0A📱 *Tel:* ${c.telefone}%0A📧 *Email:* ${c.email}%0A%0A🛍️ *Itens:*%0A${itensStr}%0A%0A💰 *Total: R$ ${totalSalvo.toFixed(2)}*${freteInfo}%0A%0A📍 *Endereço:*%0A${c.rua}, ${c.numero}${c.complemento?" - "+c.complemento:""}%0A${c.bairro} - ${c.cidade}/${c.estado} | CEP: ${c.cep}%0A%0A💳 *Pagamento:* ${c.formaPagamento}${obs}`;
+    return `https://wa.me/5527997878391?text=Olá! Fiz um pedido no site:%0A%0A👤 *Nome:* ${c.nome}%0A📱 *Tel:* ${c.telefone}%0A📧 *Email:* ${c.email}%0A%0A🛍️ *Itens:*%0A${itensStr}%0A%0A💰 *Total: R$ ${totalSalvo.toFixed(2)}*${freteInfo}%0A%0A📍 *Endereço:*%0A${c.rua}, ${c.numero}${c.complemento?" - "+c.complemento:""}%0A${c.bairro} - ${c.cidade}/${c.estado} | CEP: ${c.cep}%0A%0A💳 *Pagamento:* Mercado Pago${obs}`;
   }
 
   function verificarEstoque() {
@@ -300,6 +300,7 @@ export default function Pedidos() {
     }
     if (!validar()) { window.scrollTo({top:0,behavior:"smooth"}); return; }
 
+    setSalvando(true);
     try {
       const payload = {
         itens: cart.map(i => ({
@@ -330,10 +331,21 @@ export default function Pedidos() {
       console.log("Resposta MP:", res.data);
 
       // Em produção usa init_point, em dev usa sandbox para testes
-      const url = import.meta.env.PROD 
-        ? res.data.init_point 
+      const url = import.meta.env.PROD
+        ? res.data.init_point
         : res.data.sandbox_init_point;
       if (!url) throw new Error("URL de pagamento não retornada pelo servidor.");
+
+      // Salva um snapshot do pedido — o redirecionamento para o MP recarrega a
+      // página e perde carrinho/dados em memória; recuperamos ao voltar.
+      const snapshot = {
+        cartRestore: cart,
+        c: { ...cliente },
+        frete: { ...frete },
+        itens: cart.map(i => ({ nome: i.produto.nome, tamanho: i.tamanho, qtd: i.quantidade, preco: parseFloat(i.produto.preco) })),
+        totalSalvo: totalComFrete,
+      };
+      sessionStorage.setItem(CHECKOUT_SNAPSHOT_KEY, JSON.stringify(snapshot));
 
       // Redireciona para o checkout do Mercado Pago
       window.location.href = url;
@@ -341,76 +353,8 @@ export default function Pedidos() {
       console.error("Erro MP completo:", e.response?.data || e.message);
       const msg = e.response?.data?.erro || e.message || "Erro desconhecido";
       setErroPedido(`Não foi possível iniciar o pagamento: ${msg}`);
-      window.scrollTo({top:0,behavior:"smooth"});
-    }
-  }
-
-  async function finalizarPedido() {
-    if (salvando) return; // Previne duplo clique
-    setTentouEnviar(true);
-    setCalcFrete(true);
-    setMensagemEstoque("");
-    setErroPedido("");
-
-    if (!frete.tipo) {
-      setErroPedido("Selecione uma opção de entrega antes de continuar.");
-      window.scrollTo({top:0,behavior:"smooth"});
-      return;
-    }
-    if (!formaPagamento) {
-      setErroPedido("Selecione uma forma de pagamento antes de continuar.");
-      window.scrollTo({top:0,behavior:"smooth"});
-      return;
-    }
-    if (estoqueInsuficiente) {
-      const nomes = itensComProblema.map(i=>i.produto.nome).join(", ");
-      setMensagemEstoque(`⚠️ Estoque insuficiente: ${nomes}. Ajuste as quantidades.`);
-      window.scrollTo({top:0,behavior:"smooth"});
-      return;
-    }
-    if (!validar()) { window.scrollTo({top:0,behavior:"smooth"}); return; }
-
-    // Salvar snapshot antes de limpar carrinho
-    const formaPagLabel = formaPagamento === "pix" ? "PIX" :
-      formaPagamento === "cartao" ? "Cartão na maquininha" : "Dinheiro";
-    const snapshot = {
-      itens: cart.map(i => ({nome:i.produto.nome, tamanho:i.tamanho, qtd:i.quantidade, preco:parseFloat(i.produto.preco)})),
-      totalSalvo: totalComFrete,
-      c: {...cliente, formaPagamento: formaPagLabel},
-    };
-
-    setSalvando(true);
-    try {
-      await api.post("pedidos/", {
-        nome_cliente: cliente.nome, telefone: cliente.telefone, email: cliente.email,
-        cep: cliente.cep, rua: cliente.rua, numero: cliente.numero,
-        complemento: cliente.complemento, bairro: cliente.bairro,
-        cidade: cliente.cidade, estado: cliente.estado,
-        forma_pagamento: formaPagamento === "pix" ? "PIX (CNPJ: 61.187.869/0001-81)" :
-          formaPagamento === "cartao" ? "Cartão na maquininha" :
-          "Dinheiro",
-        observacao: cliente.observacao,
-        frete_tipo: frete.tipo || "retirada", frete_valor: frete.valor || 0,
-        itens_input: cart.map(i => ({produto:i.produto.id, tamanho:i.tamanho, quantidade:i.quantidade})),
-      });
-      // Gerar número de protocolo único
-      const agora = new Date();
-      const dataStr = agora.getFullYear().toString() +
-        String(agora.getMonth()+1).padStart(2,'0') +
-        String(agora.getDate()).padStart(2,'0');
-      const idStr = String(Date.now()).slice(-4);
-      const prot = `MTZ-${dataStr}-${idStr}`;
-      setProtocolo(prot);
-      setPedidoSalvo({...snapshot, protocolo: prot});
-      setCart([]);
-      setPedidoConcluido(true);
-      window.scrollTo({top:0,behavior:"smooth"});
-    } catch(e) {
-      console.error("Erro pedido:", e.response?.data, e.response?.status);
-      setErroPedido("Não foi possível registrar o pedido. Tente novamente.");
-      window.scrollTo({top:0,behavior:"smooth"});
-    } finally {
       setSalvando(false);
+      window.scrollTo({top:0,behavior:"smooth"});
     }
   }
 
@@ -428,8 +372,8 @@ export default function Pedidos() {
   const cardStyle = {backgroundColor:t.bgCard, border:"1px solid "+t.border, borderRadius:"12px", padding:"24px"};
   const qtdErros = Object.keys(erros).filter(k=>erros[k]).length;
 
-  // ── TELA DE SUCESSO ──
-  if (pedidoConcluido && pedidoSalvo) return (
+  // ── TELA DE SUCESSO ── (renderizada quando o Mercado Pago confirma o pagamento)
+  if (mpStatus === 'aprovado' && pedidoSalvo) return (
     <div style={{backgroundColor:t.bg}}>
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
         <div style={{fontSize:"64px",marginBottom:"20px"}}>🎉</div>
@@ -482,13 +426,13 @@ export default function Pedidos() {
             <PrinterIcon size={17} strokeWidth={1.6} />
             Salvar / Imprimir PDF
           </button>
-          <a href={montarMsgWA({...pedidoSalvo, frete_tipo: frete.tipo})} target="_blank" rel="noreferrer"
+          <a href={montarMsgWA({...pedidoSalvo, frete_tipo: pedidoSalvo.frete?.tipo})} target="_blank" rel="noreferrer"
             className="px-6 py-3 font-semibold text-white rounded-lg inline-flex items-center gap-2"
             style={{backgroundColor:"#22c55e", fontFamily:"system-ui", cursor:"pointer"}}>
             <WhatsAppIcon size={17} strokeWidth={1.6} />
             Enviar pelo WhatsApp
           </a>
-          <button onClick={() => { setPedidoConcluido(false); setPedidoSalvo(null); }}
+          <button onClick={() => { window.location.href = "/pedidos"; }}
             className="px-6 py-3 font-semibold rounded-lg"
             style={{backgroundColor:t.bgSecundario, color:t.text, fontFamily:"system-ui", cursor:"pointer", border:"1px solid "+t.border}}>
             Novo pedido
@@ -708,7 +652,7 @@ export default function Pedidos() {
                     </button>
 
                     {/* ── Motoboy ── sempre aparece, preço muda conforme cidade */}
-                    <button onClick={() => setFrete({tipo:"motoboy", valor: motoInfo ? motoInfo.min : 0})}
+                    <button onClick={() => { if (motoInfo) setFrete({tipo:"motoboy", valor: motoInfo.min}); }}
                       style={{ padding:"14px 16px", borderRadius:"10px", textAlign:"left", cursor:"pointer",
                         border:"2px solid "+(frete.tipo==="motoboy" ? "#1d4ed8" : t.border),
                         backgroundColor: frete.tipo==="motoboy" ? "#eff6ff" : t.bgCard,
@@ -731,7 +675,7 @@ export default function Pedidos() {
                     </button>
 
                     {/* ── Correios ── sempre aparece */}
-                    <button onClick={() => setFrete({tipo:"correios", valor:0})}
+                    <button onClick={() => setFrete({tipo:"correios", valor: parseValorMinimo(corInfo.pac)})}
                       style={{ padding:"14px 16px", borderRadius:"10px", textAlign:"left", cursor:"pointer",
                         border:"2px solid "+(frete.tipo==="correios" ? "#7c3aed" : t.border),
                         backgroundColor: frete.tipo==="correios" ? "#f5f3ff" : t.bgCard }}>
@@ -767,11 +711,11 @@ export default function Pedidos() {
                 style={{...inputStyle("observacao"), resize:"none"}} />
             </div>
 
-            {/* ── FORMA DE PAGAMENTO ── */}
+            {/* ── PAGAMENTO ── */}
             <div style={{backgroundColor:t.bgCard, border:"1px solid "+t.border, borderRadius:"12px", padding:"24px"}}>
-              <h2 className="text-lg font-semibold mb-1" style={{color:t.text}}>💳 Forma de Pagamento *</h2>
+              <h2 className="text-lg font-semibold mb-1" style={{color:t.text}}>💳 Pagamento</h2>
               <p className="text-sm mb-4" style={{color:t.textSecundario}}>
-                O pagamento é realizado na entrega ou na retirada do produto.
+                O pagamento é feito com segurança pelo Mercado Pago — Pix, cartão ou boleto.
               </p>
 
               {/* Resumo do valor */}
@@ -785,9 +729,7 @@ export default function Pedidos() {
                     <span style={{fontSize:"13px", color:t.textSecundario}}>
                       Frete ({frete.tipo === "motoboy" ? "Motoboy" : "Correios"}):
                     </span>
-                    <span style={{fontSize:"13px", color:t.text}}>
-                      {freteValor > 0 ? "R$ " + freteValor.toFixed(2) : "A confirmar"}
-                    </span>
+                    <span style={{fontSize:"13px", color:t.text}}>R$ {freteValor.toFixed(2)}</span>
                   </div>
                 )}
                 {frete.tipo === "retirada" && (
@@ -798,167 +740,24 @@ export default function Pedidos() {
                 )}
                 <div className="flex justify-between pt-2 mt-1" style={{borderTop:"2px solid "+t.border}}>
                   <span style={{fontSize:"15px", fontWeight:"700", color:t.text}}>Total:</span>
-                  <span style={{fontSize:"15px", fontWeight:"700", color:t.text}}>
-                    {freteValor > 0 ? "R$ " + totalComFrete.toFixed(2) : "R$ " + total.toFixed(2) + (frete.tipo && frete.tipo !== "retirada" ? " + frete" : "")}
-                  </span>
+                  <span style={{fontSize:"15px", fontWeight:"700", color:t.text}}>R$ {totalComFrete.toFixed(2)}</span>
                 </div>
               </div>
 
-              {/* Opções */}
-              <div className="flex flex-col gap-3">
-                {/* PIX */}
-                <button onClick={() => setFormaPagamento("pix")}
-                  style={{padding:"14px 16px", borderRadius:"10px", textAlign:"left", cursor:"pointer",
-                    border:"2px solid "+(formaPagamento==="pix" ? "#16a34a" : t.border),
-                    backgroundColor: formaPagamento==="pix" ? "#f0fdf4" : t.bgCard}}>
-                  <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
-                    <div>
-                      <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0, display:"flex", alignItems:"center", gap:"7px"}}><PixIcon size={16} strokeWidth={1.6} />PIX</p>
-                      <p style={{fontSize:"12px", color:t.textSecundario, marginTop:"3px"}}>
-                        Chave CNPJ — sem taxas adicionais
-                      </p>
-                    </div>
-                    <span style={{fontWeight:"700", fontSize:"12px", color:"#16a34a", whiteSpace:"nowrap", marginLeft:"12px"}}>
-                      Sem juros
-                    </span>
-                  </div>
-                  {formaPagamento==="pix" && <p style={{fontSize:"11px", color:t.textSecundario, marginTop:"6px", fontWeight:"600"}}>Selecionado</p>}
-                </button>
-
-                {/* Cartão */}
-                <button onClick={() => setFormaPagamento("cartao")}
-                  style={{padding:"14px 16px", borderRadius:"10px", textAlign:"left", cursor:"pointer",
-                    border:"2px solid "+(formaPagamento==="cartao" ? "#2563eb" : t.border),
-                    backgroundColor: formaPagamento==="cartao" ? "#eff6ff" : t.bgCard}}>
-                  <div>
-                    <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0, display:"flex", alignItems:"center", gap:"7px"}}><CardIcon size={16} strokeWidth={1.6} />Cartão (maquininha)</p>
-                    <p style={{fontSize:"12px", color:t.textSecundario, marginTop:"3px"}}>
-                      Débito: sem juros · Crédito: consulte as parcelas com a loja
-                    </p>
-                    <p style={{fontSize:"11px", color:"#d97706", marginTop:"2px"}}>
-                      Juros de 1,99% a 3,99% ao mês no crédito parcelado
-                    </p>
-                  </div>
-                  {formaPagamento==="cartao" && <p style={{fontSize:"11px", color:t.textSecundario, marginTop:"6px", fontWeight:"600"}}>Selecionado</p>}
-                </button>
-
-                {/* Dinheiro */}
-                <button onClick={() => setFormaPagamento("dinheiro")}
-                  style={{padding:"14px 16px", borderRadius:"10px", textAlign:"left", cursor:"pointer",
-                    border:"2px solid "+(formaPagamento==="dinheiro" ? "#d97706" : t.border),
-                    backgroundColor: formaPagamento==="dinheiro" ? "#fef9f0" : t.bgCard}}>
-                  <div>
-                    <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0, display:"flex", alignItems:"center", gap:"7px"}}><CashIcon size={16} strokeWidth={1.6} />Dinheiro</p>
-                    <p style={{fontSize:"12px", color:t.textSecundario, marginTop:"3px"}}>
-                      Pagamento em espécie — na entrega ou retirada
-                    </p>
-                  </div>
-                  {formaPagamento==="dinheiro" && <p style={{fontSize:"11px", color:t.textSecundario, marginTop:"6px", fontWeight:"600"}}>Selecionado</p>}
-                </button>
-              </div>
-
-              {!formaPagamento && tentouEnviar && (
-                <p style={{fontSize:"12px", color:"#dc2626", marginTop:"12px"}}>Selecione uma forma de pagamento.</p>
+              {!frete.tipo && tentouEnviar && (
+                <p style={{fontSize:"12px", color:"#dc2626"}}>Selecione uma opção de entrega antes de pagar.</p>
               )}
             </div>
 
-            {/* BOTÃO CONFIRMAR */}
-            {formaPagamento !== "pix" ? (
-              <button onClick={finalizarPedido} disabled={salvando}
-                className="cursor-pointer w-full py-5 font-bold text-lg hover:opacity-90 transition"
-                style={{backgroundColor: formaPagamento && !salvando ? t.btnPrimarioBg : "#9ca3af",
-                  color:t.btnPrimarioText, cursor: formaPagamento && !salvando ? "pointer" : "not-allowed",
-                  fontFamily:"system-ui", borderRadius:"12px", fontSize:"16px"}}>
-                {salvando ? "Registrando pedido..." :
-                 formaPagamento==="cartao" ? "Confirmar Pedido (Cartão)" :
-                 formaPagamento==="dinheiro" ? "Confirmar Pedido (Dinheiro)" :
-                 "Selecione a forma de pagamento"}
-              </button>
-            ) : (
-              <button onClick={() => {
-                  setTentouEnviar(true);
-                  setCalcFrete(true);
-                  if (!frete.tipo) { setErroPedido("Selecione uma opção de entrega."); window.scrollTo({top:0,behavior:"smooth"}); return; }
-                  if (!validar()) { window.scrollTo({top:0,behavior:"smooth"}); return; }
-                  setMostrarPixModal(true);
-                }}
-                className="cursor-pointer w-full py-5 font-bold text-lg hover:opacity-90 transition"
-                style={{backgroundColor:t.btnPrimarioBg, color:t.btnPrimarioText, cursor:"pointer",
-                  fontFamily:"system-ui", borderRadius:"12px", fontSize:"16px"}}>
-                Continuar com PIX
-              </button>
-            )}
-
-            {/* MODAL PIX — abre após clicar em "Continuar com PIX" */}
-            {mostrarPixModal && (
-              <div className="fixed inset-0 z-[9999] flex items-center justify-center"
-                style={{backgroundColor:"rgba(0,0,0,0.7)"}}>
-                <div className="rounded-2xl p-6 mx-4 text-center"
-                  style={{backgroundColor:"#ffffff", maxWidth:"420px", width:"100%"}}>
-                  <h3 style={{fontSize:"18px", fontWeight:"700", color:"#1a1a1a", marginBottom:"4px"}}>
-                    Pague via PIX
-                  </h3>
-                  <p style={{fontSize:"13px", color:"#6b7280", marginBottom:"16px"}}>
-                    Escaneie o QR Code ou copie a chave abaixo
-                  </p>
-
-                  {/* Total */}
-                  <div style={{backgroundColor:"#f0fdf4", border:"1px solid #86efac", borderRadius:"10px",
-                    padding:"10px 16px", marginBottom:"16px"}}>
-                    <p style={{fontSize:"13px", color:"#374151", margin:0}}>Valor a pagar:</p>
-                    <p style={{fontSize:"22px", fontWeight:"800", color:"#16a34a", margin:0}}>
-                      R$ {freteValor > 0 ? totalComFrete.toFixed(2) : total.toFixed(2)}
-                    </p>
-                    {freteValor === 0 && frete.tipo && frete.tipo !== "retirada" && (
-                      <p style={{fontSize:"11px", color:"#6b7280", margin:0}}>+ frete a confirmar</p>
-                    )}
-                  </div>
-
-                  {/* QR Code */}
-                  <div style={{display:"inline-block", padding:"10px", backgroundColor:"#ffffff",
-                    border:"2px solid #e5e7eb", borderRadius:"12px", marginBottom:"14px"}}>
-                    <img
-                      src={"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(gerarPayloadPix("61187869000181", "Metzker Solucoes", "Vila Velha", freteValor > 0 ? totalComFrete : total))}
-                      alt="QR Code PIX"
-                      style={{width:"200px", height:"200px", display:"block"}}
-                    />
-                  </div>
-
-                  {/* Chave */}
-                  <p style={{fontSize:"12px", color:"#6b7280", marginBottom:"6px"}}>Chave PIX (CNPJ):</p>
-                  <div className="flex items-center justify-center gap-2 mb-4 flex-wrap">
-                    <code style={{fontSize:"15px", fontWeight:"700", color:"#1a1a1a", letterSpacing:"1px",
-                      backgroundColor:"#f9fafb", padding:"8px 14px", borderRadius:"8px", border:"1px solid #e5e7eb"}}>
-                      61.187.869/0001-81
-                    </code>
-                    <button onClick={() => navigator.clipboard.writeText("61187869000181").then(() => alert("Chave copiada!"))}
-                      style={{padding:"8px 12px", backgroundColor:"#1a1a1a", color:"#ffffff",
-                        border:"none", borderRadius:"8px", cursor:"pointer", fontSize:"12px", fontWeight:"600"}}>
-                      Copiar
-                    </button>
-                  </div>
-
-                  <p style={{fontSize:"12px", color:"#6b7280", marginBottom:"16px"}}>
-                    Após realizar o pagamento, clique em confirmar. Nossa equipe irá verificar o comprovante pelo WhatsApp.
-                  </p>
-
-                  <div className="flex gap-3">
-                    <button onClick={() => setMostrarPixModal(false)}
-                      style={{flex:1, padding:"12px", borderRadius:"10px", border:"1px solid #e5e7eb",
-                        backgroundColor:"#f9fafb", color:"#374151", cursor:"pointer", fontWeight:"600", fontSize:"14px"}}>
-                      Voltar
-                    </button>
-                    <button onClick={() => { setMostrarPixModal(false); finalizarPedido(); }}
-                      disabled={salvando}
-                      style={{flex:1, padding:"12px", borderRadius:"10px", border:"none",
-                        backgroundColor: salvando ? "#9ca3af" : "#16a34a", color:"#ffffff",
-                        cursor: salvando ? "not-allowed" : "pointer", fontWeight:"700", fontSize:"14px"}}>
-                      {salvando ? "Registrando..." : "Ja paguei"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* BOTÃO CONFIRMAR — cria a preferência e redireciona para o Mercado Pago */}
+            <button onClick={pagarComMP} disabled={salvando}
+              className="cursor-pointer w-full py-5 font-bold text-lg hover:opacity-90 transition inline-flex items-center justify-center gap-2"
+              style={{backgroundColor: !salvando ? t.btnPrimarioBg : "#9ca3af",
+                color:t.btnPrimarioText, cursor: !salvando ? "pointer" : "not-allowed",
+                fontFamily:"system-ui", borderRadius:"12px", fontSize:"16px"}}>
+              <CardIcon size={18} strokeWidth={1.6} />
+              {salvando ? "Redirecionando para o Mercado Pago..." : "Pagar com Mercado Pago"}
+            </button>
           </div>
         )}
       </div>

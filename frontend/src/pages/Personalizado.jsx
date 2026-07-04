@@ -33,12 +33,30 @@ function estimarCorreiosP(estado) {
     "PR":{ pac:"R$ 28–42", sedex:"R$ 52–78", prazo:"4–7 dias úteis" },
     "SC":{ pac:"R$ 30–44", sedex:"R$ 55–80", prazo:"4–7 dias úteis" },
     "RS":{ pac:"R$ 32–48", sedex:"R$ 58–85", prazo:"5–8 dias úteis" },
+    "MT":{ pac:"R$ 32–48", sedex:"R$ 58–88", prazo:"5–9 dias úteis" },
+    "MS":{ pac:"R$ 30–44", sedex:"R$ 54–80", prazo:"4–8 dias úteis" },
     "PA":{ pac:"R$ 36–54", sedex:"R$ 65–95", prazo:"6–10 dias úteis" },
     "AM":{ pac:"R$ 40–60", sedex:"R$ 72–105", prazo:"7–12 dias úteis" },
     "CE":{ pac:"R$ 30–45", sedex:"R$ 55–82", prazo:"4–8 dias úteis" },
     "PE":{ pac:"R$ 30–45", sedex:"R$ 55–82", prazo:"4–8 dias úteis" },
+    "MA":{ pac:"R$ 33–50", sedex:"R$ 60–88", prazo:"5–9 dias úteis" },
+    "PI":{ pac:"R$ 33–50", sedex:"R$ 60–88", prazo:"5–9 dias úteis" },
+    "AL":{ pac:"R$ 30–45", sedex:"R$ 55–82", prazo:"4–8 dias úteis" },
+    "SE":{ pac:"R$ 28–42", sedex:"R$ 52–78", prazo:"3–7 dias úteis" },
+    "PB":{ pac:"R$ 31–47", sedex:"R$ 57–84", prazo:"5–9 dias úteis" },
+    "RN":{ pac:"R$ 31–47", sedex:"R$ 57–84", prazo:"5–9 dias úteis" },
+    "TO":{ pac:"R$ 34–52", sedex:"R$ 62–92", prazo:"5–9 dias úteis" },
+    "RO":{ pac:"R$ 38–57", sedex:"R$ 68–100", prazo:"6–10 dias úteis" },
+    "AC":{ pac:"R$ 42–63", sedex:"R$ 75–110", prazo:"7–12 dias úteis" },
+    "RR":{ pac:"R$ 42–63", sedex:"R$ 75–110", prazo:"7–12 dias úteis" },
+    "AP":{ pac:"R$ 40–60", sedex:"R$ 72–105", prazo:"7–12 dias úteis" },
   };
   return tabela[e] || { pac:"R$ 35–55", sedex:"R$ 62–92", prazo:"6–10 dias úteis" };
+}
+// Extrai o valor mínimo de uma faixa estimada tipo "R$ 18–28" → 18
+function parseValorMinimoP(faixaStr) {
+  const m = (faixaStr || "").match(/\d+/);
+  return m ? parseFloat(m[0]) : 0;
 }
 import api from "../services/api";
 
@@ -870,7 +888,7 @@ export default function Personalizado(){
                         </button>
 
                         {/* Correios — sempre visível */}
-                        <button onClick={()=>setForm(p=>({...p,frete_tipo:"correios",frete_valor:0}))}
+                        <button onClick={()=>setForm(p=>({...p,frete_tipo:"correios",frete_valor:parseValorMinimoP(corP.pac)}))}
                           style={{padding:"12px 14px",borderRadius:"10px",textAlign:"left",cursor:"pointer",
                             border:"2px solid "+(form.frete_tipo==="correios"?t.text:t.border),
                             backgroundColor:form.frete_tipo==="correios"?t.bgSecundario:t.bgCard}}>

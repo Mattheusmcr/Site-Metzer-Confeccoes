@@ -307,7 +307,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Botão flutuante WhatsApp — agora circular, só ícone */}
+      {/* Botão flutuante WhatsApp*/}
       <a href="https://wa.me/5527997878391" target="_blank" rel="noreferrer"
         aria-label="Fale pelo WhatsApp"
         className="fixed bottom-6 right-6 flex items-center justify-center text-white shadow-xl z-40 hover:opacity-90 hover:scale-105 transition"

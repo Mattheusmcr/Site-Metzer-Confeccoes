@@ -179,9 +179,10 @@ BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')
 DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'andremetzkrr@gmail.com')
 
 # ── MERCADO PAGO ───────────────────────────────────────────────────────────────
-MP_ACCESS_TOKEN = os.environ.get('MP_ACCESS_TOKEN', '')
-MP_PUBLIC_KEY   = os.environ.get('MP_PUBLIC_KEY', '')
-FRONTEND_URL    = os.environ.get('FRONTEND_URL', 'https://www.metzkersolucoes.com.br')
-BACKEND_URL     = os.environ.get('BACKEND_URL', 'https://api.metzkersolucoes.com.br')
+MP_ACCESS_TOKEN  = os.environ.get('MP_ACCESS_TOKEN', '')
+MP_PUBLIC_KEY    = os.environ.get('MP_PUBLIC_KEY', '')
+MP_WEBHOOK_SECRET = os.environ.get('MP_WEBHOOK_SECRET', '')
+FRONTEND_URL     = os.environ.get('FRONTEND_URL', 'https://www.metzkersolucoes.com.br')
+BACKEND_URL      = os.environ.get('BACKEND_URL', 'https://api.metzkersolucoes.com.br')
 
 OWNER_EMAIL = os.environ.get('OWNER_EMAIL', 'andremetzkrr@gmail.com')
