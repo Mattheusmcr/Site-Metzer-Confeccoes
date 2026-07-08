@@ -5,10 +5,10 @@ import { CartContext } from "../context/CartContext";
 import { Link } from "react-router-dom";
 
 const t = {
-  bg: "#FAF8F5", bgSecundario: "#F2EDE6", bgCard: "#FFFFFF",
-  text: "#1a1a1a", textSecundario: "#7a7065",
-  border: "#D5C9BC", borderForte: "#C4B5A5",
-  btnPrimarioBg: "#1a1a1a", btnPrimarioText: "#FAF8F5",
+  bg: "#FFFFFF", bgSecundario: "#F2F2F2", bgCard: "#FFFFFF",
+  text: "#1a1a1a", textSecundario: "#6b6b6b",
+  border: "#E0E0E0", borderForte: "#B0B0B0",
+  btnPrimarioBg: "#1a1a1a", btnPrimarioText: "#FFFFFF",
 };
 
 const CATEGORIAS = [
@@ -32,7 +32,7 @@ const CATEGORIAS = [
 function Sidebar({ filtro, setFiltro, mobile = false }) {
   const [abertos, setAbertos] = useState({ roupas: true, comunicacao: true });
   return (
-    <aside className={mobile ? "w-full" : "w-44 shrink-0"} style={mobile ? {} : { borderRight: "2px solid " + t.borderForte, paddingRight: "24px" }}>
+    <aside className={mobile ? "w-full" : "w-44 shrink-0"} style={mobile ? {} : { borderRight: "1px solid " + t.border, paddingRight: "24px" }}>
       <p className="text-xs font-bold tracking-widest mb-4 uppercase" style={{ color: t.textSecundario }}>Categorias</p>
       <button onClick={() => setFiltro({ categoria: null, subcategoria: null })}
         className="block w-full text-left text-xs py-2 mb-2 uppercase tracking-wider transition hover:opacity-50"
@@ -72,7 +72,7 @@ function Sidebar({ filtro, setFiltro, mobile = false }) {
               ))}
             </div>
           )}
-          <div style={{ borderBottom: "2px solid " + t.borderForte, margin: "4px 0 8px 0" }} />
+          <div style={{ borderBottom: "1px solid " + t.border, margin: "4px 0 8px 0" }} />
         </div>
       ))}
       {(filtro.categoria || filtro.subcategoria) && (
@@ -153,7 +153,7 @@ function Catalogo() {
         </div>
       )}
 
-      <div style={{ borderBottom: "2px solid " + t.borderForte, backgroundColor: t.bg, padding: "12px 20px" }}>
+      <div style={{ borderBottom: "1px solid " + t.border, backgroundColor: t.bg, padding: "16px 20px" }}>
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <p className="text-xs uppercase tracking-widest" style={{ color: t.textSecundario }}>
             {tituloAtivo} — {produtosFiltrados.length} produto{produtosFiltrados.length !== 1 ? "s" : ""}
@@ -167,7 +167,7 @@ function Catalogo() {
             <input value={busca} onChange={e => setBusca(e.target.value)}
               placeholder="Buscar produto..."
               style={{ width: "100%", paddingLeft: "32px", paddingRight: busca ? "30px" : "10px",
-                paddingTop: "7px", paddingBottom: "7px",
+                paddingTop: "7px", paddingBottom: "7px", borderRadius: "8px",
                 border: "1px solid " + t.border, backgroundColor: t.bgCard, color: t.text,
                 fontSize: "12px", fontFamily: "system-ui", outline: "none", boxSizing: "border-box" }} />
             {busca && (
@@ -181,8 +181,8 @@ function Catalogo() {
 
           {/* Botão filtros — só mobile */}
           <button
-            className="cursor-pointer md:hidden flex items-center gap-2 text-xs uppercase tracking-wider px-3 py-1.5"
-            style={{ border: "1px solid " + t.borderForte, color: t.text, backgroundColor: t.bg }}
+            className="cursor-pointer md:hidden flex items-center gap-2 text-xs uppercase tracking-wider px-3 py-1.5 rounded-lg"
+            style={{ border: "1px solid " + t.border, color: t.text, backgroundColor: t.bg }}
             onClick={() => setFiltroMobileAberto(v => !v)}>
             {filtroMobileAberto ? "Fechar" : "Filtros"}
             {(filtro.categoria || filtro.subcategoria) && (
@@ -194,7 +194,7 @@ function Catalogo() {
 
       {/* PAINEL DE FILTROS MOBILE */}
       {filtroMobileAberto && (
-        <div className="md:hidden px-5 py-4" style={{ backgroundColor: t.bgSecundario, borderBottom: "2px solid " + t.borderForte }}>
+        <div className="md:hidden px-5 py-4" style={{ backgroundColor: t.bgSecundario, borderBottom: "1px solid " + t.border }}>
           <Sidebar filtro={filtro} setFiltro={(f) => { setFiltro(f); setFiltroMobileAberto(false); }} mobile={true} />
         </div>
       )}
@@ -212,24 +212,19 @@ function Catalogo() {
               Nenhum produto nesta categoria ainda.
             </p>
           )}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-0">
-            {produtosFiltrados.map((produto, idx) => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {produtosFiltrados.map((produto) => {
               const imagens = produto.imagens?.length > 0
                 ? produto.imagens.map(i => i.imagem)
                 : [produto.imagem];
               const imagemAtual = imagens[indexImagem[produto.id] || 0];
               const tamanhosComEstoque = produto.estoques?.filter(e => e.quantidade > 0).map(e => e.tamanho) || [];
               const isComunicacao = produto.categoria === "comunicacao";
-              const col = idx % 4;
               const qtd = getQtd(produto.id);
               return (
                 <div key={produto.id}
-                  style={{
-                    borderRight: col < 3 ? "2px solid " + t.borderForte : "none",
-                    borderBottom: "2px solid " + t.borderForte,
-                    padding: "0 16px 24px 0",
-                    marginRight: col < 3 ? "16px" : "0"
-                  }}
+                  className="group rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300"
+                  style={{ backgroundColor: t.bgCard, border: "1px solid " + t.border }}
                   onMouseEnter={() => setHoverProduto(produto.id)}
                   onMouseLeave={() => {
                     setHoverProduto(null);
@@ -239,8 +234,8 @@ function Catalogo() {
                   <Link to={`/produto/${produto.id}`}>
                     <div className="relative overflow-hidden" style={{ backgroundColor: t.bgSecundario }}>
                       {imagemAtual
-                        ? <img src={imagemAtual} alt={produto.nome} className="w-full object-cover transition duration-500" style={{ height: "280px" }} />
-                        : <div className="w-full flex items-center justify-center" style={{ height: "360px", color: t.textSecundario }}>
+                        ? <img src={imagemAtual} alt={produto.nome} className="w-full object-cover transition duration-500 group-hover:scale-105" style={{ height: "280px" }} />
+                        : <div className="w-full flex items-center justify-center" style={{ height: "280px", color: t.textSecundario }}>
                             {isComunicacao ? <ImageIcon size={44} strokeWidth={1.3} /> : <ShirtIcon size={44} strokeWidth={1.3} />}
                           </div>
                       }
@@ -258,7 +253,7 @@ function Catalogo() {
                   </Link>
 
                   {/* INFO */}
-                  <div className="mt-3 space-y-2">
+                  <div className="p-4 space-y-2">
                     <Link to={`/produto/${produto.id}`}>
                       <h2 className="text-xs font-semibold uppercase tracking-wide hover:opacity-50 transition"
                         style={{ color: t.text }}>{produto.nome}</h2>
@@ -282,7 +277,7 @@ function Catalogo() {
                               setTamanhosSelecionados(prev => ({ ...prev, [produto.id]: tam }));
                               setAlertas(prev => ({ ...prev, [produto.id]: false }));
                             }}
-                            className="px-2.5 py-1 text-xs transition hover:opacity-70"
+                            className="px-2.5 py-1 text-xs rounded-md transition-all duration-200 hover:shadow-sm"
                             style={{
                               border: "1px solid " + (tamanhosSelecionados[produto.id] === tam ? t.text : t.border),
                               backgroundColor: tamanhosSelecionados[produto.id] === tam ? t.btnPrimarioBg : "transparent",
@@ -296,7 +291,7 @@ function Catalogo() {
                     </div>
 
                     {/* CONTROLE DE QUANTIDADE */}
-                    <div className="flex items-center gap-0" style={{ border: "1px solid " + t.border, width: "fit-content" }}>
+                    <div className="flex items-center gap-0 rounded-lg overflow-hidden" style={{ border: "1px solid " + t.border, width: "fit-content" }}>
                       <button
                         onClick={() => setQtd(produto.id, qtd - 1)}
                         className="px-2.5 py-1 text-sm font-bold transition hover:opacity-70"
@@ -327,7 +322,7 @@ function Catalogo() {
                         }
                         mostrarToast(`"${produto.nome}" (x${qtd}) adicionado!`, true);
                       }}
-                      className="w-full py-2 text-xs font-semibold uppercase tracking-wide transition hover:opacity-70 mt-1"
+                      className="w-full py-2 text-xs font-semibold uppercase tracking-wide transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 mt-1 rounded-lg"
                       style={{ backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText, display:"flex", alignItems:"center", justifyContent:"center", gap:"7px" }}>
                       <CartIcon size={15} strokeWidth={1.8} /> Adicionar ao Carrinho
                     </button>

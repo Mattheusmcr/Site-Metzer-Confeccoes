@@ -5,10 +5,10 @@ import { CartContext } from "../context/CartContext";
 import { CartIcon, UserIcon, CloseIcon, AdminIcon, ShirtIcon } from "./Icons";
 
 const t = {
-  bg: "#FAF8F5", bgSecundario: "#F2EDE6", bgCard: "#FFFFFF",
-  text: "#1a1a1a", textSecundario: "#7a7065",
-  border: "#D5C9BC", borderForte: "#C4B5A5",
-  btnPrimarioBg: "#1a1a1a", btnPrimarioText: "#FAF8F5",
+  bg: "#FFFFFF", bgSecundario: "#F2F2F2", bgCard: "#FFFFFF",
+  text: "#1a1a1a", textSecundario: "#6b6b6b",
+  border: "#E0E0E0", borderForte: "#B0B0B0",
+  btnPrimarioBg: "#1a1a1a", btnPrimarioText: "#FFFFFF",
 };
 
 const links = [

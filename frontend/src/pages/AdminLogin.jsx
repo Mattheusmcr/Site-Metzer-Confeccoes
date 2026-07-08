@@ -4,10 +4,10 @@ import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
 const t = {
-  bg: "#FAF8F5", bgCard: "#FFFFFF",
-  text: "#1a1a1a", textSecundario: "#7a7065",
-  border: "#E8E0D5", inputBorder: "#D5CBC0",
-  btnBg: "#1a1a1a", btnText: "#FAF8F5",
+  bg: "#FFFFFF", bgCard: "#FFFFFF",
+  text: "#1a1a1a", textSecundario: "#6b6b6b",
+  border: "#E0E0E0", inputBorder: "#D0D0D0",
+  btnBg: "#1a1a1a", btnText: "#FFFFFF",
 };
 
 function AdminLogin() {
@@ -81,7 +81,7 @@ function AdminLogin() {
           )}
 
           <button type="submit"
-            className="w-full py-3 rounded-lg font-semibold mt-2 transition hover:opacity-80"
+            className="w-full py-3 rounded-lg font-semibold mt-2 transition-all duration-300 hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5"
             style={{ backgroundColor: t.btnBg, color: t.btnText }}>
             Entrar
           </button>

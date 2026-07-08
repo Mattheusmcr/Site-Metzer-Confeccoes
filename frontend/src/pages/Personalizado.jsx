@@ -61,15 +61,15 @@ function parseValorMinimoP(faixaStr) {
 import api from "../services/api";
 
 const t = {
-  bg: "#FAF8F5", bgSecundario: "#F2EDE6", bgCard: "#FFFFFF",
-  text: "#1a1a1a", textSecundario: "#7a7065",
-  border: "#D5C9BC", borderForte: "#C4B5A5",
-  btnPrimarioBg: "#1a1a1a", btnPrimarioText: "#FAF8F5",
+  bg: "#FFFFFF", bgSecundario: "#F2F2F2", bgCard: "#FFFFFF",
+  text: "#1a1a1a", textSecundario: "#595959",
+  border: "#E0E0E0", borderForte: "#B0B0B0",
+  btnPrimarioBg: "#1a1a1a", btnPrimarioText: "#FFFFFF",
 };
 
 const CATEGORIAS = [
-  { id: "roupas",      label: "Item de Roupa",      Icone: ShirtIcon, cor: "#2563eb" },
-  { id: "comunicacao", label: "Comunicação Visual", Icone: ImageIcon, cor: "#7c3aed" },
+  { id: "roupas",      label: "Item de Roupa",      Icone: ShirtIcon, cor: t.text },
+  { id: "comunicacao", label: "Comunicação Visual", Icone: ImageIcon, cor: t.text },
 ];
 
 const TIPOS_ROUPA = [
@@ -162,9 +162,9 @@ export default function Personalizado(){
   const [modalMaterial, setModalMaterial] = useState(null); // combId
   const [tabelaAberta, setTabelaAberta] = useState(false);
 
-  const inputStyle = { width:"100%", padding:"12px 14px", outline:"none", border:"1px solid "+t.border, backgroundColor:t.bgCard, color:t.text, fontSize:"14px", boxSizing:"border-box", fontFamily:"system-ui" };
-  const labelStyle = { display:"block", fontSize:"11px", fontWeight:"600", color:t.textSecundario, marginBottom:"6px", textTransform:"uppercase", letterSpacing:"0.1em", fontFamily:"system-ui" };
-  const btnP = (a)=>({ padding:"14px", fontWeight:"700", fontSize:"14px", fontFamily:"system-ui", cursor:a?"pointer":"not-allowed", border:"none", backgroundColor:a?t.btnPrimarioBg:t.border, color:a?t.btnPrimarioText:t.textSecundario });
+  const inputStyle = { width:"100%", padding:"12px 14px", outline:"none", border:"1px solid "+t.border, borderRadius:"10px", backgroundColor:t.bgCard, color:t.text, fontSize:"14px", lineHeight:1.5, boxSizing:"border-box", fontFamily:"system-ui", transition:"border-color 0.2s" };
+  const labelStyle = { display:"block", fontSize:"12px", fontWeight:"600", color:t.textSecundario, marginBottom:"6px", textTransform:"uppercase", letterSpacing:"0.08em", fontFamily:"system-ui" };
+  const btnP = (a)=>({ padding:"14px", fontWeight:"700", fontSize:"14px", fontFamily:"system-ui", cursor:a?"pointer":"not-allowed", border:"none", borderRadius:"10px", backgroundColor:a?t.btnPrimarioBg:t.border, color:a?t.btnPrimarioText:t.textSecundario });
 
   // ── combinações helpers ──
   function addCombinacao(tipoId){
@@ -423,9 +423,9 @@ export default function Personalizado(){
         <p style={{color:t.textSecundario,lineHeight:1.8,marginBottom:"20px",fontFamily:"system-ui"}}>Seu pedido foi registrado. Nossa equipe entrará em contato em breve pelo WhatsApp para confirmar detalhes e orçamento.</p>
 
         {/* PROTOCOLO */}
-        <div style={{backgroundColor:t.bgSecundario, border:"2px solid "+t.borderForte, padding:"20px", marginBottom:"24px"}}>
+        <div style={{backgroundColor:t.bgSecundario, border:"1px solid "+t.border, borderRadius:"16px", padding:"24px", marginBottom:"24px"}}>
           <p style={{fontSize:"11px", fontWeight:"700", textTransform:"uppercase", letterSpacing:"0.1em", color:t.textSecundario, fontFamily:"system-ui", marginBottom:"10px", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px"}}>
-            <IconBadge Icone={TagIcon} cor="#c41e3a" size={11} box={20} /> Número do Protocolo
+            <IconBadge Icone={TagIcon} cor={t.text} size={11} box={20} /> Número do Protocolo
           </p>
           <div style={{display:"flex", alignItems:"center", justifyContent:"center", gap:"12px", flexWrap:"wrap"}}>
             <span style={{fontSize:"1.5rem", fontWeight:"700", fontFamily:"monospace", letterSpacing:"0.05em", color:t.text}}>
@@ -433,9 +433,10 @@ export default function Personalizado(){
             </span>
             <button
               onClick={() => { navigator.clipboard.writeText(protocolo).then(() => { setCopiado(true); setTimeout(()=>setCopiado(false),2500); }); }}
+              className="transition-all duration-300 hover:shadow-md"
               style={{padding:"6px 16px", backgroundColor:copiado?"#16a34a":t.btnPrimarioBg, color:t.btnPrimarioText,
                 border:"none", cursor:"pointer", fontFamily:"system-ui", fontSize:"12px", fontWeight:"600",
-                borderRadius:"6px", transition:"background 0.3s", display:"inline-flex", alignItems:"center", gap:"6px"}}>
+                borderRadius:"8px", display:"inline-flex", alignItems:"center", gap:"6px"}}>
               {copiado ? <><CheckIcon size={14} strokeWidth={2.2} />Copiado!</> : <><CopyIcon size={14} strokeWidth={1.8} />Copiar</>}
             </button>
           </div>
@@ -445,11 +446,16 @@ export default function Personalizado(){
         </div>
         <div style={{display:"flex",gap:"12px",justifyContent:"center",flexWrap:"wrap"}}>
           <button onClick={gerarPDFPersonalizado}
-            style={{padding:"12px 24px",backgroundColor:t.btnPrimarioBg,color:t.btnPrimarioText,border:"none",cursor:"pointer",fontFamily:"system-ui",display:"inline-flex",alignItems:"center",gap:"8px"}}>
+            className="transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
+            style={{padding:"12px 24px",borderRadius:"10px",backgroundColor:t.btnPrimarioBg,color:t.btnPrimarioText,border:"none",cursor:"pointer",fontFamily:"system-ui",display:"inline-flex",alignItems:"center",gap:"8px"}}>
             <PrinterIcon size={16} strokeWidth={1.6} /> Salvar / Imprimir PDF
           </button>
-          <button onClick={()=>navigate("/")} style={{padding:"12px 24px",border:"1px solid "+t.border,color:t.text,backgroundColor:t.bg,cursor:"pointer",fontFamily:"system-ui"}}>Voltar ao início</button>
-          <button onClick={()=>{setEnviado(false);setEtapa(1);setForm(FORM_INICIAL);}} style={{padding:"12px 24px",backgroundColor:t.bgSecundario,color:t.text,border:"1px solid "+t.border,cursor:"pointer",fontFamily:"system-ui"}}>Novo pedido</button>
+          <button onClick={()=>navigate("/")}
+            className="transition-all duration-300 hover:shadow-md"
+            style={{padding:"12px 24px",borderRadius:"10px",border:"1px solid "+t.border,color:t.text,backgroundColor:t.bg,cursor:"pointer",fontFamily:"system-ui"}}>Voltar ao início</button>
+          <button onClick={()=>{setEnviado(false);setEtapa(1);setForm(FORM_INICIAL);}}
+            className="transition-all duration-300 hover:shadow-md"
+            style={{padding:"12px 24px",borderRadius:"10px",backgroundColor:t.bgSecundario,color:t.text,border:"1px solid "+t.border,cursor:"pointer",fontFamily:"system-ui"}}>Novo pedido</button>
         </div>
       </div>
     </div>
@@ -494,7 +500,8 @@ export default function Personalizado(){
                   const sel = form.categoria === cat.id;
                   return (
                     <button key={cat.id} onClick={()=>setForm(p=>({...p,categoria:cat.id,combinacoes:[],tipoComunicacao:"",dimensoes:""}))}
-                      style={{padding:"20px 16px",cursor:"pointer",textAlign:"center",fontFamily:"system-ui",border:"2px solid "+(sel?cat.cor:t.border),backgroundColor:sel?cat.cor:t.bgCard,color:sel?"#ffffff":t.text}}>
+                      className="transition-all duration-300 hover:shadow-md"
+                      style={{padding:"20px 16px",borderRadius:"14px",cursor:"pointer",textAlign:"center",fontFamily:"system-ui",border:"2px solid "+(sel?cat.cor:t.border),backgroundColor:sel?cat.cor:t.bgCard,color:sel?"#ffffff":t.text}}>
                       <div style={{display:"flex",justifyContent:"center",marginBottom:"8px",color: sel ? "#ffffff" : cat.cor}}>
                         <cat.Icone size={26} strokeWidth={1.5} />
                       </div>
@@ -518,11 +525,11 @@ export default function Personalizado(){
                   const corObj = CORES_OPCOES.find(c=>c.id===comb.cor);
                   const total = totalComb(comb);
                   return (
-                    <div key={comb.id} style={{marginBottom:"12px",border:"2px solid "+t.borderForte,backgroundColor:t.bgCard}}>
+                    <div key={comb.id} className="transition-shadow duration-300 hover:shadow-md" style={{marginBottom:"14px",borderRadius:"14px",overflow:"hidden",border:"1px solid "+t.border,backgroundColor:t.bgCard}}>
                       {/* Header combinação */}
                       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 16px",backgroundColor:t.bgSecundario,borderBottom:"1px solid "+t.border}}>
                         <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
-                          <IconBadge Icone={ShirtIcon} cor="#2563eb" size={12} box={22} />
+                          <IconBadge Icone={ShirtIcon} cor={t.text} size={12} box={22} />
                           {corObj?.hex && <span style={{width:"14px",height:"14px",borderRadius:"50%",backgroundColor:corObj.hex,border:"1px solid "+t.border,display:"inline-block",flexShrink:0}}/>}
                           <span style={{fontWeight:"600",fontSize:"13px",color:t.text,fontFamily:"system-ui"}}>
                             {tipo?.label}{corObj?" — "+corObj.label:""}
@@ -540,10 +547,10 @@ export default function Personalizado(){
                             <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
                               {corObj?.hex && <span style={{width:"16px",height:"16px",borderRadius:"50%",backgroundColor:corObj.hex,border:"1px solid "+t.border,display:"inline-block"}}/>}
                               <span style={{fontSize:"13px",color:t.text,fontFamily:"system-ui"}}>{corObj?.label}</span>
-                              <button onClick={()=>setModalCores(comb.id)} style={{fontSize:"11px",color:t.textSecundario,background:"none",border:"1px solid "+t.border,cursor:"pointer",padding:"2px 8px",fontFamily:"system-ui"}}>Trocar</button>
+                              <button onClick={()=>setModalCores(comb.id)} style={{fontSize:"11px",color:t.textSecundario,background:"none",border:"1px solid "+t.border,borderRadius:"6px",cursor:"pointer",padding:"3px 10px",fontFamily:"system-ui"}}>Trocar</button>
                             </div>
                           ) : (
-                            <button onClick={()=>setModalCores(comb.id)} style={{display:"inline-flex",alignItems:"center",gap:"6px",padding:"7px 12px",border:"1px dashed "+t.borderForte,backgroundColor:t.bgCard,color:t.text,cursor:"pointer",fontSize:"12px",fontFamily:"system-ui"}}>
+                            <button onClick={()=>setModalCores(comb.id)} style={{display:"inline-flex",alignItems:"center",gap:"6px",padding:"8px 14px",borderRadius:"8px",border:"1px dashed "+t.borderForte,backgroundColor:t.bgCard,color:t.text,cursor:"pointer",fontSize:"12px",fontFamily:"system-ui"}}>
                               <PaletteIcon size={14} strokeWidth={1.6} /> Selecionar cor
                             </button>
                           )}
@@ -556,7 +563,8 @@ export default function Personalizado(){
                             <div style={{display:"flex",gap:"8px"}}>
                               {MATERIAL_CALCAS.map(mat=>(
                                 <button key={mat} onClick={()=>updateComb(comb.id,"material",mat)}
-                                  style={{padding:"7px 18px",cursor:"pointer",fontFamily:"system-ui",fontSize:"13px",border:"2px solid "+(comb.material===mat?t.text:t.border),backgroundColor:comb.material===mat?t.text:t.bgCard,color:comb.material===mat?t.btnPrimarioText:t.text}}>
+                                  className="transition-all duration-200 hover:shadow-sm"
+                                  style={{padding:"7px 18px",borderRadius:"8px",cursor:"pointer",fontFamily:"system-ui",fontSize:"13px",border:"2px solid "+(comb.material===mat?t.text:t.border),backgroundColor:comb.material===mat?t.text:t.bgCard,color:comb.material===mat?t.btnPrimarioText:t.text}}>
                                   {mat}
                                 </button>
                               ))}
@@ -571,10 +579,10 @@ export default function Personalizado(){
                             {comb.material ? (
                               <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
                                 <span style={{fontSize:"13px",color:t.text,fontFamily:"system-ui"}}>{MATERIAIS_OPCOES.find(m=>m.id===comb.material)?.label}</span>
-                                <button onClick={()=>setModalMaterial(comb.id)} style={{fontSize:"11px",color:t.textSecundario,background:"none",border:"1px solid "+t.border,cursor:"pointer",padding:"2px 8px",fontFamily:"system-ui"}}>Trocar</button>
+                                <button onClick={()=>setModalMaterial(comb.id)} style={{fontSize:"11px",color:t.textSecundario,background:"none",border:"1px solid "+t.border,borderRadius:"6px",cursor:"pointer",padding:"3px 10px",fontFamily:"system-ui"}}>Trocar</button>
                               </div>
                             ) : (
-                              <button onClick={()=>setModalMaterial(comb.id)} style={{display:"inline-flex",alignItems:"center",gap:"6px",padding:"7px 12px",border:"1px dashed "+t.borderForte,backgroundColor:t.bgCard,color:t.text,cursor:"pointer",fontSize:"12px",fontFamily:"system-ui"}}>
+                              <button onClick={()=>setModalMaterial(comb.id)} style={{display:"inline-flex",alignItems:"center",gap:"6px",padding:"8px 14px",borderRadius:"8px",border:"1px dashed "+t.borderForte,backgroundColor:t.bgCard,color:t.text,cursor:"pointer",fontSize:"12px",fontFamily:"system-ui"}}>
                                 <ThreadIcon size={14} strokeWidth={1.6} /> Selecionar material
                               </button>
                             )}
@@ -584,7 +592,7 @@ export default function Personalizado(){
                         {/* Tamanhos */}
                         <div>
                           <label style={{...labelStyle,marginBottom:"6px"}}>Tamanhos e quantidades *</label>
-                          <button onClick={()=>setModalTamanhos(comb.id)} style={{display:"inline-flex",alignItems:"center",gap:"8px",padding:"8px 14px",border:"1px solid "+t.borderForte,backgroundColor:t.bgCard,color:t.text,cursor:"pointer",fontSize:"12px",fontFamily:"system-ui"}}>
+                          <button onClick={()=>setModalTamanhos(comb.id)} className="transition-all duration-300 hover:shadow-sm" style={{display:"inline-flex",alignItems:"center",gap:"8px",padding:"8px 14px",borderRadius:"8px",border:"1px solid "+t.borderForte,backgroundColor:t.bgCard,color:t.text,cursor:"pointer",fontSize:"12px",fontFamily:"system-ui"}}>
                             <RulerIcon size={14} strokeWidth={1.6} /> {total>0?`Editar tamanhos (${total} un)`:"Selecionar tamanhos e quantidades"}
                           </button>
                           {total>0 && (
@@ -599,7 +607,7 @@ export default function Personalizado(){
                                     {g.label&&<p style={{fontSize:"10px",fontWeight:"700",color:t.textSecundario,fontFamily:"system-ui",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"4px"}}>{g.label}</p>}
                                     <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
                                     {qtds.map(([tam,qtd])=>(
-                                      <div key={tam} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"4px 10px",backgroundColor:t.bgCard,border:"1px solid "+t.borderForte,minWidth:"44px"}}>
+                                      <div key={tam} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"4px 10px",borderRadius:"8px",backgroundColor:t.bgCard,border:"1px solid "+t.borderForte,minWidth:"44px"}}>
                                         <span style={{fontSize:"12px",fontWeight:"700",color:t.text,fontFamily:"system-ui"}}>{tam}</span>
                                         <span style={{fontSize:"10px",color:t.textSecundario,fontFamily:"system-ui"}}>{qtd} {parseInt(qtd)===1?"pç":"pçs"}</span>
                                       </div>
@@ -622,7 +630,8 @@ export default function Personalizado(){
                   <div style={{display:"flex",flexWrap:"wrap",gap:"8px"}}>
                     {TIPOS_ROUPA.map(tipo=>(
                       <button key={tipo.id} onClick={()=>addCombinacao(tipo.id)}
-                        style={{display:"inline-flex",alignItems:"center",gap:"6px",padding:"9px 14px",border:"1px solid "+t.borderForte,backgroundColor:t.bgCard,color:t.text,cursor:"pointer",fontSize:"13px",fontFamily:"system-ui"}}>
+                        className="transition-all duration-300 hover:shadow-sm"
+                        style={{display:"inline-flex",alignItems:"center",gap:"6px",padding:"9px 14px",borderRadius:"8px",border:"1px solid "+t.borderForte,backgroundColor:t.bgCard,color:t.text,cursor:"pointer",fontSize:"13px",fontFamily:"system-ui"}}>
                         + {tipo.label}
                       </button>
                     ))}
@@ -637,7 +646,7 @@ export default function Personalizado(){
 
                 {/* Contador e checklist */}
                 {form.combinacoes.length>0 && (
-                  <div style={{backgroundColor:totalGeral>0?"#f0fdf4":"#fef9f0",border:"1px solid "+(totalGeral>0?"#86efac":"#fde68a"),padding:"14px"}}>
+                  <div style={{backgroundColor:totalGeral>0?"#f0fdf4":"#fef9f0",border:"1px solid "+(totalGeral>0?"#86efac":"#fde68a"),borderRadius:"12px",padding:"14px"}}>
                     <p style={{fontSize:"13px",fontWeight:"600",fontFamily:"system-ui",marginBottom:"6px",color:totalGeral>0?"#16a34a":"#92400e",display:"flex",alignItems:"center",gap:"6px"}}>
                       {totalGeral>0
                         ? <><CheckIcon size={15} strokeWidth={2.2} />{totalGeral} unidade{totalGeral>1?"s":""} selecionada{totalGeral>1?"s":""}</>
@@ -674,7 +683,8 @@ export default function Personalizado(){
                       const sel = form.tipoComunicacao===tipo.id;
                       return (
                         <button key={tipo.id} onClick={()=>setForm(p=>({...p,tipoComunicacao:tipo.id}))}
-                          style={{display:"flex",alignItems:"center",gap:"12px",padding:"14px 16px",cursor:"pointer",textAlign:"left",fontFamily:"system-ui",fontSize:"14px",border:"2px solid "+(sel?t.text:t.border),backgroundColor:sel?t.bgSecundario:t.bgCard,color:t.text,fontWeight:sel?"600":"400"}}>
+                          className="transition-all duration-300 hover:shadow-md"
+                          style={{display:"flex",alignItems:"center",gap:"12px",padding:"14px 16px",borderRadius:"12px",cursor:"pointer",textAlign:"left",fontFamily:"system-ui",fontSize:"14px",border:"2px solid "+(sel?t.text:t.border),backgroundColor:sel?t.bgSecundario:t.bgCard,color:t.text,fontWeight:sel?"600":"400"}}>
                           {sel ? <CheckIcon size={15} strokeWidth={2.2} style={{color:"#16a34a"}} /> : <span style={{width:"15px",height:"15px",borderRadius:"50%",border:"1.5px solid "+t.border,display:"inline-block"}} />}
                           {tipo.label}
                         </button>
@@ -711,8 +721,8 @@ export default function Personalizado(){
                 </div>
                 <div>
                   <label style={labelStyle}>{form.categoria==="roupas"?"Artes e estampas (opcional — até 5)":"Arquivos de referência (opcional — até 5)"}</label>
-                  <label style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"28px",cursor:"pointer",border:"2px dashed "+t.borderForte,backgroundColor:t.bgCard}}>
-                    <span style={{marginBottom:"10px"}}><IconBadge Icone={PaperclipIcon} cor="#0891b2" size={20} box={44} /></span>
+                  <label className="transition-all duration-300 hover:shadow-sm" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"28px",borderRadius:"14px",cursor:"pointer",border:"2px dashed "+t.borderForte,backgroundColor:t.bgCard}}>
+                    <span style={{marginBottom:"10px"}}><IconBadge Icone={PaperclipIcon} cor={t.text} size={20} box={44} /></span>
                     <span style={{fontSize:"13px",fontWeight:"500",color:t.text,fontFamily:"system-ui"}}>Clique para selecionar arquivos</span>
                     <span style={{fontSize:"11px",color:t.textSecundario,marginTop:"4px",fontFamily:"system-ui"}}>PNG, JPG, PDF — até 5 arquivos</span>
                     <input type="file" multiple accept="image/*,.pdf" style={{display:"none"}} onChange={e=>{const files=Array.from(e.target.files).slice(0,5);setForm(p=>({...p,fotos:files.map(f=>({file:f,url:f.type.startsWith("image/")?URL.createObjectURL(f):null,name:f.name}))}));}}/>
@@ -721,8 +731,8 @@ export default function Personalizado(){
                     <div style={{display:"flex",gap:"8px",flexWrap:"wrap",marginTop:"10px"}}>
                       {form.fotos.map((foto,i)=>(
                         <div key={i} style={{position:"relative"}}>
-                          {foto.url?<img src={foto.url} alt="" style={{width:"72px",height:"72px",objectFit:"cover",border:"1px solid "+t.border}}/>
-                            :<div style={{width:"72px",height:"72px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",backgroundColor:t.bgSecundario,border:"1px solid "+t.border,color:t.textSecundario,gap:"3px"}}>
+                          {foto.url?<img src={foto.url} alt="" style={{width:"72px",height:"72px",borderRadius:"10px",objectFit:"cover",border:"1px solid "+t.border}}/>
+                            :<div style={{width:"72px",height:"72px",borderRadius:"10px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",backgroundColor:t.bgSecundario,border:"1px solid "+t.border,color:t.textSecundario,gap:"3px"}}>
                                 <DocIcon size={20} strokeWidth={1.5} />
                                 <span style={{fontSize:"9px"}}>{foto.name.split(".").pop().toUpperCase()}</span>
                               </div>}
@@ -735,7 +745,9 @@ export default function Personalizado(){
               </>
             )}
 
-            <button onClick={()=>{if(etapa1Valida)setEtapa(2);}} disabled={!etapa1Valida} style={{...btnP(etapa1Valida),width:"100%"}}>Próximo →</button>
+            <button onClick={()=>{if(etapa1Valida)setEtapa(2);}} disabled={!etapa1Valida}
+              className="transition-all duration-300 hover:enabled:shadow-lg hover:enabled:-translate-y-0.5"
+              style={{...btnP(etapa1Valida),width:"100%"}}>Próximo →</button>
           </div>
         )}
 
@@ -745,9 +757,9 @@ export default function Personalizado(){
             <h2 style={{fontSize:"1.4rem",fontWeight:"400",color:t.text,fontFamily:"Georgia, serif"}}>Finalizar Pedido</h2>
 
             {/* RESUMO */}
-            <div style={{border:"1px solid "+t.border,padding:"20px",backgroundColor:t.bgCard}}>
+            <div style={{border:"1px solid "+t.border,borderRadius:"14px",padding:"20px",backgroundColor:t.bgCard}}>
               <p style={{fontSize:"11px",textTransform:"uppercase",letterSpacing:"0.1em",color:t.textSecundario,fontFamily:"system-ui",marginBottom:"14px",display:"flex",alignItems:"center",gap:"8px"}}>
-                <IconBadge Icone={ListIcon} cor="#7a7065" size={12} box={22} /> Resumo do pedido
+                <IconBadge Icone={ListIcon} cor="#6b6b6b" size={12} box={22} /> Resumo do pedido
               </p>
               <div style={{padding:"8px 0",borderBottom:"1px solid "+t.border}}>
                 <p style={{fontSize:"13px",fontWeight:"600",color:t.text,fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"7px"}}>
@@ -803,7 +815,7 @@ export default function Personalizado(){
             {/* CONTATO + ENDEREÇO */}
             <div style={{borderTop:"2px solid "+t.borderForte,paddingTop:"20px"}}>
               <p style={{fontSize:"13px",fontWeight:"600",color:t.text,fontFamily:"system-ui",marginBottom:"16px",display:"flex",alignItems:"center",gap:"8px"}}>
-                <IconBadge Icone={UserIcon} cor="#2563eb" size={12} box={22} /> Seus dados para contato *
+                <IconBadge Icone={UserIcon} cor={t.text} size={12} box={22} /> Seus dados para contato *
               </p>
               <div style={{display:"flex",flexDirection:"column",gap:"14px"}}>
                 <div><label style={labelStyle}>Nome completo *</label><input value={form.nomeCliente} onChange={e=>setForm(p=>({...p,nomeCliente:e.target.value}))} placeholder="Ex: João Silva" style={inputStyle}/></div>
@@ -844,7 +856,7 @@ export default function Personalizado(){
                   const cidadeL = form.cidade ? ` para ${form.cidade}` : "";
                   return (
                     <div>
-                      <label style={{...labelStyle, marginBottom:"10px", display:"flex", alignItems:"center", gap:"8px"}}><IconBadge Icone={TruckIcon} cor="#7a7065" size={11} box={20} /> Como deseja receber? *</label>
+                      <label style={{...labelStyle, marginBottom:"10px", display:"flex", alignItems:"center", gap:"8px"}}><IconBadge Icone={TruckIcon} cor="#6b6b6b" size={11} box={20} /> Como deseja receber? *</label>
                       <p style={{fontSize:"12px",color:t.textSecundario,fontFamily:"system-ui",marginBottom:"10px",lineHeight:1.5}}>
                         Escolha uma opção. Os valores de motoboy e Correios são estimativas — confirmamos o valor exato pelo WhatsApp.
                       </p>
@@ -852,12 +864,13 @@ export default function Personalizado(){
 
                         {/* Retirada */}
                         <button onClick={()=>setForm(p=>({...p,frete_tipo:"retirada",frete_valor:0}))}
+                          className="transition-all duration-300 hover:shadow-md"
                           style={{padding:"12px 14px",borderRadius:"10px",textAlign:"left",cursor:"pointer",
                             border:"2px solid "+(form.frete_tipo==="retirada"?t.text:t.border),
                             backgroundColor:form.frete_tipo==="retirada"?t.bgSecundario:t.bgCard}}>
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                             <div>
-                              <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0,display:"flex",alignItems:"center",gap:"8px"}}><IconBadge Icone={StoreIcon} cor="#16a34a" size={12} box={22} /> Retirada no local</p>
+                              <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0,display:"flex",alignItems:"center",gap:"8px"}}><IconBadge Icone={StoreIcon} cor={t.text} size={12} box={22} /> Retirada no local</p>
                               <p style={{fontSize:"11px",color:t.textSecundario,margin:"3px 0 0"}}>Polo Têxtil Santa Inês — Vila Velha, ES</p>
                             </div>
                             <span style={{fontSize:"13px",fontWeight:"700",color:"#16a34a",whiteSpace:"nowrap",marginLeft:"12px"}}>Grátis</span>
@@ -867,20 +880,21 @@ export default function Personalizado(){
 
                         {/* Motoboy — sempre visível, desativado se fora da região */}
                         <button onClick={()=>{ if(motoP) setForm(p=>({...p,frete_tipo:"motoboy",frete_valor:motoP.min})); }}
+                          className="transition-all duration-300 hover:shadow-md"
                           style={{padding:"12px 14px",borderRadius:"10px",textAlign:"left",cursor: motoP?"pointer":"default",
                             border:"2px solid "+(form.frete_tipo==="motoboy"?t.text:t.border),
                             backgroundColor:form.frete_tipo==="motoboy"?t.bgSecundario:t.bgCard,
                             opacity: motoP ? 1 : 0.45}}>
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                             <div style={{flex:1}}>
-                              <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0,display:"flex",alignItems:"center",gap:"8px"}}><IconBadge Icone={TruckIcon} cor="#1d4ed8" size={12} box={22} /> Entrega por motoboy</p>
+                              <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0,display:"flex",alignItems:"center",gap:"8px"}}><IconBadge Icone={TruckIcon} cor={t.text} size={12} box={22} /> Entrega por motoboy</p>
                               <p style={{fontSize:"11px",color:t.textSecundario,margin:"3px 0 0"}}>
                                 {motoP
                                   ? `Entrega própria${cidadeL} — estimativa de R$ ${motoP.min} a R$ ${motoP.max}`
                                   : "Disponível apenas para a região da Grande Vitória / ES"}
                               </p>
                             </div>
-                            <span style={{fontSize:"12px",fontWeight:"700",color:motoP?"#1d4ed8":t.textSecundario,whiteSpace:"nowrap",marginLeft:"12px"}}>
+                            <span style={{fontSize:"12px",fontWeight:"700",color:t.textSecundario,whiteSpace:"nowrap",marginLeft:"12px"}}>
                               {motoP ? `~R$ ${motoP.min}–${motoP.max}` : "Indisponível"}
                             </span>
                           </div>
@@ -889,11 +903,12 @@ export default function Personalizado(){
 
                         {/* Correios — sempre visível */}
                         <button onClick={()=>setForm(p=>({...p,frete_tipo:"correios",frete_valor:parseValorMinimoP(corP.pac)}))}
+                          className="transition-all duration-300 hover:shadow-md"
                           style={{padding:"12px 14px",borderRadius:"10px",textAlign:"left",cursor:"pointer",
                             border:"2px solid "+(form.frete_tipo==="correios"?t.text:t.border),
                             backgroundColor:form.frete_tipo==="correios"?t.bgSecundario:t.bgCard}}>
                           <div>
-                            <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0,display:"flex",alignItems:"center",gap:"8px"}}><IconBadge Icone={MailIcon} cor="#7c3aed" size={12} box={22} /> Correios (PAC ou SEDEX)</p>
+                            <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0,display:"flex",alignItems:"center",gap:"8px"}}><IconBadge Icone={MailIcon} cor={t.text} size={12} box={22} /> Correios (PAC ou SEDEX)</p>
                             <p style={{fontSize:"11px",color:t.textSecundario,margin:"3px 0 0"}}>Para qualquer cidade do Brasil</p>
                             <div style={{display:"flex",gap:"14px",marginTop:"5px"}}>
                               <span style={{fontSize:"11px",color:t.textSecundario}}>PAC: <strong style={{color:t.text}}>{corP.pac}</strong></span>
@@ -912,7 +927,7 @@ export default function Personalizado(){
               </div>
             </div>
 
-            <div style={{backgroundColor:t.bgSecundario,border:"1px solid "+t.border,padding:"14px",display:"flex",gap:"10px",alignItems:"flex-start"}}>
+            <div style={{backgroundColor:t.bgSecundario,border:"1px solid "+t.border,borderRadius:"12px",padding:"14px",display:"flex",gap:"10px",alignItems:"flex-start"}}>
               <span style={{color:t.textSecundario, marginTop:"1px", flexShrink:0}}><InfoIcon size={16} strokeWidth={1.7} /></span>
               <p style={{fontSize:"13px",color:t.textSecundario,lineHeight:1.7,fontFamily:"system-ui",margin:0}}>
                 Ao confirmar o pedido, nossa equipe entrará em contato pelo WhatsApp para confirmar detalhes, prazo e orçamento.
@@ -921,7 +936,7 @@ export default function Personalizado(){
             </div>
 
             {!finalizacaoValida&&(
-              <div style={{backgroundColor:"#fef9f0",border:"1px solid #fde68a",padding:"14px"}}>
+              <div style={{backgroundColor:"#fef9f0",border:"1px solid #fde68a",borderRadius:"12px",padding:"14px"}}>
                 <p style={{fontSize:"12px",fontWeight:"600",color:"#92400e",marginBottom:"8px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"6px"}}><WarningIcon size={14} strokeWidth={1.8} /> Preencha os campos obrigatórios para finalizar:</p>
                 <ul style={{fontSize:"12px",color:"#92400e",fontFamily:"system-ui",lineHeight:1.8,paddingLeft:"16px",margin:0}}>
                   {!form.nomeCliente.trim()&&<li>Nome completo</li>}
@@ -937,12 +952,14 @@ export default function Personalizado(){
               </div>
             )}
 
-            {erro&&<div style={{backgroundColor:"#fef2f2",border:"1px solid #fecaca",padding:"12px",color:"#dc2626",fontSize:"13px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"6px"}}><WarningIcon size={14} strokeWidth={1.8} /> {erro}</div>}
+            {erro&&<div style={{backgroundColor:"#fef2f2",border:"1px solid #fecaca",borderRadius:"12px",padding:"12px",color:"#dc2626",fontSize:"13px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"6px"}}><WarningIcon size={14} strokeWidth={1.8} /> {erro}</div>}
 
             <div style={{display:"flex",gap:"12px"}}>
-              <button onClick={()=>setEtapa(1)} style={{flex:1,padding:"14px",border:"1px solid "+t.border,color:t.text,backgroundColor:t.bg,cursor:"pointer",fontFamily:"system-ui",fontWeight:"600"}}>← Voltar</button>
+              <button onClick={()=>setEtapa(1)} className="transition-all duration-300 hover:shadow-md"
+                style={{flex:1,padding:"14px",borderRadius:"10px",border:"1px solid "+t.border,color:t.text,backgroundColor:t.bg,cursor:"pointer",fontFamily:"system-ui",fontWeight:"600"}}>← Voltar</button>
             </div>
             <button onClick={salvarNoBanco} disabled={salvando||!finalizacaoValida}
+              className="transition-all duration-300 hover:enabled:shadow-lg hover:enabled:-translate-y-0.5"
               style={{ cursor: "pointer",...btnP(!salvando&&finalizacaoValida),width:"100%",padding:"18px",fontSize:"16px",display:"flex",alignItems:"center",justifyContent:"center",gap:"8px"}}>
               {salvando ? "Salvando..." : <><CheckIcon size={17} strokeWidth={2.2} /> Confirmar Pedido</>}
             </button>
@@ -958,7 +975,7 @@ export default function Personalizado(){
         const cor = CORES_OPCOES.find(c=>c.id===comb.cor);
         return (
           <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" style={{backgroundColor:"rgba(0,0,0,0.5)"}} onClick={e=>{if(e.target===e.currentTarget)setModalTamanhos(null);}}>
-            <div style={{backgroundColor:t.bgCard,width:"100%",maxWidth:"500px",maxHeight:"85vh",overflowY:"auto",borderTop:"2px solid "+t.borderForte}}>
+            <div style={{backgroundColor:t.bgCard,width:"100%",maxWidth:"500px",maxHeight:"85vh",overflowY:"auto",borderRadius:"20px 20px 0 0"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 16px",borderBottom:"1px solid "+t.border}}>
                 <div>
                   <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Georgia, serif"}}>{tipo?.label} {cor?"— "+cor.label:""}</h3>
@@ -974,17 +991,17 @@ export default function Personalizado(){
                       {TAMANHOS_CALCAS.map(tam=>{
                         const qtd=comb.quantidades.calcas?.[tam]||0;
                         return (
-                          <div key={tam} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",border:"1px solid "+t.border,backgroundColor:qtd>0?t.bgSecundario:t.bgCard}}>
+                          <div key={tam} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",borderRadius:"10px",border:"1px solid "+t.border,backgroundColor:qtd>0?t.bgSecundario:t.bgCard}}>
                             <span style={{fontSize:"14px",fontWeight:"700",color:t.text,fontFamily:"system-ui"}}>{tam}</span>
-                            <div style={{display:"flex",alignItems:"center"}}>
-                              <button onClick={()=>setQtdComb(comb.id,"calcas",tam,Math.max(0,qtd-1))} style={{width:"28px",height:"28px",border:"1px solid "+t.border,backgroundColor:t.bg,color:t.text,cursor:"pointer",fontSize:"16px",display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
+                            <div className="rounded-lg overflow-hidden" style={{display:"flex",alignItems:"center",border:"1px solid "+t.border}}>
+                              <button onClick={()=>setQtdComb(comb.id,"calcas",tam,Math.max(0,qtd-1))} style={{width:"28px",height:"28px",border:"none",backgroundColor:t.bg,color:t.text,cursor:"pointer",fontSize:"16px",display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
                               <input type="number" min="0" value={qtd===0?"":qtd}
                                 onChange={e=>{const v=parseInt(e.target.value)||0;setQtdComb(comb.id,"calcas",tam,Math.max(0,v));}}
                                 onFocus={e=>e.target.select()}
-                                style={{width:"44px",textAlign:"center",fontSize:"14px",fontWeight:"600",color:t.text,fontFamily:"system-ui",border:"none",borderTop:"1px solid "+t.border,borderBottom:"1px solid "+t.border,padding:"4px 0",backgroundColor:t.bg,outline:"none"}}
+                                style={{width:"44px",textAlign:"center",fontSize:"14px",fontWeight:"600",color:t.text,fontFamily:"system-ui",border:"none",borderLeft:"1px solid "+t.border,borderRight:"1px solid "+t.border,padding:"4px 0",backgroundColor:t.bg,outline:"none"}}
                                 placeholder="0"
                               />
-                              <button onClick={()=>setQtdComb(comb.id,"calcas",tam,qtd+1)} style={{width:"28px",height:"28px",border:"1px solid "+t.border,backgroundColor:t.bg,color:t.text,cursor:"pointer",fontSize:"16px",display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+                              <button onClick={()=>setQtdComb(comb.id,"calcas",tam,qtd+1)} style={{width:"28px",height:"28px",border:"none",backgroundColor:t.bg,color:t.text,cursor:"pointer",fontSize:"16px",display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
                             </div>
                           </div>
                         );
@@ -999,17 +1016,17 @@ export default function Personalizado(){
                         {grupo.tamanhos.map(tam=>{
                           const qtd=comb.quantidades[grupo.id]?.[tam]||0;
                           return (
-                            <div key={tam} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",border:"1px solid "+t.border,backgroundColor:qtd>0?t.bgSecundario:t.bgCard}}>
+                            <div key={tam} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",borderRadius:"10px",border:"1px solid "+t.border,backgroundColor:qtd>0?t.bgSecundario:t.bgCard}}>
                               <span style={{fontSize:"13px",fontWeight:"700",color:t.text,fontFamily:"system-ui"}}>{tam}</span>
-                              <div style={{display:"flex",alignItems:"center"}}>
-                                <button onClick={()=>setQtdComb(comb.id,grupo.id,tam,Math.max(0,qtd-1))} style={{width:"26px",height:"26px",border:"1px solid "+t.border,backgroundColor:t.bg,color:t.text,cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
+                              <div className="rounded-lg overflow-hidden" style={{display:"flex",alignItems:"center",border:"1px solid "+t.border}}>
+                                <button onClick={()=>setQtdComb(comb.id,grupo.id,tam,Math.max(0,qtd-1))} style={{width:"26px",height:"26px",border:"none",backgroundColor:t.bg,color:t.text,cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>−</button>
                                 <input type="number" min="0" value={qtd===0?"":qtd}
                                   onChange={e=>{const v=parseInt(e.target.value)||0;setQtdComb(comb.id,grupo.id,tam,Math.max(0,v));}}
                                   onFocus={e=>e.target.select()}
-                                  style={{width:"40px",textAlign:"center",fontSize:"13px",fontWeight:"600",color:t.text,fontFamily:"system-ui",border:"none",borderTop:"1px solid "+t.border,borderBottom:"1px solid "+t.border,padding:"3px 0",backgroundColor:t.bg,outline:"none"}}
+                                  style={{width:"40px",textAlign:"center",fontSize:"13px",fontWeight:"600",color:t.text,fontFamily:"system-ui",border:"none",borderLeft:"1px solid "+t.border,borderRight:"1px solid "+t.border,padding:"3px 0",backgroundColor:t.bg,outline:"none"}}
                                   placeholder="0"
                                 />
-                                <button onClick={()=>setQtdComb(comb.id,grupo.id,tam,qtd+1)} style={{width:"26px",height:"26px",border:"1px solid "+t.border,backgroundColor:t.bg,color:t.text,cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
+                                <button onClick={()=>setQtdComb(comb.id,grupo.id,tam,qtd+1)} style={{width:"26px",height:"26px",border:"none",backgroundColor:t.bg,color:t.text,cursor:"pointer",fontSize:"14px",display:"flex",alignItems:"center",justifyContent:"center"}}>+</button>
                               </div>
                             </div>
                           );
@@ -1020,7 +1037,7 @@ export default function Personalizado(){
                 )}
               </div>
               <div style={{padding:"12px 16px 20px",borderTop:"1px solid "+t.border}}>
-                <button onClick={()=>setModalTamanhos(null)} style={{width:"100%",padding:"14px",backgroundColor:t.btnPrimarioBg,color:t.btnPrimarioText,border:"none",cursor:"pointer",fontWeight:"700",fontFamily:"system-ui",fontSize:"14px"}}>Confirmar tamanhos</button>
+                <button onClick={()=>setModalTamanhos(null)} className="transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5" style={{width:"100%",padding:"14px",borderRadius:"10px",backgroundColor:t.btnPrimarioBg,color:t.btnPrimarioText,border:"none",cursor:"pointer",fontWeight:"700",fontFamily:"system-ui",fontSize:"14px"}}>Confirmar tamanhos</button>
               </div>
             </div>
           </div>
@@ -1030,9 +1047,9 @@ export default function Personalizado(){
       {/* ══ MODAL CORES ══ */}
       {modalCores && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" style={{backgroundColor:"rgba(0,0,0,0.5)"}} onClick={e=>{if(e.target===e.currentTarget)setModalCores(null);}}>
-          <div style={{backgroundColor:t.bgCard,width:"100%",maxWidth:"480px",maxHeight:"80vh",overflowY:"auto",borderTop:"2px solid "+t.borderForte}}>
+          <div style={{backgroundColor:t.bgCard,width:"100%",maxWidth:"480px",maxHeight:"80vh",overflowY:"auto",borderRadius:"20px 20px 0 0"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 16px",borderBottom:"1px solid "+t.border}}>
-              <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Georgia, serif",display:"flex",alignItems:"center",gap:"10px"}}><IconBadge Icone={PaletteIcon} cor="#c41e3a" size={15} box={28} /> Selecionar cor</h3>
+              <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Georgia, serif",display:"flex",alignItems:"center",gap:"10px"}}><IconBadge Icone={PaletteIcon} cor={t.text} size={15} box={28} /> Selecionar cor</h3>
               <button onClick={()=>setModalCores(null)} style={{background:"none",border:"none",cursor:"pointer",color:t.text,display:"flex"}}><CloseIcon size={20} strokeWidth={1.8} /></button>
             </div>
             <div style={{padding:"16px",display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"8px"}}>
@@ -1040,7 +1057,8 @@ export default function Personalizado(){
                 const sel = getComb(modalCores)?.cor===cor.id;
                 return (
                   <button key={cor.id} onClick={()=>{updateComb(modalCores,"cor",cor.id);setModalCores(null);}}
-                    style={{display:"flex",alignItems:"center",gap:"10px",padding:"12px 14px",cursor:"pointer",textAlign:"left",fontFamily:"system-ui",fontSize:"13px",border:"2px solid "+(sel?t.text:t.border),backgroundColor:sel?t.bgSecundario:t.bgCard,color:t.text}}>
+                    className="transition-all duration-300 hover:shadow-sm"
+                    style={{display:"flex",alignItems:"center",gap:"10px",padding:"12px 14px",borderRadius:"10px",cursor:"pointer",textAlign:"left",fontFamily:"system-ui",fontSize:"13px",border:"2px solid "+(sel?t.text:t.border),backgroundColor:sel?t.bgSecundario:t.bgCard,color:t.text}}>
                     <span style={{width:"20px",height:"20px",borderRadius:"50%",flexShrink:0,display:"inline-block",backgroundColor:cor.hex||"transparent",border:cor.hex?"1px solid "+t.border:"2px dashed "+t.border}}/>
                     <span style={{fontWeight:sel?"600":"400"}}>{cor.label}</span>
                     {sel&&<span style={{marginLeft:"auto",color:"#16a34a",display:"flex"}}><CheckIcon size={15} strokeWidth={2.2} /></span>}
@@ -1055,9 +1073,9 @@ export default function Personalizado(){
       {/* ══ MODAL MATERIAL ══ */}
       {modalMaterial && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" style={{backgroundColor:"rgba(0,0,0,0.5)"}} onClick={e=>{if(e.target===e.currentTarget)setModalMaterial(null);}}>
-          <div style={{backgroundColor:t.bgCard,width:"100%",maxWidth:"480px",maxHeight:"80vh",overflowY:"auto",borderTop:"2px solid "+t.borderForte}}>
+          <div style={{backgroundColor:t.bgCard,width:"100%",maxWidth:"480px",maxHeight:"80vh",overflowY:"auto",borderRadius:"20px 20px 0 0"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 16px",borderBottom:"1px solid "+t.border}}>
-              <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Georgia, serif",display:"flex",alignItems:"center",gap:"10px"}}><IconBadge Icone={ThreadIcon} cor="#d97706" size={15} box={28} /> Selecionar material</h3>
+              <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Georgia, serif",display:"flex",alignItems:"center",gap:"10px"}}><IconBadge Icone={ThreadIcon} cor={t.text} size={15} box={28} /> Selecionar material</h3>
               <button onClick={()=>setModalMaterial(null)} style={{background:"none",border:"none",cursor:"pointer",color:t.text,display:"flex"}}><CloseIcon size={20} strokeWidth={1.8} /></button>
             </div>
             <div style={{padding:"16px",display:"flex",flexDirection:"column",gap:"8px"}}>
@@ -1065,7 +1083,8 @@ export default function Personalizado(){
                 const sel=getComb(modalMaterial)?.material===mat.id;
                 return (
                   <button key={mat.id} onClick={()=>{updateComb(modalMaterial,"material",mat.id);setModalMaterial(null);}}
-                    style={{display:"flex",flexDirection:"column",alignItems:"flex-start",padding:"14px 16px",cursor:"pointer",textAlign:"left",fontFamily:"system-ui",border:"2px solid "+(sel?t.text:t.border),backgroundColor:sel?t.bgSecundario:t.bgCard}}>
+                    className="transition-all duration-300 hover:shadow-sm"
+                    style={{display:"flex",flexDirection:"column",alignItems:"flex-start",padding:"14px 16px",borderRadius:"10px",cursor:"pointer",textAlign:"left",fontFamily:"system-ui",border:"2px solid "+(sel?t.text:t.border),backgroundColor:sel?t.bgSecundario:t.bgCard}}>
                     <span style={{fontSize:"13px",fontWeight:"600",color:t.text,display:"flex",alignItems:"center",gap:"6px"}}>{mat.label} {sel && <CheckIcon size={13} strokeWidth={2.2} style={{color:"#16a34a"}} />}</span>
                     <span style={{fontSize:"11px",color:t.textSecundario,marginTop:"2px"}}>{mat.descricao}</span>
                   </button>
@@ -1081,9 +1100,9 @@ export default function Personalizado(){
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
           style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
           onClick={e => { if (e.target === e.currentTarget) setTabelaAberta(false); }}>
-          <div style={{ backgroundColor: t.bgCard, width: "100%", maxWidth: "520px", maxHeight: "90vh", overflowY: "auto", borderTop: "2px solid " + t.borderForte }}>
+          <div style={{ backgroundColor: t.bgCard, width: "100%", maxWidth: "520px", maxHeight: "90vh", overflowY: "auto", borderRadius: "20px 20px 0 0" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 20px 16px", borderBottom: "1px solid " + t.border }}>
-              <h3 style={{ fontSize: "16px", fontWeight: "600", color: t.text, fontFamily: "Georgia, serif", display:"flex", alignItems:"center", gap:"10px" }}><IconBadge Icone={RulerIcon} cor="#2563eb" size={15} box={28} /> Tabela de Medidas</h3>
+              <h3 style={{ fontSize: "16px", fontWeight: "600", color: t.text, fontFamily: "Georgia, serif", display:"flex", alignItems:"center", gap:"10px" }}><IconBadge Icone={RulerIcon} cor={t.text} size={15} box={28} /> Tabela de Medidas</h3>
               <button onClick={() => setTabelaAberta(false)} style={{ background: "none", border: "none", cursor: "pointer", color: t.text, display:"flex" }}><CloseIcon size={20} strokeWidth={1.8} /></button>
             </div>
             <div style={{ padding: "20px" }}>
@@ -1091,7 +1110,7 @@ export default function Personalizado(){
 
               {/* Tradicional */}
               <p style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.1em", color: t.text, fontFamily: "system-ui", marginBottom: "8px" }}>Tradicional</p>
-              <div style={{ overflowX: "auto", marginBottom: "20px", border: "1px solid " + t.border }}>
+              <div style={{ overflowX: "auto", marginBottom: "20px", border: "1px solid " + t.border, borderRadius: "10px" }}>
                 <table style={{ minWidth: "380px", width: "100%", fontSize: "12px", borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ backgroundColor: t.bgSecundario }}>
@@ -1124,7 +1143,7 @@ export default function Personalizado(){
 
               {/* Baby Look */}
               <p style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "0.1em", color: t.text, fontFamily: "system-ui", marginBottom: "8px" }}>Baby Look</p>
-              <div style={{ overflowX: "auto", marginBottom: "20px", border: "1px solid " + t.border }}>
+              <div style={{ overflowX: "auto", marginBottom: "20px", border: "1px solid " + t.border, borderRadius: "10px" }}>
                 <table style={{ minWidth: "280px", width: "100%", fontSize: "12px", borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ backgroundColor: t.bgSecundario }}>

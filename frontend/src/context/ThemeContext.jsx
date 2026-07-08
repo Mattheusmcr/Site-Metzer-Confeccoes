@@ -3,17 +3,17 @@ import { createContext, useContext } from "react";
 export const ThemeContext = createContext();
 
 export const tema = {
-  bg: "#FAF8F5",
-  bgSecundario: "#F2EDE6",
+  bg: "#FFFFFF",
+  bgSecundario: "#F2F2F2",
   bgCard: "#FFFFFF",
   text: "#1a1a1a",
-  textSecundario: "#7a7065",
-  border: "#E8E0D5",
-  borderForte: "#C4B5A5",
+  textSecundario: "#6b6b6b",
+  border: "#E0E0E0",
+  borderForte: "#B0B0B0",
   btnPrimarioBg: "#1a1a1a",
-  btnPrimarioText: "#FAF8F5",
-  navBg: "#FAF8F5",
-  navBorder: "#E8E0D5",
+  btnPrimarioText: "#FFFFFF",
+  navBg: "#FFFFFF",
+  navBorder: "#E0E0E0",
 };
 
 export function ThemeProvider({ children }) {

@@ -111,7 +111,7 @@ function CadastrarProduto({ mostrarToast, dark, estilos }) {
             </select>
             {form.subcategoria && (
               <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium"
-                style={{ backgroundColor: dark ? "#374151" : "#F2EDE6", color: text, border: "1px solid " + border }}>
+                style={{ backgroundColor: dark ? "#374151" : "#F2F2F2", color: text, border: "1px solid " + border }}>
                 <FolderIcon size={13} strokeWidth={1.6} /> {CATEGORIAS_ADMIN.find(c => c.id === form.categoria)?.label} › {subcatsDisponiveis.find(s => s.id === form.subcategoria)?.label}
               </div>
             )}
@@ -138,7 +138,7 @@ function CadastrarProduto({ mostrarToast, dark, estilos }) {
             </div>
           )}
         </div>
-        <button onClick={handleSubmit} disabled={loading} className="cursor-pointer py-3 rounded-lg font-semibold text-white"
+        <button onClick={handleSubmit} disabled={loading} className="cursor-pointer py-3 rounded-lg font-semibold text-white transition-all duration-300 hover:enabled:shadow-lg hover:enabled:-translate-y-0.5"
           style={{ backgroundColor: loading ? "#9ca3af" : "#1a1a1a", cursor: loading ? "not-allowed" : "pointer" }}>
           {loading ? "Salvando..." : "Salvar Produto"}
         </button>
@@ -272,7 +272,7 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
                   </div>
                   {editando.categoria && (
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium"
-                      style={{ backgroundColor: dark ? "#374151" : "#F2EDE6", color: text, border: "1px solid " + border }}>
+                      style={{ backgroundColor: dark ? "#374151" : "#F2F2F2", color: text, border: "1px solid " + border }}>
                       <FolderIcon size={13} strokeWidth={1.6} /> {CATEGORIAS_ADMIN.find(c => c.id === editando.categoria)?.label}
                       {editando.subcategoria && ` › ${subcatsEdicao.find(sub => sub.id === editando.subcategoria)?.label}`}
                     </div>
@@ -300,7 +300,7 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
                     )}
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={salvarEdicao} className="cursor-pointer px-4 py-2 rounded-lg text-sm font-semibold text-white" style={{ backgroundColor: "#16a34a" }}>Salvar</button>
+                    <button onClick={salvarEdicao} className="cursor-pointer px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all duration-300 hover:shadow-md hover:-translate-y-0.5" style={{ backgroundColor: "#16a34a" }}>Salvar</button>
                     <button onClick={() => { setEditando(null); setNovasImagens([]); setPreviews([]); }}
                       className="px-4 py-2 rounded-lg text-sm font-semibold"
                       style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: text }}>Cancelar</button>
@@ -313,7 +313,7 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
                     <p className="text-sm" style={{ color: subtext }}>R$ {Number(p.preco).toFixed(2)}</p>
                     {labelCategoria(p) && (
                       <span className="text-xs px-2 py-0.5 rounded-full mt-1 mr-2 inline-flex items-center gap-1"
-                        style={{ backgroundColor: dark ? "#374151" : "#F2EDE6", color: subtext }}>
+                        style={{ backgroundColor: dark ? "#374151" : "#F2F2F2", color: subtext }}>
                         <FolderIcon size={11} strokeWidth={1.6} /> {labelCategoria(p)}
                       </span>
                     )}
@@ -1688,7 +1688,7 @@ export default function Admin() {
         <div className="flex gap-2 flex-wrap mb-8 pb-4" style={{ borderBottom: "1px solid " + border }}>
           {abas.map(aba => (
             <button key={aba.id} onClick={() => setAbaAtiva(aba.id)}
-              className="px-4 py-2 rounded-lg text-sm font-medium transition inline-flex items-center gap-2"
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 inline-flex items-center gap-2"
               style={{ backgroundColor: abaAtiva === aba.id ? (dark ? "#ffffff" : "#000000") : (dark ? "#1f2937" : "#f3f4f6"),
                 color: abaAtiva === aba.id ? (dark ? "#000000" : "#ffffff") : text,
                 border: "1px solid " + (abaAtiva === aba.id ? "transparent" : border) }}>

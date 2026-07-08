@@ -1,7 +1,8 @@
 import { useContext, useState, useEffect } from "react";
 import { CartContext } from "../context/CartContext";
 import api from "../services/api";
-import { WhatsAppIcon, PrinterIcon, CartIcon, CardIcon, StoreIcon, TruckIcon, MailIcon } from "../components/Icons";
+import { WhatsAppIcon, PrinterIcon, CartIcon, CardIcon, StoreIcon, TruckIcon, MailIcon,
+  UserIcon, PinIcon, DocIcon, TagIcon, CopyIcon, WarningIcon, ClockIcon, CheckIcon, PartyIcon, CloseIcon } from "../components/Icons";
 
 // ── CÁLCULO DE FRETE ─────────────────────────────────────────────────────────
 const REGIAO_METRO_ES = ["vitoria","vila velha","cariacica","serra","viana","guarapari","fundao"];
@@ -55,10 +56,10 @@ function estimarCorreios(estado) {
 }
 
 const t = {
-  bg: "#FAF8F5", bgSecundario: "#F2EDE6", bgCard: "#FFFFFF",
-  text: "#1a1a1a", textSecundario: "#7a7065", border: "#E8E0D5",
-  inputBg: "#FFFFFF", inputBorder: "#D5CBC0",
-  btnPrimarioBg: "#1a1a1a", btnPrimarioText: "#FAF8F5",
+  bg: "#FFFFFF", bgSecundario: "#F2F2F2", bgCard: "#FFFFFF",
+  text: "#1a1a1a", textSecundario: "#6b6b6b", border: "#E0E0E0",
+  inputBg: "#FFFFFF", inputBorder: "#D0D0D0",
+  btnPrimarioBg: "#1a1a1a", btnPrimarioText: "#FFFFFF",
 };
 
 function formatTelefone(v) {
@@ -280,7 +281,7 @@ export default function Pedidos() {
   function verificarEstoque() {
     if (estoqueInsuficiente) {
       const nomes = itensComProblema.map(i => i.produto.nome).join(", ");
-      setMensagemEstoque(`⚠️ Estoque insuficiente: ${nomes}. Ajuste as quantidades.`);
+      setMensagemEstoque(`Estoque insuficiente: ${nomes}. Ajuste as quantidades.`);
       window.scrollTo({ top: 0, behavior: "smooth" });
       return false;
     }
@@ -376,16 +377,20 @@ export default function Pedidos() {
   if (mpStatus === 'aprovado' && pedidoSalvo) return (
     <div style={{backgroundColor:t.bg}}>
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <div style={{fontSize:"64px",marginBottom:"20px"}}>🎉</div>
+        <div className="flex justify-center mb-5">
+          <span className="flex items-center justify-center rounded-full" style={{width:"72px", height:"72px", backgroundColor:t.bgSecundario, color:t.text}}>
+            <PartyIcon size={36} strokeWidth={1.4} />
+          </span>
+        </div>
         <h1 className="text-3xl font-bold mb-4" style={{color:t.text}}>Pedido confirmado!</h1>
         <p className="mb-6" style={{color:t.textSecundario, lineHeight:1.8}}>
           Nossa equipe entrará em contato pelo WhatsApp <strong style={{color:t.text}}>{pedidoSalvo.c.telefone}</strong> para confirmar os detalhes.
         </p>
 
         {/* PROTOCOLO */}
-        <div className="mb-8 rounded-xl p-5" style={{backgroundColor:t.bgSecundario, border:"2px solid "+t.borderForte}}>
-          <p className="text-xs uppercase font-bold mb-2" style={{color:t.textSecundario, letterSpacing:"0.1em"}}>
-            🔖 Número do Protocolo
+        <div className="mb-8 rounded-xl p-5" style={{backgroundColor:t.bgSecundario, border:"1px solid "+t.border}}>
+          <p className="text-xs uppercase font-bold mb-2 flex items-center justify-center gap-1.5" style={{color:t.textSecundario, letterSpacing:"0.1em"}}>
+            <TagIcon size={13} strokeWidth={1.8} /> Número do Protocolo
           </p>
           <div className="flex items-center justify-center gap-3 flex-wrap">
             <span style={{fontSize:"1.6rem", fontWeight:"700", fontFamily:"monospace", letterSpacing:"0.05em", color:t.text}}>
@@ -393,10 +398,11 @@ export default function Pedidos() {
             </span>
             <button
               onClick={() => { navigator.clipboard.writeText(protocolo).then(() => { setCopiado(true); setTimeout(()=>setCopiado(false),2500); }); }}
-              style={{padding:"6px 16px", backgroundColor:copiado?"#16a34a":t.btnPrimarioBg, color:t.btnPrimarioText,
+              className="inline-flex items-center gap-1.5 transition-all duration-300 hover:shadow-md"
+              style={{padding:"6px 16px", backgroundColor:copiado?"#16a34a":t.btnPrimarioBg, color:"#FFFFFF",
                 border:"none", cursor:"pointer", fontFamily:"system-ui", fontSize:"12px", fontWeight:"600",
-                borderRadius:"6px", transition:"background 0.3s"}}>
-              {copiado ? "✅ Copiado!" : "📋 Copiar"}
+                borderRadius:"6px"}}>
+              {copiado ? <><CheckIcon size={14} strokeWidth={2.2} /> Copiado!</> : <><CopyIcon size={14} strokeWidth={1.8} /> Copiar</>}
             </button>
           </div>
           <p className="text-xs mt-3" style={{color:t.textSecundario, fontFamily:"system-ui"}}>
@@ -448,22 +454,22 @@ export default function Pedidos() {
         <h1 className="text-3xl font-bold mb-8" style={{color:t.text}}>Finalizar Pedido</h1>
 
         {mpStatus === 'aprovado' && (
-          <div className="rounded-xl p-6 mb-6 text-center" style={{backgroundColor:"#f0fdf4", border:"2px solid #86efac"}}>
-            <div style={{fontSize:"48px", marginBottom:"12px"}}>🎉</div>
+          <div className="rounded-xl p-6 mb-6 text-center" style={{backgroundColor:"#f0fdf4", border:"1px solid #86efac"}}>
+            <div className="flex justify-center mb-3" style={{color:"#16a34a"}}><PartyIcon size={40} strokeWidth={1.4} /></div>
             <h2 className="text-xl font-bold mb-2" style={{color:"#16a34a"}}>Pagamento aprovado!</h2>
             <p style={{color:t.textSecundario, fontFamily:"system-ui"}}>Seu pedido foi confirmado pelo Mercado Pago. Nossa equipe entrará em contato em breve.</p>
           </div>
         )}
         {mpStatus === 'pendente' && (
-          <div className="rounded-xl p-6 mb-6 text-center" style={{backgroundColor:"#fef9f0", border:"2px solid #fde68a"}}>
-            <div style={{fontSize:"48px", marginBottom:"12px"}}>⏳</div>
+          <div className="rounded-xl p-6 mb-6 text-center" style={{backgroundColor:"#fef9f0", border:"1px solid #fde68a"}}>
+            <div className="flex justify-center mb-3" style={{color:"#92400e"}}><ClockIcon size={40} strokeWidth={1.4} /></div>
             <h2 className="text-xl font-bold mb-2" style={{color:"#92400e"}}>Pagamento pendente</h2>
             <p style={{color:t.textSecundario, fontFamily:"system-ui"}}>Aguardando confirmação do pagamento. Você receberá um email quando for aprovado.</p>
           </div>
         )}
         {mpStatus === 'falhou' && (
-          <div className="rounded-xl p-6 mb-6 text-center" style={{backgroundColor:"#fef2f2", border:"2px solid #fecaca"}}>
-            <div style={{fontSize:"48px", marginBottom:"12px"}}>❌</div>
+          <div className="rounded-xl p-6 mb-6 text-center" style={{backgroundColor:"#fef2f2", border:"1px solid #fecaca"}}>
+            <div className="flex justify-center mb-3" style={{color:"#dc2626"}}><CloseIcon size={36} strokeWidth={1.8} /></div>
             <h2 className="text-xl font-bold mb-2" style={{color:"#dc2626"}}>Pagamento não realizado</h2>
             <p style={{color:t.textSecundario, fontFamily:"system-ui"}}>O pagamento não foi concluído. Tente novamente ou escolha outra forma de pagamento.</p>
           </div>
@@ -472,8 +478,8 @@ export default function Pedidos() {
 
         {/* ALERTAS */}
         {mensagemEstoque && (
-          <div className="rounded-xl p-4 mb-6 flex gap-3" style={{backgroundColor:"#fef2f2",border:"2px solid #fecaca"}}>
-            <span style={{fontSize:"20px"}}>🚫</span>
+          <div className="rounded-xl p-4 mb-6 flex gap-3" style={{backgroundColor:"#fef2f2",border:"1px solid #fecaca"}}>
+            <span style={{color:"#dc2626"}}><WarningIcon size={20} strokeWidth={1.6} /></span>
             <div>
               <p className="font-semibold" style={{color:"#dc2626"}}>Estoque insuficiente</p>
               <p className="text-sm mt-1" style={{color:"#7f1d1d"}}>{mensagemEstoque}</p>
@@ -481,8 +487,8 @@ export default function Pedidos() {
           </div>
         )}
         {erroPedido && (
-          <div className="rounded-xl p-4 mb-6 flex gap-3" style={{backgroundColor:"#fef2f2",border:"2px solid #fecaca"}}>
-            <span style={{fontSize:"20px"}}>⚠️</span>
+          <div className="rounded-xl p-4 mb-6 flex gap-3" style={{backgroundColor:"#fef2f2",border:"1px solid #fecaca"}}>
+            <span style={{color:"#dc2626"}}><WarningIcon size={20} strokeWidth={1.6} /></span>
             <div>
               <p className="font-semibold" style={{color:"#dc2626"}}>Erro ao registrar pedido</p>
               <p className="text-sm mt-1" style={{color:"#7f1d1d"}}>{erroPedido}</p>
@@ -491,7 +497,7 @@ export default function Pedidos() {
         )}
         {tentouEnviar && qtdErros>0 && !mensagemEstoque && (
           <div className="rounded-xl p-4 mb-6 flex gap-3" style={{backgroundColor:"#fff5f5",border:"1px solid #fecaca"}}>
-            <span>⚠️</span>
+            <span style={{color:"#dc2626"}}><WarningIcon size={16} strokeWidth={1.8} /></span>
             <div>
               <p className="font-semibold" style={{color:"#dc2626"}}>Campos obrigatórios</p>
               <p className="text-sm" style={{color:t.textSecundario}}>{qtdErros} campo{qtdErros>1?"s":""} precisam ser preenchidos.</p>
@@ -510,7 +516,7 @@ export default function Pedidos() {
                 const est = item.produto?.estoques?.find(e=>e.tamanho===item.tamanho);
                 const semEst = est && item.quantidade > est.quantidade;
                 return (
-                  <div key={i} className="rounded-xl p-4 flex justify-between items-center"
+                  <div key={i} className="rounded-xl p-4 flex justify-between items-center transition-shadow duration-300 hover:shadow-md"
                     style={{backgroundColor:t.bgCard,border:"1px solid "+(semEst?"#fecaca":t.border)}}>
                     <div>
                       <p className="font-semibold" style={{color:t.text}}>{item.produto.nome}</p>
@@ -518,7 +524,7 @@ export default function Pedidos() {
                       <p className="text-sm font-medium" style={{color:t.text}}>
                         R$ {(parseFloat(item.produto?.preco||0)*item.quantidade).toFixed(2)}
                       </p>
-                      {semEst && <p className="text-sm font-semibold mt-1" style={{color:"#dc2626"}}>🚫 Estoque insuficiente</p>}
+                      {semEst && <p className="text-sm font-semibold mt-1 flex items-center gap-1.5" style={{color:"#dc2626"}}><WarningIcon size={14} strokeWidth={1.8} /> Estoque insuficiente</p>}
                     </div>
                     <div className="flex items-center gap-2">
                       <button onClick={() => decrease(item.produto.id, item.tamanho)}
@@ -545,7 +551,7 @@ export default function Pedidos() {
           <div className="space-y-6">
             {/* DADOS PESSOAIS */}
             <div style={cardStyle}>
-              <h2 className="text-lg font-semibold mb-4" style={{color:t.text}}>📋 Dados Pessoais</h2>
+              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{color:t.text}}><UserIcon size={19} strokeWidth={1.6} /> Dados Pessoais</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label style={labelStyle("nome")}>Nome completo *</label>
@@ -564,14 +570,14 @@ export default function Pedidos() {
                   <input name="email" value={cliente.email} onChange={handleEmail}
                     type="email" placeholder="seu@email.com" style={inputStyle("email")} />
                   {erros.email && <p className="text-xs mt-1" style={{color:"#dc2626"}}>E-mail inválido</p>}
-                  {cliente.email && emailValido(cliente.email) && <p className="text-xs mt-1" style={{color:"#16a34a"}}>✅ E-mail válido</p>}
+                  {cliente.email && emailValido(cliente.email) && <p className="text-xs mt-1 flex items-center gap-1" style={{color:"#16a34a"}}><CheckIcon size={12} strokeWidth={2.2} /> E-mail válido</p>}
                 </div>
               </div>
             </div>
 
             {/* ENDEREÇO */}
             <div style={cardStyle}>
-              <h2 className="text-lg font-semibold mb-1" style={{color:t.text}}>📍 Endereço de Entrega</h2>
+              <h2 className="text-lg font-semibold mb-1 flex items-center gap-2" style={{color:t.text}}><PinIcon size={19} strokeWidth={1.6} /> Endereço de Entrega</h2>
               <p className="text-sm mb-4" style={{color:t.textSecundario}}>CEP preenche o endereço automaticamente.</p>
               <div className="grid md:grid-cols-3 gap-4">
                 <div>
@@ -580,7 +586,7 @@ export default function Pedidos() {
                     placeholder="29000-000" inputMode="numeric" maxLength={9} style={inputStyle("cep")} />
                   {erros.cep && <p className="text-xs mt-1" style={{color:"#dc2626"}}>Obrigatório</p>}
                   {cliente.cep.replace(/\D/g,"").length===8 && cliente.cidade && (
-                    <p className="text-xs mt-1" style={{color:"#16a34a"}}>✅ {cliente.cidade}/{cliente.estado}</p>
+                    <p className="text-xs mt-1 flex items-center gap-1" style={{color:"#16a34a"}}><CheckIcon size={12} strokeWidth={2.2} /> {cliente.cidade}/{cliente.estado}</p>
                   )}
                 </div>
                 <div className="md:col-span-2">
@@ -627,7 +633,7 @@ export default function Pedidos() {
               const cidadeLabel = cliente.cidade ? ` para ${cliente.cidade}` : "";
               return (
                 <div style={{...cardStyle, borderColor: !frete.tipo && calcFrete ? "#fecaca" : t.border}}>
-                  <h2 className="text-lg font-semibold mb-1" style={{color:t.text}}>🚚 Como deseja receber? *</h2>
+                  <h2 className="text-lg font-semibold mb-1 flex items-center gap-2" style={{color:t.text}}><TruckIcon size={19} strokeWidth={1.6} /> Como deseja receber? *</h2>
                   <p className="text-sm mb-4" style={{color:t.textSecundario}}>
                     Escolha uma opção abaixo. Os valores de motoboy e Correios são estimativas — a loja confirmará o valor exato pelo WhatsApp antes de enviar.
                   </p>
@@ -635,9 +641,10 @@ export default function Pedidos() {
 
                     {/* ── Retirada ── */}
                     <button onClick={() => setFrete({tipo:"retirada", valor:0})}
+                      className="transition-all duration-300 hover:shadow-md"
                       style={{ padding:"14px 16px", borderRadius:"10px", textAlign:"left", cursor:"pointer",
-                        border:"2px solid "+(frete.tipo==="retirada" ? "#16a34a" : t.border),
-                        backgroundColor: frete.tipo==="retirada" ? "#f0fdf4" : t.bgCard }}>
+                        border:"2px solid "+(frete.tipo==="retirada" ? t.text : t.border),
+                        backgroundColor: frete.tipo==="retirada" ? t.bgSecundario : t.bgCard }}>
                       <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
                         <div>
                           <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0, display:"flex", alignItems:"center", gap:"7px"}}><StoreIcon size={16} strokeWidth={1.6} />Retirada no local</p>
@@ -648,14 +655,15 @@ export default function Pedidos() {
                           Grátis
                         </span>
                       </div>
-                      {frete.tipo==="retirada" && <p style={{fontSize:"11px", color:"#16a34a", marginTop:"8px", fontWeight:"600"}}>✅ Selecionado</p>}
+                      {frete.tipo==="retirada" && <p className="flex items-center gap-1" style={{fontSize:"11px", color:t.text, marginTop:"8px", fontWeight:"600"}}><CheckIcon size={12} strokeWidth={2.2} /> Selecionado</p>}
                     </button>
 
                     {/* ── Motoboy ── sempre aparece, preço muda conforme cidade */}
                     <button onClick={() => { if (motoInfo) setFrete({tipo:"motoboy", valor: motoInfo.min}); }}
-                      style={{ padding:"14px 16px", borderRadius:"10px", textAlign:"left", cursor:"pointer",
-                        border:"2px solid "+(frete.tipo==="motoboy" ? "#1d4ed8" : t.border),
-                        backgroundColor: frete.tipo==="motoboy" ? "#eff6ff" : t.bgCard,
+                      className="transition-all duration-300 hover:shadow-md"
+                      style={{ padding:"14px 16px", borderRadius:"10px", textAlign:"left", cursor: motoInfo ? "pointer" : "default",
+                        border:"2px solid "+(frete.tipo==="motoboy" ? t.text : t.border),
+                        backgroundColor: frete.tipo==="motoboy" ? t.bgSecundario : t.bgCard,
                         opacity: motoInfo ? 1 : 0.5 }}>
                       <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
                         <div>
@@ -667,18 +675,19 @@ export default function Pedidos() {
                           </p>
                           {motoInfo && <p style={{fontSize:"11px", color:t.textSecundario, marginTop:"2px"}}>Valor final confirmado pela loja pelo WhatsApp</p>}
                         </div>
-                        <span style={{fontWeight:"700", fontSize:"13px", color: motoInfo ? "#1d4ed8" : t.textSecundario, whiteSpace:"nowrap", marginLeft:"12px"}}>
+                        <span style={{fontWeight:"700", fontSize:"13px", color: t.textSecundario, whiteSpace:"nowrap", marginLeft:"12px"}}>
                           {motoInfo ? `~R$ ${motoInfo.min}–${motoInfo.max}` : "Indisponível"}
                         </span>
                       </div>
-                      {frete.tipo==="motoboy" && <p style={{fontSize:"11px", color:"#1d4ed8", marginTop:"8px", fontWeight:"600"}}>✅ Selecionado</p>}
+                      {frete.tipo==="motoboy" && <p className="flex items-center gap-1" style={{fontSize:"11px", color:t.text, marginTop:"8px", fontWeight:"600"}}><CheckIcon size={12} strokeWidth={2.2} /> Selecionado</p>}
                     </button>
 
                     {/* ── Correios ── sempre aparece */}
                     <button onClick={() => setFrete({tipo:"correios", valor: parseValorMinimo(corInfo.pac)})}
+                      className="transition-all duration-300 hover:shadow-md"
                       style={{ padding:"14px 16px", borderRadius:"10px", textAlign:"left", cursor:"pointer",
-                        border:"2px solid "+(frete.tipo==="correios" ? "#7c3aed" : t.border),
-                        backgroundColor: frete.tipo==="correios" ? "#f5f3ff" : t.bgCard }}>
+                        border:"2px solid "+(frete.tipo==="correios" ? t.text : t.border),
+                        backgroundColor: frete.tipo==="correios" ? t.bgSecundario : t.bgCard }}>
                       <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start"}}>
                         <div style={{flex:1}}>
                           <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0, display:"flex", alignItems:"center", gap:"7px"}}><MailIcon size={16} strokeWidth={1.6} />Correios (PAC ou SEDEX)</p>
@@ -690,12 +699,12 @@ export default function Pedidos() {
                           <p style={{fontSize:"11px", color:t.textSecundario, marginTop:"3px"}}>Prazo estimado: {corInfo.prazo} · Valor confirmado pela loja</p>
                         </div>
                       </div>
-                      {frete.tipo==="correios" && <p style={{fontSize:"11px", color:"#7c3aed", marginTop:"8px", fontWeight:"600"}}>✅ Selecionado</p>}
+                      {frete.tipo==="correios" && <p className="flex items-center gap-1" style={{fontSize:"11px", color:t.text, marginTop:"8px", fontWeight:"600"}}><CheckIcon size={12} strokeWidth={2.2} /> Selecionado</p>}
                     </button>
 
                   </div>
                   {!frete.tipo && calcFrete && (
-                    <p style={{fontSize:"12px", color:"#dc2626", marginTop:"12px"}}>⚠️ Selecione uma opção de entrega para continuar.</p>
+                    <p className="flex items-center gap-1.5" style={{fontSize:"12px", color:"#dc2626", marginTop:"12px"}}><WarningIcon size={13} strokeWidth={1.8} /> Selecione uma opção de entrega para continuar.</p>
                   )}
                 </div>
               );
@@ -703,8 +712,8 @@ export default function Pedidos() {
 
             {/* OBS */}
             <div style={cardStyle}>
-              <h2 className="text-lg font-semibold mb-4" style={{color:t.text}}>
-                📝 Observações <span style={{color:t.textSecundario, fontWeight:400, fontSize:"14px"}}>(opcional)</span>
+              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{color:t.text}}>
+                <DocIcon size={18} strokeWidth={1.6} /> Observações <span style={{color:t.textSecundario, fontWeight:400, fontSize:"14px"}}>(opcional)</span>
               </h2>
               <textarea name="observacao" value={cliente.observacao} onChange={handleChange}
                 placeholder="Alguma informação adicional?" rows={3}
@@ -713,7 +722,7 @@ export default function Pedidos() {
 
             {/* ── PAGAMENTO ── */}
             <div style={{backgroundColor:t.bgCard, border:"1px solid "+t.border, borderRadius:"12px", padding:"24px"}}>
-              <h2 className="text-lg font-semibold mb-1" style={{color:t.text}}>💳 Pagamento</h2>
+              <h2 className="text-lg font-semibold mb-1 flex items-center gap-2" style={{color:t.text}}><CardIcon size={19} strokeWidth={1.6} /> Pagamento</h2>
               <p className="text-sm mb-4" style={{color:t.textSecundario}}>
                 O pagamento é feito com segurança pelo Mercado Pago — Pix, cartão ou boleto.
               </p>
@@ -751,7 +760,7 @@ export default function Pedidos() {
 
             {/* BOTÃO CONFIRMAR — cria a preferência e redireciona para o Mercado Pago */}
             <button onClick={pagarComMP} disabled={salvando}
-              className="cursor-pointer w-full py-5 font-bold text-lg hover:opacity-90 transition inline-flex items-center justify-center gap-2"
+              className="cursor-pointer w-full py-5 font-bold text-lg transition-all duration-300 hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 inline-flex items-center justify-center gap-2"
               style={{backgroundColor: !salvando ? t.btnPrimarioBg : "#9ca3af",
                 color:t.btnPrimarioText, cursor: !salvando ? "pointer" : "not-allowed",
                 fontFamily:"system-ui", borderRadius:"12px", fontSize:"16px"}}>
