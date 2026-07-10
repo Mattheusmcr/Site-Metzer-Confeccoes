@@ -154,41 +154,43 @@ function Catalogo() {
       )}
 
       <div style={{ borderBottom: "1px solid " + t.border, backgroundColor: t.bg, padding: "16px 20px" }}>
-        <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <p className="text-xs uppercase tracking-widest" style={{ color: t.textSecundario }}>
             {tituloAtivo} — {produtosFiltrados.length} produto{produtosFiltrados.length !== 1 ? "s" : ""}
           </p>
 
-          {/* Campo de busca — mesmo ícone do Admin */}
-          <div style={{ position: "relative", flex: "1", maxWidth: "260px" }}>
-            <span style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", color: t.textSecundario, display: "flex" }}>
-              <SearchIcon size={14} strokeWidth={1.8} />
-            </span>
-            <input value={busca} onChange={e => setBusca(e.target.value)}
-              placeholder="Buscar produto..."
-              style={{ width: "100%", paddingLeft: "32px", paddingRight: busca ? "30px" : "10px",
-                paddingTop: "7px", paddingBottom: "7px", borderRadius: "8px",
-                border: "1px solid " + t.border, backgroundColor: t.bgCard, color: t.text,
-                fontSize: "12px", fontFamily: "system-ui", outline: "none", boxSizing: "border-box" }} />
-            {busca && (
-              <button onClick={() => setBusca("")}
-                style={{ position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)",
-                  background: "none", border: "none", cursor: "pointer", color: t.textSecundario, fontSize: "18px", lineHeight: 1 }}>
-                ×
-              </button>
-            )}
-          </div>
+          <div className="flex items-center gap-3">
+            {/* Campo de busca — mesmo ícone do Admin */}
+            <div style={{ position: "relative", flex: "1", minWidth: 0, maxWidth: "260px" }}>
+              <span style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", color: t.textSecundario, display: "flex" }}>
+                <SearchIcon size={14} strokeWidth={1.8} />
+              </span>
+              <input value={busca} onChange={e => setBusca(e.target.value)}
+                placeholder="Buscar produto..."
+                style={{ width: "100%", paddingLeft: "32px", paddingRight: busca ? "30px" : "10px",
+                  paddingTop: "7px", paddingBottom: "7px", borderRadius: "8px",
+                  border: "1px solid " + t.border, backgroundColor: t.bgCard, color: t.text,
+                  fontSize: "12px", fontFamily: "system-ui", outline: "none", boxSizing: "border-box" }} />
+              {busca && (
+                <button onClick={() => setBusca("")}
+                  style={{ position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)",
+                    background: "none", border: "none", cursor: "pointer", color: t.textSecundario, fontSize: "18px", lineHeight: 1 }}>
+                  ×
+                </button>
+              )}
+            </div>
 
-          {/* Botão filtros — só mobile */}
-          <button
-            className="cursor-pointer md:hidden flex items-center gap-2 text-xs uppercase tracking-wider px-3 py-1.5 rounded-lg"
-            style={{ border: "1px solid " + t.border, color: t.text, backgroundColor: t.bg }}
-            onClick={() => setFiltroMobileAberto(v => !v)}>
-            {filtroMobileAberto ? "Fechar" : "Filtros"}
-            {(filtro.categoria || filtro.subcategoria) && (
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: t.text }} />
-            )}
-          </button>
+            {/* Botão filtros — só mobile */}
+            <button
+              className="cursor-pointer md:hidden shrink-0 flex items-center gap-2 text-xs uppercase tracking-wider px-3 py-1.5 rounded-lg"
+              style={{ border: "1px solid " + t.border, color: t.text, backgroundColor: t.bg }}
+              onClick={() => setFiltroMobileAberto(v => !v)}>
+              {filtroMobileAberto ? "Fechar" : "Filtros"}
+              {(filtro.categoria || filtro.subcategoria) && (
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: t.text }} />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 

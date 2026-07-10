@@ -4,14 +4,14 @@ import {
   ShirtIcon, ImageIcon, PaletteIcon, ThreadIcon, RulerIcon, CheckIcon,
   WarningIcon, PaperclipIcon, DocIcon, TruckIcon, StoreIcon, MailIcon,
   InfoIcon, PartyIcon, TagIcon, CopyIcon, PrinterIcon, CloseIcon,
-  UserIcon, ListIcon,
+  UserIcon, ListIcon, PinIcon,
 } from "../components/Icons";
 
 // ── CÁLCULO DE FRETE ─────────────────────────────────────────────────────────
 const REGIAO_METRO_ES_P = ["vitoria","vila velha","cariacica","serra","viana","guarapari","fundao"];
 function estimarMotoboyP(cidade, estado) {
   if ((estado||"").toUpperCase() !== "ES") return null;
-  const c = (cidade||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  const c = (cidade||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
   if (!REGIAO_METRO_ES_P.some(r => c.includes(r))) return null;
   if (c.includes("vila velha")) return { min:8, max:25 };
   if (c.includes("vitoria")||c.includes("vitória")) return { min:15, max:35 };
@@ -147,6 +147,8 @@ const FORM_INICIAL = {
   frete_tipo:"", frete_valor:0,
 };
 
+const ETAPAS_LABELS = ["O que precisa","Detalhes","Referências","Seus dados","Entrega"];
+
 export default function Personalizado(){
   const navigate = useNavigate();
   const [etapa, setEtapa] = useState(1);
@@ -187,8 +189,10 @@ export default function Personalizado(){
   function totalComb(comb){ return Object.values(comb.quantidades).reduce((a,g)=>a+Object.values(g).reduce((x,y)=>x+y,0),0); }
   const totalGeral = form.combinacoes.reduce((a,c)=>a+totalComb(c),0);
 
-  // ── validação ──
-  const etapa1Valida = (()=>{
+  // ── validação por etapa ──
+  const categoriaValida = !!form.categoria;
+
+  const detalhesValida = (()=>{
     if(!form.categoria) return false;
     if(form.categoria==="roupas"){
       if(form.combinacoes.length===0) return false;
@@ -204,13 +208,18 @@ export default function Personalizado(){
     return false;
   })();
 
-  const finalizacaoValida = Boolean(
+  const contatoValida = Boolean(
     form.nomeCliente.trim() && !validarTel(form.telefone) &&
-    form.email.trim() && emailValido(form.email) &&
+    form.email.trim() && emailValido(form.email)
+  );
+
+  const enderecoValida = Boolean(
     form.cep && form.cep.replace(/\D/g,"").length===8 &&
     form.cidade.trim() && form.estado.trim() &&
     (form.rua||"").trim() && (form.numero||"").trim() && (form.bairro||"").trim()
   );
+
+  const finalizacaoValida = Boolean(contatoValida && enderecoValida && form.frete_tipo);
 
   // ── salvar ──
   function gerarPDFPersonalizado() {
@@ -477,24 +486,23 @@ export default function Personalizado(){
 
         {/* PROGRESSO */}
         <div style={{marginBottom:"40px"}}>
-          <div style={{display:"flex",justifyContent:"space-between",marginBottom:"8px"}}>
-            {["Detalhes do pedido","Finalizar pedido"].map((label,i)=>(
-              <span key={i} style={{fontSize:"10px",textTransform:"uppercase",letterSpacing:"0.1em",fontFamily:"system-ui",color:etapa>i?t.text:t.textSecundario,fontWeight:etapa===i+1?"700":"400"}}>{label}</span>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:"8px",gap:"4px"}}>
+            {ETAPAS_LABELS.map((label,i)=>(
+              <span key={i} style={{fontSize:"9px",textTransform:"uppercase",letterSpacing:"0.05em",fontFamily:"system-ui",color:etapa>i?t.text:t.textSecundario,fontWeight:etapa===i+1?"700":"400",textAlign:i===0?"left":i===ETAPAS_LABELS.length-1?"right":"center",flex:1}}>{label}</span>
             ))}
           </div>
           <div style={{height:"2px",backgroundColor:t.border}}>
-            <div style={{height:"100%",width:etapa===1?"50%":"100%",backgroundColor:t.text,transition:"width 0.4s ease"}}/>
+            <div style={{height:"100%",width:(etapa/ETAPAS_LABELS.length*100)+"%",backgroundColor:t.text,transition:"width 0.4s ease"}}/>
           </div>
         </div>
 
-        {/* ══ ETAPA 1 ══ */}
+        {/* ══ ETAPA 1 — O QUE PRECISA ══ */}
         {etapa===1 && (
           <div style={{display:"flex",flexDirection:"column",gap:"28px"}}>
-            <h2 style={{fontSize:"1.4rem",fontWeight:"400",color:t.text,fontFamily:"Georgia, serif"}}>Detalhes do Pedido</h2>
+            <h2 style={{fontSize:"1.4rem",fontWeight:"400",color:t.text,fontFamily:"Georgia, serif"}}>O que você precisa?</h2>
 
-            {/* CATEGORIA */}
             <div>
-              <label style={labelStyle}>O que você precisa? *</label>
+              <label style={labelStyle}>Escolha uma categoria *</label>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"10px"}}>
                 {CATEGORIAS.map(cat=>{
                   const sel = form.categoria === cat.id;
@@ -512,6 +520,17 @@ export default function Personalizado(){
               </div>
             </div>
 
+            <button onClick={()=>{if(categoriaValida)setEtapa(2);}} disabled={!categoriaValida}
+              className="transition-all duration-300 hover:enabled:shadow-lg hover:enabled:-translate-y-0.5"
+              style={{...btnP(categoriaValida),width:"100%"}}>Próximo →</button>
+          </div>
+        )}
+
+        {/* ══ ETAPA 2 — DETALHES DO PRODUTO ══ */}
+        {etapa===2 && (
+          <div style={{display:"flex",flexDirection:"column",gap:"28px"}}>
+            <h2 style={{fontSize:"1.4rem",fontWeight:"400",color:t.text,fontFamily:"Georgia, serif"}}>Detalhes do Produto</h2>
+
             {/* ══ ROUPAS ══ */}
             {form.categoria==="roupas" && (
               <div>
@@ -520,7 +539,7 @@ export default function Personalizado(){
                 </div>
 
                 {/* Lista de combinações */}
-                {form.combinacoes.map((comb,idx)=>{
+                {form.combinacoes.map((comb)=>{
                   const tipo = TIPOS_ROUPA.find(t=>t.id===comb.tipoId);
                   const corObj = CORES_OPCOES.find(c=>c.id===comb.cor);
                   const total = totalComb(comb);
@@ -710,51 +729,101 @@ export default function Personalizado(){
               </>
             )}
 
-            {/* DESCRIÇÃO + UPLOAD */}
-            {form.categoria && (
-              <>
-                <div>
-                  <label style={labelStyle}>{form.categoria==="roupas"?"Descrição (estampa, tema, arte...)":"Descrição do projeto"}</label>
-                  <textarea value={form.descricao} onChange={e=>setForm(p=>({...p,descricao:e.target.value}))} rows={4}
-                    placeholder={form.categoria==="roupas"?"Descreva o tema, arte, estampa, referências...":"Descreva o logo, cores, referências..."}
-                    style={{...inputStyle,resize:"none"}}/>
-                </div>
-                <div>
-                  <label style={labelStyle}>{form.categoria==="roupas"?"Artes e estampas (opcional — até 5)":"Arquivos de referência (opcional — até 5)"}</label>
-                  <label className="transition-all duration-300 hover:shadow-sm" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"28px",borderRadius:"14px",cursor:"pointer",border:"2px dashed "+t.borderForte,backgroundColor:t.bgCard}}>
-                    <span style={{marginBottom:"10px"}}><IconBadge Icone={PaperclipIcon} cor={t.text} size={20} box={44} /></span>
-                    <span style={{fontSize:"13px",fontWeight:"500",color:t.text,fontFamily:"system-ui"}}>Clique para selecionar arquivos</span>
-                    <span style={{fontSize:"11px",color:t.textSecundario,marginTop:"4px",fontFamily:"system-ui"}}>PNG, JPG, PDF — até 5 arquivos</span>
-                    <input type="file" multiple accept="image/*,.pdf" style={{display:"none"}} onChange={e=>{const files=Array.from(e.target.files).slice(0,5);setForm(p=>({...p,fotos:files.map(f=>({file:f,url:f.type.startsWith("image/")?URL.createObjectURL(f):null,name:f.name}))}));}}/>
-                  </label>
-                  {form.fotos.length>0&&(
-                    <div style={{display:"flex",gap:"8px",flexWrap:"wrap",marginTop:"10px"}}>
-                      {form.fotos.map((foto,i)=>(
-                        <div key={i} style={{position:"relative"}}>
-                          {foto.url?<img src={foto.url} alt="" style={{width:"72px",height:"72px",borderRadius:"10px",objectFit:"cover",border:"1px solid "+t.border}}/>
-                            :<div style={{width:"72px",height:"72px",borderRadius:"10px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",backgroundColor:t.bgSecundario,border:"1px solid "+t.border,color:t.textSecundario,gap:"3px"}}>
-                                <DocIcon size={20} strokeWidth={1.5} />
-                                <span style={{fontSize:"9px"}}>{foto.name.split(".").pop().toUpperCase()}</span>
-                              </div>}
-                          <button onClick={()=>setForm(p=>({...p,fotos:p.fotos.filter((_,j)=>j!==i)}))} style={{position:"absolute",top:"-5px",right:"-5px",width:"18px",height:"18px",borderRadius:"50%",backgroundColor:"#ef4444",color:"white",border:"none",cursor:"pointer",fontSize:"10px"}}>✕</button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-
-            <button onClick={()=>{if(etapa1Valida)setEtapa(2);}} disabled={!etapa1Valida}
-              className="transition-all duration-300 hover:enabled:shadow-lg hover:enabled:-translate-y-0.5"
-              style={{...btnP(etapa1Valida),width:"100%"}}>Próximo →</button>
+            <div style={{display:"flex",gap:"12px"}}>
+              <button onClick={()=>setEtapa(1)} className="transition-all duration-300 hover:shadow-md"
+                style={{flex:1,padding:"14px",borderRadius:"10px",border:"1px solid "+t.border,color:t.text,backgroundColor:t.bg,cursor:"pointer",fontFamily:"system-ui",fontWeight:"600"}}>← Voltar</button>
+              <button onClick={()=>{if(detalhesValida)setEtapa(3);}} disabled={!detalhesValida}
+                className="transition-all duration-300 hover:enabled:shadow-lg hover:enabled:-translate-y-0.5"
+                style={{...btnP(detalhesValida),flex:2}}>Próximo →</button>
+            </div>
           </div>
         )}
 
-        {/* ══ ETAPA 2 — FINALIZAR ══ */}
-        {etapa===2 && (
+        {/* ══ ETAPA 3 — REFERÊNCIAS E DESCRIÇÃO ══ */}
+        {etapa===3 && (
+          <div style={{display:"flex",flexDirection:"column",gap:"28px"}}>
+            <h2 style={{fontSize:"1.4rem",fontWeight:"400",color:t.text,fontFamily:"Georgia, serif"}}>Referências e Descrição</h2>
+
+            <div>
+              <label style={labelStyle}>{form.categoria==="roupas"?"Descrição (estampa, tema, arte...)":"Descrição do projeto"}</label>
+              <textarea value={form.descricao} onChange={e=>setForm(p=>({...p,descricao:e.target.value}))} rows={4}
+                placeholder={form.categoria==="roupas"?"Descreva o tema, arte, estampa, referências...":"Descreva o logo, cores, referências..."}
+                style={{...inputStyle,resize:"none"}}/>
+            </div>
+            <div>
+              <label style={labelStyle}>{form.categoria==="roupas"?"Artes e estampas (opcional — até 5)":"Arquivos de referência (opcional — até 5)"}</label>
+              <label className="transition-all duration-300 hover:shadow-sm" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"28px",borderRadius:"14px",cursor:"pointer",border:"2px dashed "+t.borderForte,backgroundColor:t.bgCard}}>
+                <span style={{marginBottom:"10px"}}><IconBadge Icone={PaperclipIcon} cor={t.text} size={20} box={44} /></span>
+                <span style={{fontSize:"13px",fontWeight:"500",color:t.text,fontFamily:"system-ui"}}>Clique para selecionar arquivos</span>
+                <span style={{fontSize:"11px",color:t.textSecundario,marginTop:"4px",fontFamily:"system-ui"}}>PNG, JPG, PDF — até 5 arquivos</span>
+                <input type="file" multiple accept="image/*,.pdf" style={{display:"none"}} onChange={e=>{const files=Array.from(e.target.files).slice(0,5);setForm(p=>({...p,fotos:files.map(f=>({file:f,url:f.type.startsWith("image/")?URL.createObjectURL(f):null,name:f.name}))}));}}/>
+              </label>
+              {form.fotos.length>0&&(
+                <div style={{display:"flex",gap:"8px",flexWrap:"wrap",marginTop:"10px"}}>
+                  {form.fotos.map((foto,i)=>(
+                    <div key={i} style={{position:"relative"}}>
+                      {foto.url?<img src={foto.url} alt="" style={{width:"72px",height:"72px",borderRadius:"10px",objectFit:"cover",border:"1px solid "+t.border}}/>
+                        :<div style={{width:"72px",height:"72px",borderRadius:"10px",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",backgroundColor:t.bgSecundario,border:"1px solid "+t.border,color:t.textSecundario,gap:"3px"}}>
+                            <DocIcon size={20} strokeWidth={1.5} />
+                            <span style={{fontSize:"9px"}}>{foto.name.split(".").pop().toUpperCase()}</span>
+                          </div>}
+                      <button onClick={()=>setForm(p=>({...p,fotos:p.fotos.filter((_,j)=>j!==i)}))} style={{position:"absolute",top:"-5px",right:"-5px",width:"18px",height:"18px",borderRadius:"50%",backgroundColor:"#ef4444",color:"white",border:"none",cursor:"pointer",fontSize:"10px"}}>✕</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div>
+              <label style={labelStyle}>Observações finais (opcional)</label>
+              <textarea value={form.observacoes} onChange={e=>setForm(p=>({...p,observacoes:e.target.value}))} rows={3} placeholder="Alguma informação extra..." style={{...inputStyle,resize:"none"}}/>
+            </div>
+
+            <div style={{display:"flex",gap:"12px"}}>
+              <button onClick={()=>setEtapa(2)} className="transition-all duration-300 hover:shadow-md"
+                style={{flex:1,padding:"14px",borderRadius:"10px",border:"1px solid "+t.border,color:t.text,backgroundColor:t.bg,cursor:"pointer",fontFamily:"system-ui",fontWeight:"600"}}>← Voltar</button>
+              <button onClick={()=>setEtapa(4)}
+                className="transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
+                style={{...btnP(true),flex:2}}>Próximo →</button>
+            </div>
+          </div>
+        )}
+
+        {/* ══ ETAPA 4 — SEUS DADOS ══ */}
+        {etapa===4 && (
           <div style={{display:"flex",flexDirection:"column",gap:"20px"}}>
-            <h2 style={{fontSize:"1.4rem",fontWeight:"400",color:t.text,fontFamily:"Georgia, serif"}}>Finalizar Pedido</h2>
+            <h2 style={{fontSize:"1.4rem",fontWeight:"400",color:t.text,fontFamily:"Georgia, serif"}}>Seus Dados</h2>
+            <p style={{fontSize:"13px",color:t.textSecundario,fontFamily:"system-ui",lineHeight:1.6,marginTop:"-12px"}}>
+              Para nossa equipe entrar em contato e confirmar os detalhes do seu pedido.
+            </p>
+            <div style={{display:"flex",flexDirection:"column",gap:"14px"}}>
+              <div><label style={labelStyle}>Nome completo *</label><input value={form.nomeCliente} onChange={e=>setForm(p=>({...p,nomeCliente:e.target.value}))} placeholder="Ex: João Silva" style={inputStyle}/></div>
+              <div>
+                <label style={labelStyle}>Telefone / WhatsApp *</label>
+                <input value={form.telefone} onChange={e=>setForm(p=>({...p,telefone:formatTel(e.target.value)}))} placeholder="(27) 99999-9999" maxLength={15} inputMode="tel" style={{...inputStyle,borderColor:form.telefone&&validarTel(form.telefone)?"#ef4444":t.border}}/>
+                {form.telefone&&validarTel(form.telefone)&&<p style={{fontSize:"11px",color:"#ef4444",marginTop:"4px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"4px"}}><WarningIcon size={12} strokeWidth={1.8} /> {validarTel(form.telefone)}</p>}
+              </div>
+              <div>
+                <label style={labelStyle}>E-mail *</label>
+                <input value={form.email} type="email" onChange={e=>setForm(p=>({...p,email:e.target.value}))} placeholder="Ex: joao@email.com" style={{...inputStyle,borderColor:form.email&&!emailValido(form.email)?"#ef4444":t.border}}/>
+                {form.email&&!emailValido(form.email)&&<p style={{fontSize:"11px",color:"#ef4444",marginTop:"4px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"4px"}}><WarningIcon size={12} strokeWidth={1.8} /> E-mail inválido</p>}
+                {form.email&&emailValido(form.email)&&<p style={{fontSize:"11px",color:"#16a34a",marginTop:"4px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"4px"}}><CheckIcon size={12} strokeWidth={2.2} /> E-mail válido</p>}
+              </div>
+            </div>
+
+            <div style={{display:"flex",gap:"12px"}}>
+              <button onClick={()=>setEtapa(3)} className="transition-all duration-300 hover:shadow-md"
+                style={{flex:1,padding:"14px",borderRadius:"10px",border:"1px solid "+t.border,color:t.text,backgroundColor:t.bg,cursor:"pointer",fontFamily:"system-ui",fontWeight:"600"}}>← Voltar</button>
+              <button onClick={()=>{if(contatoValida)setEtapa(5);}} disabled={!contatoValida}
+                className="transition-all duration-300 hover:enabled:shadow-lg hover:enabled:-translate-y-0.5"
+                style={{...btnP(contatoValida),flex:2}}>Próximo →</button>
+            </div>
+          </div>
+        )}
+
+        {/* ══ ETAPA 5 — ENTREGA E REVISÃO ══ */}
+        {etapa===5 && (
+          <div style={{display:"flex",flexDirection:"column",gap:"20px"}}>
+            <h2 style={{fontSize:"1.4rem",fontWeight:"400",color:t.text,fontFamily:"Georgia, serif"}}>Entrega e Revisão</h2>
 
             {/* RESUMO */}
             <div style={{border:"1px solid "+t.border,borderRadius:"14px",padding:"20px",backgroundColor:t.bgCard}}>
@@ -812,24 +881,12 @@ export default function Personalizado(){
               )}
             </div>
 
-            {/* CONTATO + ENDEREÇO */}
-            <div style={{borderTop:"2px solid "+t.borderForte,paddingTop:"20px"}}>
+            {/* ENDEREÇO */}
+            <div>
               <p style={{fontSize:"13px",fontWeight:"600",color:t.text,fontFamily:"system-ui",marginBottom:"16px",display:"flex",alignItems:"center",gap:"8px"}}>
-                <IconBadge Icone={UserIcon} cor={t.text} size={12} box={22} /> Seus dados para contato *
+                <IconBadge Icone={PinIcon} cor={t.text} size={12} box={22} /> Endereço de Entrega *
               </p>
               <div style={{display:"flex",flexDirection:"column",gap:"14px"}}>
-                <div><label style={labelStyle}>Nome completo *</label><input value={form.nomeCliente} onChange={e=>setForm(p=>({...p,nomeCliente:e.target.value}))} placeholder="Ex: João Silva" style={inputStyle}/></div>
-                <div>
-                  <label style={labelStyle}>Telefone / WhatsApp *</label>
-                  <input value={form.telefone} onChange={e=>setForm(p=>({...p,telefone:formatTel(e.target.value)}))} placeholder="(27) 99999-9999" maxLength={15} inputMode="tel" style={{...inputStyle,borderColor:form.telefone&&validarTel(form.telefone)?"#ef4444":t.border}}/>
-                  {form.telefone&&validarTel(form.telefone)&&<p style={{fontSize:"11px",color:"#ef4444",marginTop:"4px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"4px"}}><WarningIcon size={12} strokeWidth={1.8} /> {validarTel(form.telefone)}</p>}
-                </div>
-                <div>
-                  <label style={labelStyle}>E-mail *</label>
-                  <input value={form.email} type="email" onChange={e=>setForm(p=>({...p,email:e.target.value}))} placeholder="Ex: joao@email.com" style={{...inputStyle,borderColor:form.email&&!emailValido(form.email)?"#ef4444":t.border}}/>
-                  {form.email&&!emailValido(form.email)&&<p style={{fontSize:"11px",color:"#ef4444",marginTop:"4px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"4px"}}><WarningIcon size={12} strokeWidth={1.8} /> E-mail inválido</p>}
-                  {form.email&&emailValido(form.email)&&<p style={{fontSize:"11px",color:"#16a34a",marginTop:"4px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"4px"}}><CheckIcon size={12} strokeWidth={2.2} /> E-mail válido</p>}
-                </div>
                 <div>
                   <label style={labelStyle}>CEP *</label>
                   <input value={form.cep} onChange={e=>{const fmt=formatCEP(e.target.value);setForm(p=>({...p,cep:fmt}));if(fmt.replace(/\D/g,"").length===8)buscarCEP(fmt,setForm);}} placeholder="29000-000" maxLength={9} inputMode="numeric" style={{...inputStyle,borderColor:form.cep&&form.cep.replace(/\D/g,"").length<8?"#ef4444":t.border}}/>
@@ -847,7 +904,6 @@ export default function Personalizado(){
                   <div><label style={labelStyle}>Bairro *</label><input value={form.bairro||""} onChange={e=>setForm(p=>({...p,bairro:e.target.value}))} placeholder="Centro" style={inputStyle}/></div>
                   <div><label style={labelStyle}>Complemento</label><input value={form.complemento||""} onChange={e=>setForm(p=>({...p,complemento:e.target.value}))} placeholder="Apto 2" style={inputStyle}/></div>
                 </div>
-                <div><label style={labelStyle}>Observações finais (opcional)</label><textarea value={form.observacoes} onChange={e=>setForm(p=>({...p,observacoes:e.target.value}))} rows={3} placeholder="Alguma informação extra..." style={{...inputStyle,resize:"none"}}/></div>
 
                 {/* FRETE */}
                 {(() => {
@@ -939,15 +995,13 @@ export default function Personalizado(){
               <div style={{backgroundColor:"#fef9f0",border:"1px solid #fde68a",borderRadius:"12px",padding:"14px"}}>
                 <p style={{fontSize:"12px",fontWeight:"600",color:"#92400e",marginBottom:"8px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"6px"}}><WarningIcon size={14} strokeWidth={1.8} /> Preencha os campos obrigatórios para finalizar:</p>
                 <ul style={{fontSize:"12px",color:"#92400e",fontFamily:"system-ui",lineHeight:1.8,paddingLeft:"16px",margin:0}}>
-                  {!form.nomeCliente.trim()&&<li>Nome completo</li>}
-                  {validarTel(form.telefone)&&<li>Telefone válido</li>}
-                  {(!form.email.trim()||!emailValido(form.email))&&<li>E-mail válido</li>}
                   {(!form.cep||form.cep.replace(/\D/g,"").length<8)&&<li>CEP completo</li>}
                   {!form.cidade.trim()&&<li>Cidade</li>}
                   {!form.estado.trim()&&<li>Estado</li>}
                   {!(form.rua||"").trim()&&<li>Rua / Avenida</li>}
                   {!(form.numero||"").trim()&&<li>Número</li>}
                   {!(form.bairro||"").trim()&&<li>Bairro</li>}
+                  {!form.frete_tipo&&<li>Forma de entrega</li>}
                 </ul>
               </div>
             )}
@@ -955,7 +1009,7 @@ export default function Personalizado(){
             {erro&&<div style={{backgroundColor:"#fef2f2",border:"1px solid #fecaca",borderRadius:"12px",padding:"12px",color:"#dc2626",fontSize:"13px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"6px"}}><WarningIcon size={14} strokeWidth={1.8} /> {erro}</div>}
 
             <div style={{display:"flex",gap:"12px"}}>
-              <button onClick={()=>setEtapa(1)} className="transition-all duration-300 hover:shadow-md"
+              <button onClick={()=>setEtapa(4)} className="transition-all duration-300 hover:shadow-md"
                 style={{flex:1,padding:"14px",borderRadius:"10px",border:"1px solid "+t.border,color:t.text,backgroundColor:t.bg,cursor:"pointer",fontFamily:"system-ui",fontWeight:"600"}}>← Voltar</button>
             </div>
             <button onClick={salvarNoBanco} disabled={salvando||!finalizacaoValida}
