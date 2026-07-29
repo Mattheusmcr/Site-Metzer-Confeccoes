@@ -112,7 +112,7 @@ export default function Home() {
   return (
     <div style={{ backgroundColor: t.bg, color: t.text, fontFamily: "Manrope, sans-serif", overflowX: "hidden" }}>
 
-      {/* ══ HERO ══ */}
+      {/* HERO */}
       <section ref={heroRef} className="relative overflow-hidden" style={{ height: "95vh", minHeight: "550px" }}>
         {heroImages.map((img, i) => (
           <div key={i} className="absolute inset-0 transition-opacity duration-1000"
@@ -158,7 +158,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══ O QUE FAZEMOS + FOTO ══ */}
+      {/* O QUE FAZEMOS + FOTO */}
       <section ref={sobreRef} style={{ backgroundColor: t.bg }}>
         <div ref={missaoRef} className="grid grid-cols-1 md:grid-cols-2 md:gap-14 px-6 md:px-16 py-14 md:py-24">
           {/* Esquerda: todo o conteúdo textual empilhado */}
@@ -196,7 +196,7 @@ export default function Home() {
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 {clientes.map((c, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
-                    <span style={{ color: t.accent, fontWeight: "700", flexShrink: 0, fontSize: "14px" }}>→</span>
+                    <span style={{ color: t.accent, fontWeight: "700", flexShrink: 0, fontSize: "14px" }}>-</span>
                     <p style={{ fontSize: "13.5px", color: t.textSecundario, lineHeight: 1.5 }}>{c}</p>
                   </div>
                 ))}
@@ -223,7 +223,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══ PORQUE NOS ESCOLHEM ══ */}
+      {/* PORQUE NOS ESCOLHEM */}
       <section ref={porqueRef} style={{ backgroundColor: t.bgDark }}>
         <div className="px-6 md:px-24 py-16 md:py-24">
           <div style={{ opacity: porqueVisible ? 1 : 0, transform: porqueVisible ? "translateY(0)" : "translateY(30px)", transition: "all 0.8s ease" }}>
@@ -249,7 +249,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══ PROJETOS ENTREGUES ══ */}
+      {/* PROJETOS ENTREGUES */}
       <section ref={galeriaRef} style={{ backgroundColor: t.bg }}>
         <div className="px-6 md:px-24 py-16 md:py-24">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 md:mb-16 gap-4"
@@ -270,9 +270,9 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-rows-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {galeria.slice(galeriaIndex * FOTOS_POR_SLIDE, galeriaIndex * FOTOS_POR_SLIDE + FOTOS_POR_SLIDE).map((url, i) => (
-              <div key={i} className={`overflow-hidden relative group shadow-md hover:shadow-xl h-[260px] sm:h-auto ${i === 0 ? "sm:row-span-2" : ""}`}
+              <div key={i} className="overflow-hidden relative group shadow-md hover:shadow-xl h-[280px]"
                 style={{
                   borderRadius: "20px",
                   opacity: galeriaVisible ? 1 : 0, transform: galeriaVisible ? "translateY(0)" : "translateY(20px)",
@@ -305,7 +305,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══ CTA ══ */}
+      {/* CTA */}
       <section style={{ background: "linear-gradient(135deg, #161513 0%, #3a352c 100%)" }}>
         <div className="px-6 md:px-24 py-16 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
           <div>

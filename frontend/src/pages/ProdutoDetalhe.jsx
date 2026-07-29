@@ -157,7 +157,7 @@ export default function ProdutoDetalhe() {
 
             <div style={{ borderTop: "1px solid " + t.border, marginBottom: "24px" }} />
 
-            {/* ══ TAMANHOS - ROUPA ══ */}
+            {/* TAMANHOS - ROUPA */}
             {!isComunicacao && (
               <div className="mb-6">
                 <p className="text-xs font-bold uppercase mb-3" style={{ color: t.textSecundario, letterSpacing: "0.1em" }}>
@@ -196,7 +196,7 @@ export default function ProdutoDetalhe() {
               </div>
             )}
 
-            {/* ══ TAMANHOS - COMUNICAÇÃO VISUAL ══ */}
+            {/* TAMANHOS - COMUNICAÇÃO VISUAL */}
             {isComunicacao && todosTamanhos.length > 0 && (
               <div className="mb-6">
                 <p className="text-xs font-bold uppercase mb-3" style={{ color: t.textSecundario, letterSpacing: "0.1em" }}>
@@ -234,7 +234,7 @@ export default function ProdutoDetalhe() {
               </div>
             )}
 
-            {/* ══ QUANTIDADE ══ */}
+            {/* QUANTIDADE */}
             <div className="flex items-center gap-4 mb-6">
               <p className="text-xs font-bold uppercase" style={{ color: t.textSecundario, letterSpacing: "0.1em" }}>Quantidade</p>
               <div className="flex items-center overflow-hidden" style={{ border: "1px solid " + t.border, borderRadius: "999px" }}>
@@ -248,7 +248,7 @@ export default function ProdutoDetalhe() {
               </div>
             </div>
 
-            {/* ══ BOTÕES ══ */}
+            {/* BOTÕES */}
             <div className="flex flex-col gap-3 mb-6">
               <button onClick={handleComprar}
                 className="cursor-pointer w-full py-4 font-bold text-white transition hover:opacity-90"

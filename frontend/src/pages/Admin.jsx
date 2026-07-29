@@ -35,6 +35,33 @@ function IconBadge({ Icone, cor, size = 13 }) {
   );
 }
 
+function ConfirmModal({ titulo, mensagem, aviso, Icone = TrashIcon, corIcone = "#DC2626", textoConfirmar = "Confirmar", corConfirmar = "#DC2626", onConfirmar, onCancelar }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+      <div className="rounded-2xl p-8 shadow-2xl max-w-md w-full mx-4" style={{ backgroundColor: "#FFFFFF" }}>
+        <div className="text-center mb-6">
+          <p className="mb-4 flex justify-center" style={{ color: corIcone }}><Icone size={36} strokeWidth={1.4} /></p>
+          <h3 className="text-xl font-bold mb-2" style={{ color: "#161513" }}>{titulo}</h3>
+          <p className="text-sm" style={{ color: "#8A877F" }}>{mensagem}</p>
+          {aviso && <p className="text-sm mt-2 font-medium" style={{ color: corIcone }}>{aviso}</p>}
+        </div>
+        <div className="flex gap-3">
+          <button onClick={onCancelar}
+            className="flex-1 py-3 rounded-full font-semibold transition hover:opacity-70"
+            style={{ border: "1px solid rgba(0,0,0,0.08)", color: "#161513", backgroundColor: "transparent", cursor: "pointer" }}>
+            Cancelar
+          </button>
+          <button onClick={onConfirmar}
+            className="cursor-pointer flex-1 py-3 rounded-full font-semibold text-white transition hover:opacity-80"
+            style={{ backgroundColor: corConfirmar }}>
+            {textoConfirmar}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const CATEGORIAS_ADMIN = [
   {
     id: "roupas", label: "Item de Roupa",
@@ -111,7 +138,7 @@ function CadastrarProduto({ mostrarToast, dark, estilos }) {
             </select>
             {form.subcategoria && (
               <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium"
-                style={{ backgroundColor: dark ? "#374151" : "#F4F2EE", color: text, border: "1px solid " + border }}>
+                style={{ backgroundColor: "#FFFFFF", color: text, border: "1px solid " + border }}>
                 <FolderIcon size={13} strokeWidth={1.6} /> {CATEGORIAS_ADMIN.find(c => c.id === form.categoria)?.label} › {subcatsDisponiveis.find(s => s.id === form.subcategoria)?.label}
               </div>
             )}
@@ -155,6 +182,7 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
   const [editando, setEditando] = useState(null);
   const [novasImagens, setNovasImagens] = useState([]);
   const [previews, setPreviews] = useState([]);
+  const [confirmAcao, setConfirmAcao] = useState(null);
 
   const inputStyle = { padding: "7px 10px", borderRadius: "6px", border: "1px solid " + inputBorder, backgroundColor: inputBg, color: text, fontSize: "13px", outline: "none", width: "100%", boxSizing: "border-box" };
   const labelStyle = { fontSize: "11px", color: subtext, display: "block", marginBottom: "3px", textTransform: "uppercase" };
@@ -183,12 +211,13 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
       console.error("toggleAtivo erro:", e.response?.data);
       mostrarToast("Erro ao alterar status.", "erro");
     }
+    finally { setConfirmAcao(null); }
   }
 
   async function excluir(p) {
-    if (!confirm(`Excluir "${p.nome}"?`)) return;
     try { await api.delete(`produtos/${p.id}/`); mostrarToast(`"${p.nome}" excluído.`, "sucesso"); carregar(); }
     catch { mostrarToast("Erro ao excluir.", "erro"); }
+    finally { setConfirmAcao(null); }
   }
 
   async function salvarEdicao() {
@@ -272,7 +301,7 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
                   </div>
                   {editando.categoria && (
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium"
-                      style={{ backgroundColor: dark ? "#374151" : "#F4F2EE", color: text, border: "1px solid " + border }}>
+                      style={{ backgroundColor: "#FFFFFF", color: text, border: "1px solid " + border }}>
                       <FolderIcon size={13} strokeWidth={1.6} /> {CATEGORIAS_ADMIN.find(c => c.id === editando.categoria)?.label}
                       {editando.subcategoria && ` › ${subcatsEdicao.find(sub => sub.id === editando.subcategoria)?.label}`}
                     </div>
@@ -303,7 +332,7 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
                     <button onClick={salvarEdicao} className="cursor-pointer px-4 py-2 rounded-full text-sm font-semibold text-white transition-all duration-300 hover:shadow-md hover:-translate-y-0.5" style={{ backgroundColor: "#16A34A" }}>Salvar</button>
                     <button onClick={() => { setEditando(null); setNovasImagens([]); setPreviews([]); }}
                       className="px-4 py-2 rounded-lg text-sm font-semibold"
-                      style={{ backgroundColor: dark ? "#374151" : "#F4F2EE", color: text }}>Cancelar</button>
+                      style={{ backgroundColor: "#FFFFFF", border: "1px solid " + border, color: text }}>Cancelar</button>
                   </div>
                 </div>
               ) : (
@@ -313,7 +342,7 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
                     <p className="text-sm" style={{ color: subtext }}>R$ {Number(p.preco).toFixed(2)}</p>
                     {labelCategoria(p) && (
                       <span className="text-xs px-2 py-0.5 rounded-full mt-1 mr-2 inline-flex items-center gap-1"
-                        style={{ backgroundColor: dark ? "#374151" : "#F4F2EE", color: subtext }}>
+                        style={{ backgroundColor: "#FFFFFF", border: "1px solid " + border, color: subtext }}>
                         <FolderIcon size={11} strokeWidth={1.6} /> {labelCategoria(p)}
                       </span>
                     )}
@@ -323,15 +352,15 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
                     </span>
                   </div>
                   <div className="flex gap-2 shrink-0 flex-wrap justify-end">
-                    <button onClick={() => toggleAtivo(p)} className="px-3 py-1.5 text-sm rounded-lg font-medium"
-                      style={{ backgroundColor: p.ativo ? "#FEF2F2" : "#F0FDF4", color: p.ativo ? "#DC2626" : "#16A34A" }}>
+                    <button onClick={() => setConfirmAcao({ tipo: p.ativo ? "desativar" : "ativar", produto: p })} className="px-3 py-1.5 text-sm rounded-lg font-medium"
+                      style={{ backgroundColor: p.ativo ? "#FEF2F2" : "#F0FDF4", color: p.ativo ? "#DC2626" : "#16A34A", cursor: "pointer" }}>
                       {p.ativo ? "Desativar" : "Ativar"}
                     </button>
                     <button onClick={() => { setEditando({ ...p }); setNovasImagens([]); setPreviews([]); }}
                       className="px-3 py-1.5 text-sm rounded-lg"
-                      style={{ backgroundColor: dark ? "#374151" : "#F4F2EE", color: text }}>Editar</button>
-                    <button onClick={() => excluir(p)} className="px-3 py-1.5 text-sm rounded-lg"
-                      style={{ backgroundColor: "#FEF2F2", color: "#DC2626" }}>Excluir</button>
+                      style={{ backgroundColor: "#FFFFFF", border: "1px solid " + border, color: text, cursor: "pointer" }}>Editar</button>
+                    <button onClick={() => setConfirmAcao({ tipo: "excluir", produto: p })} className="px-3 py-1.5 text-sm rounded-lg"
+                      style={{ backgroundColor: "#FEF2F2", color: "#DC2626", cursor: "pointer" }}>Excluir</button>
                   </div>
                 </>
               )}
@@ -339,6 +368,32 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
           </div>
         ))}
       </div>
+
+      {confirmAcao?.tipo === "excluir" && (
+        <ConfirmModal
+          titulo="Excluir produto?"
+          mensagem={<>Você está prestes a excluir <strong style={{ color: "#161513" }}>"{confirmAcao.produto.nome}"</strong>.</>}
+          aviso="Esta ação é irreversível e remove o produto permanentemente do catálogo."
+          Icone={TrashIcon} corIcone="#DC2626" corConfirmar="#DC2626" textoConfirmar="Sim, excluir"
+          onCancelar={() => setConfirmAcao(null)}
+          onConfirmar={() => excluir(confirmAcao.produto)}
+        />
+      )}
+      {(confirmAcao?.tipo === "ativar" || confirmAcao?.tipo === "desativar") && (
+        <ConfirmModal
+          titulo={confirmAcao.tipo === "ativar" ? "Ativar produto?" : "Desativar produto?"}
+          mensagem={<>
+            {confirmAcao.tipo === "ativar" ? "O produto voltará a aparecer no catálogo público: " : "O produto deixará de aparecer no catálogo público: "}
+            <strong style={{ color: "#161513" }}>"{confirmAcao.produto.nome}"</strong>.
+          </>}
+          Icone={confirmAcao.tipo === "ativar" ? CheckIcon : CloseIcon}
+          corIcone={confirmAcao.tipo === "ativar" ? "#16A34A" : "#DC2626"}
+          corConfirmar={confirmAcao.tipo === "ativar" ? "#16A34A" : "#DC2626"}
+          textoConfirmar={confirmAcao.tipo === "ativar" ? "Sim, ativar" : "Sim, desativar"}
+          onCancelar={() => setConfirmAcao(null)}
+          onConfirmar={() => toggleAtivo(confirmAcao.produto)}
+        />
+      )}
     </div>
   );
 }
@@ -414,7 +469,7 @@ function Dashboard({ dark, estilos }) {
           ].map((item, i) => (
             <a key={i} href={item.url} target="_blank" rel="noreferrer"
               style={{ borderRadius:"8px", padding:"12px 10px", textAlign:"center",
-                backgroundColor: dark ? "#374151" : "#F4F2EE", border: "1px solid " + border,
+                backgroundColor: "#FFFFFF", border: "1px solid " + border,
                 textDecoration:"none", display:"block" }}>
               <div style={{ marginBottom:"5px", color: text, display:"flex", justifyContent:"center" }}><item.Icone size={20} strokeWidth={1.5} /></div>
               <p style={{ fontSize:"12px", color: text, fontFamily:"system-ui", fontWeight:"600", margin:0 }}>{item.label}</p>
@@ -437,7 +492,7 @@ function Dashboard({ dark, estilos }) {
                   <span style={{ fontSize: "13px", color: text }}>{nome}</span>
                   <span style={{ fontSize: "13px", fontWeight: "600", color: text }}>{qtd} un</span>
                 </div>
-                <div style={{ height: "6px", backgroundColor: dark ? "#374151" : "#F4F2EE", borderRadius: "3px" }}>
+                <div style={{ height: "6px", backgroundColor: "#FFFFFF", borderRadius: "3px" }}>
                   <div style={{ height: "100%", width: pct + "%", backgroundColor: "#2563EB", borderRadius: "3px" }} />
                 </div>
               </div>
@@ -804,7 +859,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                 <button onClick={() => setAberto(expandido ? null : `cat-${p.id}`)}
                   className="w-full p-5 flex items-center justify-between text-left">
                   <div className="flex items-center gap-4">
-                    <span className="text-xs px-2 py-1 rounded-lg font-mono" style={{ backgroundColor: dark ? "#374151" : "#F4F2EE", color: subtext }}>#{p.id}</span>
+                    <span className="text-xs px-2 py-1 rounded-lg font-mono" style={{ backgroundColor: "#FFFFFF", color: subtext }}>#{p.id}</span>
                     <div>
                       <p className="font-semibold" style={{ color: text }}>{p.nome_cliente}</p>
                       <p className="text-xs font-mono flex items-center gap-1" style={{ color: "#2563EB" }}>
@@ -858,7 +913,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                           </div>
                         ) },
                       ].map(({ titulo, Icone, cor, conteudo }) => (
-                        <div key={titulo} className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#F4F2EE" }}>
+                        <div key={titulo} className="rounded-lg p-4" style={{ backgroundColor: "#FFFFFF" }}>
                           <div className="flex items-center gap-2 mb-3">
                             <IconBadge Icone={Icone} cor={cor} />
                             <p className="text-xs font-bold uppercase" style={{ color: subtext }}>{titulo}</p>
@@ -869,7 +924,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                     </div>
                     <div className="rounded-lg overflow-hidden" style={{ border: "1px solid " + border }}>
                       <table className="w-full text-sm">
-                        <thead><tr style={{ backgroundColor: dark ? "#374151" : "#F4F2EE" }}>
+                        <thead><tr style={{ backgroundColor: "#FFFFFF" }}>
                           <th className="text-left p-3 font-semibold" style={{ color: text }}>Produto</th>
                           <th className="text-center p-3 font-semibold" style={{ color: text }}>Tamanho</th>
                           <th className="text-center p-3 font-semibold" style={{ color: text }}>Qtd.</th>
@@ -878,7 +933,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                         </tr></thead>
                         <tbody>
                           {(p.itens || []).map((item, i) => (
-                            <tr key={i} style={{ backgroundColor: i % 2 === 0 ? (dark ? "#1f2937" : "#fff") : (dark ? "#111827" : "#F4F2EE") }}>
+                            <tr key={i} style={{ backgroundColor: i % 2 === 0 ? (dark ? "#1f2937" : "#fff") : ("#FFFFFF") }}>
                               <td className="p-3 font-medium" style={{ color: text }}>{item.produto_nome}</td>
                               <td className="p-3 text-center" style={{ color: subtext }}>{item.tamanho}</td>
                               <td className="p-3 text-center" style={{ color: subtext }}>{item.quantidade}</td>
@@ -888,7 +943,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                           ))}
                         </tbody>
                         <tfoot>
-                          <tr style={{ backgroundColor: dark ? "#374151" : "#F4F2EE", borderTop: "2px solid " + border }}>
+                          <tr style={{ backgroundColor: "#FFFFFF", borderTop: "2px solid " + border }}>
                             <td colSpan={4} className="p-3 text-right font-bold" style={{ color: text }}>Total do Pedido</td>
                             <td className="p-3 text-right font-bold text-base" style={{ color: text }}>
                               R$ {((p.itens || []).reduce((acc, i) => acc + parseFloat(i.produto_preco) * i.quantidade, 0)).toFixed(2)}
@@ -911,7 +966,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                             style={{
                               padding: "5px 12px", fontSize: "12px", fontWeight: "600",
                               cursor: "pointer", border: "none", borderRadius: "6px", fontFamily: "system-ui",
-                              backgroundColor: (p.status || "novo") === s.id ? s.cor : (dark ? "#374151" : "#F4F2EE"),
+                              backgroundColor: (p.status || "novo") === s.id ? s.cor : ("#FFFFFF"),
                               color: (p.status || "novo") === s.id ? "white" : text,
                             }}>{s.label}</button>
                         ))}
@@ -920,7 +975,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
 
                     {/* HISTÓRICO DE STATUS */}
                     {historicoStatus[`cat-${p.id}`]?.length > 0 && (
-                      <div className="rounded-lg p-3 mt-2 mb-3" style={{ backgroundColor: dark ? "#111827" : "#F4F2EE", border: "1px solid " + border }}>
+                      <div className="rounded-lg p-3 mt-2 mb-3" style={{ backgroundColor: "#FFFFFF", border: "1px solid " + border }}>
                         <p className="text-xs font-bold uppercase mb-2 flex items-center gap-1.5" style={{ color: subtext }}><ListIcon size={12} strokeWidth={1.7} />Histórico de status</p>
                         {historicoStatus[`cat-${p.id}`].map((h, i) => (
                           <p key={i} style={{ fontSize: "11px", color: subtext, fontFamily: "system-ui" }}>
@@ -970,7 +1025,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                 <button onClick={() => setAberto(expandido ? null : `per-${p.id}`)}
                   className="w-full p-5 flex items-center justify-between text-left">
                   <div className="flex items-center gap-4">
-                    <span className="text-xs px-2 py-1 rounded-lg font-mono" style={{ backgroundColor: dark ? "#374151" : "#F4F2EE", color: subtext }}>#{p.id}</span>
+                    <span className="text-xs px-2 py-1 rounded-lg font-mono" style={{ backgroundColor: "#FFFFFF", color: subtext }}>#{p.id}</span>
                     <div>
                       <p className="font-semibold" style={{ color: text }}>{p.nome_cliente}</p>
                       <p className="text-xs font-mono flex items-center gap-1" style={{ color: "#2563EB" }}>
@@ -998,7 +1053,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                     <div className="grid md:grid-cols-2 gap-4 pt-4">
 
                       {/* CONTATO */}
-                      <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: dark ? "#111827" : "#F4F2EE" }}>
+                      <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: "#FFFFFF" }}>
                         <div className="flex items-center gap-2 mb-1">
                           <IconBadge Icone={UserIcon} cor="#2563EB" />
                           <p className="text-xs font-bold uppercase" style={{ color: subtext }}>Contato</p>
@@ -1014,7 +1069,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                       </div>
 
                       {/* CATEGORIA E TIPO */}
-                      <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: dark ? "#111827" : "#F4F2EE" }}>
+                      <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: "#FFFFFF" }}>
                         <div className="flex items-center gap-2 mb-1">
                           <IconBadge Icone={PackageIcon} cor="#7c3aed" />
                           <p className="text-xs font-bold uppercase" style={{ color: subtext }}>Pedido</p>
@@ -1029,7 +1084,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
 
                     {/* COMBINAÇÕES exibe o campo referencia formatado */}
                     {p.referencia && (
-                      <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#F4F2EE" }}>
+                      <div className="rounded-lg p-4" style={{ backgroundColor: "#FFFFFF" }}>
                         <div className="flex items-center gap-2 mb-3">
                           <IconBadge Icone={PaletteIcon} cor="#c41e3a" />
                           <p className="text-xs font-bold uppercase" style={{ color: subtext }}>Combinações | Detalhes</p>
@@ -1043,15 +1098,12 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                               <div key={i} className="mb-4 pb-4" style={{ borderBottom: i < arr.length - 1 ? "1px solid " + border : "none" }}>
                                 <p className="text-sm font-bold mb-2" style={{ color: text }}>{titulo}</p>
                                 {detalhes.map((parte, j) => {
-                                  const [chave, ...resto] = parte.split(":");
-                                  const valor = resto.join(":").trim();
-                                  if (chave.trim() === "Total") {
-                                    return <p key={j} className="text-xs font-semibold mt-1" style={{ color: text }}>Total: {valor}</p>;
-                                  }
-                                  if (chave.trim().startsWith("Adulto") || chave.trim().startsWith("Baby") || chave.trim().startsWith("Infantil") || chave.trim().startsWith("Tamanhos")) {
-                                    const grupo = chave.trim().replace(/\[.*\]/, "");
-                                    const tamStr = parte.match(/\[([^\]]+)\]/)?.[1] || valor;
-                                    const tams = tamStr.split(" ").filter(Boolean).map(t => {
+                                  // Grupos de tamanho vêm como "Nome[tam:qtd tam:qtd]" - extrai direto do texto
+                                  // original (não do split por ":") porque o conteúdo do colchete também tem ":"
+                                  const grupoMatch = parte.match(/^(.*?)\[([^\]]*)\]/);
+                                  if (grupoMatch) {
+                                    const grupo = grupoMatch[1].trim();
+                                    const tams = grupoMatch[2].split(" ").filter(Boolean).map(t => {
                                       const [tam, qtd] = t.split(":");
                                       return qtd ? `${tam}: ${qtd} peça${parseInt(qtd) !== 1 ? "s" : ""}` : t;
                                     });
@@ -1060,11 +1112,16 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                                         {grupo && <p className="text-xs font-semibold" style={{ color: subtext }}>{grupo}:</p>}
                                         <div className="flex flex-wrap gap-1 mt-1">
                                           {tams.map((t, k) => (
-                                            <span key={k} className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: dark ? "#374151" : "#F4F2EE", color: text }}>{t}</span>
+                                            <span key={k} className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: "#FFFFFF", border: "1px solid " + border, color: text }}>{t}</span>
                                           ))}
                                         </div>
                                       </div>
                                     );
+                                  }
+                                  const [chave, ...resto] = parte.split(":");
+                                  const valor = resto.join(":").trim();
+                                  if (chave.trim() === "Total") {
+                                    return <p key={j} className="text-xs font-semibold mt-1" style={{ color: text }}>Total: {valor}</p>;
                                   }
                                   return <p key={j} className="text-xs mt-1" style={{ color: subtext }}><strong>{chave.trim()}:</strong> {valor}</p>;
                                 })}
@@ -1079,7 +1136,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
 
                     {/* DESCRIÇÃO */}
                     {p.observacoes && (
-                      <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#F4F2EE" }}>
+                      <div className="rounded-lg p-4" style={{ backgroundColor: "#FFFFFF" }}>
                         <p className="text-xs font-bold uppercase mb-2 flex items-center gap-1.5" style={{ color: subtext }}><EditIcon size={13} strokeWidth={1.6} />Descrição do cliente</p>
                         <p className="text-sm" style={{ color: subtext, whiteSpace: "pre-wrap" }}>
                           {p.observacoes.includes("Descrição:") 
@@ -1091,7 +1148,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
 
                     {/* HISTÓRICO DE STATUS */}
                     {historicoStatus[`pers-${p.id}`]?.length > 0 && (
-                      <div className="rounded-lg p-3 mt-2" style={{ backgroundColor: dark ? "#111827" : "#F4F2EE", border: "1px solid " + border }}>
+                      <div className="rounded-lg p-3 mt-2" style={{ backgroundColor: "#FFFFFF", border: "1px solid " + border }}>
                         <p className="text-xs font-bold uppercase mb-2 flex items-center gap-1.5" style={{ color: subtext }}><ListIcon size={12} strokeWidth={1.7} />Histórico de status</p>
                         {historicoStatus[`pers-${p.id}`].map((h, i) => (
                           <p key={i} style={{ fontSize: "11px", color: subtext, fontFamily: "system-ui" }}>
@@ -1103,7 +1160,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
 
                     {/* IMAGENS DE REFERÊNCIA */}
                     {(p.imagem1 || p.imagem2 || p.imagem3 || p.imagem4 || p.imagem5) && (
-                      <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#F4F2EE" }}>
+                      <div className="rounded-lg p-4" style={{ backgroundColor: "#FFFFFF" }}>
                         <p className="text-xs font-bold uppercase mb-3 flex items-center gap-1.5" style={{ color: subtext }}><ImageIcon size={13} strokeWidth={1.6} />Imagens de referência</p>
                         <div className="flex gap-3 flex-wrap">
                           {[p.imagem1, p.imagem2, p.imagem3, p.imagem4, p.imagem5].filter(Boolean).map((url, i) => (
@@ -1131,7 +1188,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                             onClick={() => atualizarStatus(p.id, s.id)}
                             className="px-3 py-1.5 rounded-lg text-xs font-semibold transition"
                             style={{
-                              backgroundColor: p.status === s.id ? s.cor : (dark ? "#374151" : "#F4F2EE"),
+                              backgroundColor: p.status === s.id ? s.cor : ("#FFFFFF"),
                               color: p.status === s.id ? "white" : text,
                               cursor: "pointer",
                             }}>
@@ -1159,7 +1216,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                         onClick={() => gerarPDFPedido(p)}
                         style={{ padding:"7px 14px", fontSize:"12px", fontWeight:"600",
                           cursor:"pointer", border:"1px solid "+border, borderRadius:"6px",
-                          backgroundColor: dark ? "#374151" : "#F4F2EE", color: text,
+                          backgroundColor: "#FFFFFF", color: text,
                           fontFamily:"system-ui", display:"flex", alignItems:"center", gap:"6px" }}>
                         <PrinterIcon size={14} strokeWidth={1.6} /> Gerar PDF
                       </button>
@@ -1216,6 +1273,7 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
   const [novoTamanho, setNovoTamanho] = useState({});
   const [salvando, setSalvando] = useState({});
   const [categoriaAtiva, setCategoriaAtiva] = useState("todos");
+  const [busca, setBusca] = useState("");
 
   const carregar = useCallback(async () => {
     try {
@@ -1262,9 +1320,10 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
   const roupas = produtos.filter(p => p.categoria === "roupas" || !p.categoria);
   const comunicacao = produtos.filter(p => p.categoria === "comunicacao");
 
-  const produtosFiltrados = categoriaAtiva === "todos" ? produtos
+  const produtosFiltrados = (categoriaAtiva === "todos" ? produtos
     : categoriaAtiva === "roupas" ? roupas
-    : comunicacao;
+    : comunicacao
+  ).filter(p => !busca.trim() || p.nome.toLowerCase().includes(busca.toLowerCase()));
 
   const abas = [
     { id: "todos",       label: "Todos (" + produtos.length + ")",        cor: text, Icone: PackageIcon },
@@ -1274,10 +1333,20 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
 
   return (
     <div>
-      <p className="text-sm mb-4" style={{ color: subtext }}>
-        Para <strong>Comunicação Visual</strong>, use "tamanhos" para informar dimensões (ex: A4, Banner 1m).
-        Para <strong>Roupas</strong>, use P, M, G, G1, G2, G3, GG, EXG, EXGG.
-      </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+        <p className="text-sm" style={{ color: subtext }}>
+          Controle os tamanhos e quantidades disponíveis de cada produto.
+        </p>
+        <div style={{ position: "relative", width: "min(280px, 100%)" }}>
+          <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: subtext, display: "flex" }}>
+            <SearchIcon size={14} strokeWidth={1.8} />
+          </span>
+          <input value={busca} onChange={e => setBusca(e.target.value)}
+            placeholder="Buscar produto..."
+            style={{ width: "100%", padding: "9px 14px 9px 36px", border: "1px solid " + inputBorder,
+              backgroundColor: "#FFFFFF", color: text, borderRadius: "999px", fontSize: "13px", outline: "none", boxSizing: "border-box" }} />
+        </div>
+      </div>
 
       {/* Filtro por categoria */}
       <div className="flex gap-2 mb-6 flex-wrap" style={{ borderBottom: "2px solid " + border, paddingBottom: "0" }}>
@@ -1300,82 +1369,69 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
           const isComunicacao = p.categoria === "comunicacao";
           const totalEstoque = Object.values(valores[p.id] || {}).reduce((s, q) => s + (parseInt(q) || 0), 0);
           return (
-            <div key={p.id} className="rounded-2xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
-              <div className="flex items-center gap-3 mb-4 flex-wrap">
-                <p className="font-semibold" style={{ color: text }}>{p.nome}</p>
-                <span className="text-xs px-2 py-0.5 rounded-full inline-flex items-center gap-1"
-                  style={{ backgroundColor: isComunicacao ? "#eff6ff" : "#f5f3ff",
-                    color: isComunicacao ? "#2563EB" : "#7c3aed" }}>
-                  {isComunicacao ? <ImageIcon size={11} strokeWidth={1.8} /> : <ShirtIcon size={11} strokeWidth={1.8} />}
-                  {isComunicacao ? "Com. Visual" : "Roupa"}
-                </span>
-                {totalEstoque > 0 && (
-                  <span className="text-xs px-2 py-0.5 rounded-full"
-                    style={{ backgroundColor: "#F0FDF4", color: "#16A34A", fontWeight: 700 }}>
-                    {totalEstoque} un. em estoque
+            <div key={p.id} className="rounded-2xl overflow-hidden" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
+              <div className="flex items-center justify-between gap-3 flex-wrap px-5 py-3.5" style={{ backgroundColor: "#F4F2EE" }}>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <p className="font-semibold" style={{ color: text }}>{p.nome}</p>
+                  <span className="text-xs px-2 py-0.5 rounded-full inline-flex items-center gap-1"
+                    style={{ backgroundColor: "#FFFFFF", color: isComunicacao ? "#2563EB" : "#7c3aed" }}>
+                    {isComunicacao ? <ImageIcon size={11} strokeWidth={1.8} /> : <ShirtIcon size={11} strokeWidth={1.8} />}
+                    {isComunicacao ? "Com. Visual" : "Roupa"}
                   </span>
-                )}
-              </div>
-
-              {tams.length === 0 && (
-                <p className="text-sm mb-3" style={{ color: subtext }}>
-                  {isComunicacao ? "Adicione os formatos disponíveis (ex: A4, Banner 1m, 80x60cm)" : "Nenhum tamanho cadastrado ainda."}
-                </p>
-              )}
-
-              <div className="flex gap-3 flex-wrap mb-4">
-                {tams.map(tam => {
-                  const esgotado = parseInt(valores[p.id]?.[tam]) === 0;
-                  return (
-                  <div key={tam} className="flex flex-col items-center gap-1.5 px-3 py-2"
-                    style={{ borderRadius: "12px", border: "1px solid " + (esgotado ? "#FECACA" : border), backgroundColor: esgotado ? "#FEF2F2" : "#F4F2EE" }}>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-bold" style={{ color: text }}>{tam}</span>
-                      <button onClick={() => removerTamanho(p.id, tam)}
-                        className="text-xs leading-none" style={{ color: "#DC2626", cursor: "pointer" }}>✕</button>
-                    </div>
-                    <input type="number" min="0" value={valores[p.id]?.[tam] ?? 0}
-                      onChange={e => setValores(prev => ({ ...prev, [p.id]: { ...prev[p.id], [tam]: e.target.value } }))}
-                      className="text-center text-sm rounded-lg"
-                      style={{ width: "60px", padding: "5px", border: "1px solid " + (esgotado ? "#FECACA" : inputBorder),
-                        backgroundColor: inputBg, color: text, outline: "none" }} />
-                    {esgotado && (
-                      <span style={{ fontSize: "9px", color: "#DC2626", fontWeight: 700 }}>esgotado</span>
-                    )}
-                  </div>
-                  );
-                })}
-
-                {/* Adicionar tamanho chip pontilhado */}
-                <div className="flex flex-col justify-center px-3 py-2" style={{ borderRadius: "12px", border: "1.5px dashed " + inputBorder }}>
-                  <input value={novoTamanho[p.id] || ""}
-                    onChange={e => setNovoTamanho(prev => ({ ...prev, [p.id]: e.target.value }))}
-                    onKeyDown={e => {
-                      if (e.key === "Enter") {
-                        const tam = (novoTamanho[p.id] || "").trim().toUpperCase();
-                        if (!tam || valores[p.id]?.[tam] !== undefined) return;
-                        setValores(prev => ({ ...prev, [p.id]: { ...prev[p.id], [tam]: 0 } }));
-                        setNovoTamanho(prev => ({ ...prev, [p.id]: "" }));
-                      }
-                    }}
-                    placeholder={isComunicacao ? "A4, Banner..." : "PP, P, M..."}
-                    style={{ border: "none", outline: "none", background: "transparent", color: text, fontSize: "13px", width: "90px" }} />
-                  <button onClick={() => {
-                      const tam = (novoTamanho[p.id] || "").trim().toUpperCase();
-                      if (!tam || valores[p.id]?.[tam] !== undefined) return;
-                      setValores(prev => ({ ...prev, [p.id]: { ...prev[p.id], [tam]: 0 } }));
-                      setNovoTamanho(prev => ({ ...prev, [p.id]: "" }));
-                    }}
-                    className="text-xs font-bold inline-flex items-center gap-1"
-                    style={{ background: "none", border: "none", cursor: "pointer", color: "#C2660A", padding: 0 }}>
-                    <PlusIcon size={12} strokeWidth={2.2} /> Adicionar {isComunicacao ? "formato" : "tamanho"}
-                  </button>
                 </div>
+                <span className="text-xs font-semibold" style={{ color: subtext }}>
+                  {totalEstoque} unidade{totalEstoque !== 1 ? "s" : ""} no total
+                </span>
               </div>
 
-              <div className="flex items-center gap-2 mb-4 flex-wrap">
+              <div className="p-5">
+                {tams.length === 0 && (
+                  <p className="text-sm mb-3" style={{ color: subtext }}>
+                    {isComunicacao ? "Adicione os formatos disponíveis (ex: A4, Banner 1m, 80x60cm)" : "Nenhum tamanho cadastrado ainda."}
+                  </p>
+                )}
+
+                <div className="flex gap-2.5 flex-wrap">
+                  {tams.map(tam => {
+                    const esgotado = parseInt(valores[p.id]?.[tam]) === 0;
+                    return (
+                      <div key={tam} className="flex items-center gap-1.5 pl-3 pr-2 py-1.5"
+                        style={{ borderRadius: "999px", border: "1px solid " + (esgotado ? "#FECACA" : border), backgroundColor: esgotado ? "#FEF2F2" : "#FFFFFF" }}>
+                        <span className="text-sm font-bold" style={{ color: esgotado ? "#DC2626" : text }}>{tam}</span>
+                        <span style={{ color: subtext, fontSize: "13px" }}>-</span>
+                        <input type="number" min="0" value={valores[p.id]?.[tam] ?? 0}
+                          onChange={e => setValores(prev => ({ ...prev, [p.id]: { ...prev[p.id], [tam]: e.target.value } }))}
+                          style={{ width: "30px", border: "none", outline: "none", background: "transparent", textAlign: "center",
+                            fontSize: "13px", fontWeight: 600, color: esgotado ? "#DC2626" : text, padding: 0 }} />
+                        <span className="text-sm" style={{ color: esgotado ? "#DC2626" : subtext, fontWeight: esgotado ? 700 : 400 }}>
+                          {esgotado ? "esgotado" : "un."}
+                        </span>
+                        <button onClick={() => removerTamanho(p.id, tam)}
+                          className="leading-none" style={{ color: subtext, cursor: "pointer", fontSize: "12px", marginLeft: "2px" }}>✕</button>
+                      </div>
+                    );
+                  })}
+
+                  {/* Adicionar tamanho - chip pontilhado compacto */}
+                  <div className="flex items-center gap-1.5 pl-3 pr-2 py-1.5" style={{ borderRadius: "999px", border: "1.5px dashed " + inputBorder }}>
+                    <PlusIcon size={12} strokeWidth={2.2} style={{ color: "#C2660A", flexShrink: 0 }} />
+                    <input value={novoTamanho[p.id] || ""}
+                      onChange={e => setNovoTamanho(prev => ({ ...prev, [p.id]: e.target.value }))}
+                      onKeyDown={e => {
+                        if (e.key === "Enter") {
+                          const tam = (novoTamanho[p.id] || "").trim().toUpperCase();
+                          if (!tam || valores[p.id]?.[tam] !== undefined) return;
+                          setValores(prev => ({ ...prev, [p.id]: { ...prev[p.id], [tam]: 0 } }));
+                          setNovoTamanho(prev => ({ ...prev, [p.id]: "" }));
+                        }
+                      }}
+                      placeholder={isComunicacao ? "A4, Banner..." : "Tamanho"}
+                      style={{ border: "none", outline: "none", background: "transparent", color: text, fontSize: "13px", width: "72px" }} />
+                  </div>
+                </div>
+
                 {!isComunicacao && (
-                  <div className="flex gap-1 flex-wrap">
+                  <div className="flex gap-1 flex-wrap mt-3">
                     {["PP","P","M","G","G1","G2","G3","GG","EXG","EXGG"].map(tam => (
                       valores[p.id]?.[tam] === undefined ? (
                         <button key={tam} onClick={() => setValores(prev => ({ ...prev, [p.id]: { ...prev[p.id], [tam]: 0 } }))}
@@ -1387,14 +1443,14 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
                     ))}
                   </div>
                 )}
-              </div>
 
-              <button onClick={() => salvarEstoque(p.id)} disabled={salvando[p.id]}
-                className="px-6 py-2 rounded-full text-sm font-semibold text-white inline-flex items-center gap-2"
-                style={{ backgroundColor: salvando[p.id] ? "#9ca3af" : "#16A34A",
-                  cursor: salvando[p.id] ? "not-allowed" : "pointer" }}>
-                <SaveIcon size={15} strokeWidth={1.6} /> {salvando[p.id] ? "Salvando..." : "Salvar"}
-              </button>
+                <button onClick={() => salvarEstoque(p.id)} disabled={salvando[p.id]}
+                  className="px-6 py-2 rounded-full text-sm font-semibold text-white inline-flex items-center gap-2 mt-4"
+                  style={{ backgroundColor: salvando[p.id] ? "#9ca3af" : "#16A34A",
+                    cursor: salvando[p.id] ? "not-allowed" : "pointer" }}>
+                  <SaveIcon size={15} strokeWidth={1.6} /> {salvando[p.id] ? "Salvando..." : "Salvar"}
+                </button>
+              </div>
             </div>
           );
         })}
@@ -1426,6 +1482,7 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
   const [heroItems, setHeroItems]       = useState(HERO_ESTATICAS);
   const [loading, setLoading]           = useState(true);
   const [uploading, setUploading]       = useState({});
+  const [itemParaRemover, setItemParaRemover] = useState(null);
 
   const cardStyle = { backgroundColor: cardBg, border: "1px solid " + border, borderRadius: "18px", padding: "20px", marginBottom: "24px" };
 
@@ -1477,17 +1534,21 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
     }
   }
 
-  async function removerImagem(item) {
+  function pedirRemocao(item) {
     if (item._static) {
       mostrarToast("Esta é uma imagem original do site. Para remover, envie uma imagem substituta.", "erro");
       return;
     }
-    if (!confirm("Remover esta imagem do site?")) return;
+    setItemParaRemover(item);
+  }
+
+  async function removerImagem(item) {
     try {
       await api.delete("institucional/" + item.id + "/");
       mostrarToast("Imagem removida!", "sucesso");
       await carregarImagens();
     } catch { mostrarToast("Erro ao remover.", "erro"); }
+    finally { setItemParaRemover(null); }
   }
 
   function ImageCard({ item, tipo, isNew }) {
@@ -1497,7 +1558,7 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
 
     return (
       <div className="relative group rounded-2xl overflow-hidden"
-        style={{ backgroundColor: dark ? "#374151" : "#F4F2EE",
+        style={{ backgroundColor: "#FFFFFF",
           border: "2px " + (isNew ? "dashed" : "solid") + " " + (item?.imagem ? border : inputBorder),
           aspectRatio: "1" }}>
         {item?.imagem ? (
@@ -1518,7 +1579,7 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
                   onChange={e => { if (e.target.files[0]) uploadImagem(e.target.files[0], tipo, item); }} />
               </label>
               {!isStatic && (
-                <button onClick={() => removerImagem(item)}
+                <button onClick={() => pedirRemocao(item)}
                   className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white inline-flex items-center gap-1.5"
                   style={{ backgroundColor: "#DC2626" }}>
                   <TrashIcon size={13} strokeWidth={1.8} /> Remover
@@ -1545,7 +1606,7 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
                 </span>
               </>
             )}
-            <input type="file" accept="image/*" className="hidden"
+            <input type="file" accept="image/*" className="hidden" id={tipo === "galeria" ? "galeria-add-input" : undefined}
               onChange={e => { if (e.target.files[0]) uploadImagem(e.target.files[0], tipo, null); }} />
           </label>
         )}
@@ -1557,34 +1618,9 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
 
   return (
     <div>
-      {/* GALERIA / PROJETOS ENTREGUES*/}
-      <div style={cardStyle}>
-        <div className="flex items-start justify-between mb-1 flex-wrap gap-2">
-          <h3 className="text-base font-semibold" style={{ color: text }}>Galeria de Projetos Entregues</h3>
-          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "#F0FDF4", color: text }}>
-            Recomendado: 800×800 px (quadrado)
-          </span>
-        </div>
-        <p className="text-sm mb-4" style={{ color: subtext }}>
-          Fotos da seção "Projetos Entregues" na página inicial. Passe o mouse sobre uma foto para substituir.
-          Imagens marcadas como "original" são as imagens iniciais do site.
-        </p>
-        <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-          {galeriaItems.map(item => (
-            <ImageCard key={item.titulo} item={item} tipo="galeria" isNew={false} />
-          ))}
-          <ImageCard item={null} tipo="galeria" isNew={true} />
-        </div>
-      </div>
-
       {/* BANNER PRINCIPAL */}
       <div style={cardStyle}>
-        <div className="flex items-start justify-between mb-1 flex-wrap gap-2">
-          <h3 className="text-base font-semibold" style={{ color: text }}>Banner Principal</h3>
-          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "#eff6ff", color: text }}>
-            Recomendado: 1920×900 px (horizontal)
-          </span>
-        </div>
+        <h3 className="text-base font-semibold mb-1" style={{ color: text }}>Banner Principal (Home)</h3>
         <p className="text-sm mb-4" style={{ color: subtext }}>
           Imagens do slideshow principal do site. Máximo 4 imagens. Fotos horizontais funcionam melhor.
           Ao substituir, a nova imagem entra imediatamente no site.
@@ -1597,16 +1633,12 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
             <ImageCard item={null} tipo="hero" isNew={true} />
           )}
         </div>
+        <p className="text-xs mt-3" style={{ color: subtext }}>Recomendado: 1920 × 900px (paisagem), JPG ou PNG, até 3MB.</p>
       </div>
 
       {/* FOTO SOBRE NÓS */}
       <div style={cardStyle}>
-        <div className="flex items-start justify-between mb-1 flex-wrap gap-2">
-          <h3 className="text-base font-semibold" style={{ color: text }}>Imagem "Sobre Nós"</h3>
-          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "#FEF9F0", color: text }}>
-            Recomendado: 600×700 px (retrato)
-          </span>
-        </div>
+        <h3 className="text-base font-semibold mb-1" style={{ color: text }}>Imagem "Sobre Nós"</h3>
         <p className="text-sm mb-4" style={{ color: subtext }}>
           Foto ao lado do texto de apresentação da empresa na página inicial.
         </p>
@@ -1622,9 +1654,9 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
                 }
               </div>
               <div>
-                <label className="cursor-pointer px-4 py-2 rounded-full text-sm font-semibold text-white inline-flex items-center gap-2"
-                  style={{ backgroundColor: "#161513" }}>
-                  <CameraIcon size={15} strokeWidth={1.6} /> {sobreItem ? "Substituir foto" : "Enviar nova foto"}
+                <label className="cursor-pointer px-4 py-2 rounded-lg text-sm font-semibold inline-flex items-center gap-2"
+                  style={{ backgroundColor: "#F4F2EE", color: text, border: "1px solid " + border }}>
+                  <CameraIcon size={15} strokeWidth={1.6} /> {sobreItem ? "Trocar imagem" : "Enviar nova foto"}
                   <input type="file" accept="image/*" className="hidden"
                     onChange={async e => {
                       if (!e.target.files[0]) return;
@@ -1646,13 +1678,48 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
                     }} />
                 </label>
                 <p className="text-xs mt-2" style={{ color: subtext }}>
-                  Foto atual: FotoMetkzerepai.jpg (imagem do pai da empresa)
+                  Recomendado: 1200 × 900px (retrato/quadrada), JPG ou PNG, até 3MB.
                 </p>
               </div>
             </div>
           );
         })()}
       </div>
+
+      {/* GALERIA / PROJETOS ENTREGUES */}
+      <div style={cardStyle}>
+        <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
+          <h3 className="text-base font-semibold" style={{ color: text }}>Galeria de Projetos Entregues</h3>
+          <label htmlFor="galeria-add-input"
+            className="text-sm font-bold" style={{ color: "#C2660A", cursor: "pointer" }}>
+            + Adicionar foto
+          </label>
+        </div>
+        <p className="text-sm mb-4" style={{ color: subtext }}>
+          Fotos da seção "Projetos Entregues" na página inicial. Passe o mouse sobre uma foto para substituir.
+          Imagens marcadas como "original" são as imagens iniciais do site.
+        </p>
+        <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+          {galeriaItems.map(item => (
+            <ImageCard key={item.titulo} item={item} tipo="galeria" isNew={false} />
+          ))}
+          <ImageCard item={null} tipo="galeria" isNew={true} />
+        </div>
+        <p className="text-xs mt-3" style={{ color: subtext }}>
+          Recomendado: 800 × 800px (quadradas), JPG ou PNG, até 2MB cada. Clique em uma foto para substituir.
+        </p>
+      </div>
+
+      {itemParaRemover && (
+        <ConfirmModal
+          titulo="Remover imagem?"
+          mensagem="Esta imagem será removida do site imediatamente."
+          aviso="Esta ação é irreversível."
+          Icone={TrashIcon} corIcone="#DC2626" corConfirmar="#DC2626" textoConfirmar="Sim, remover"
+          onCancelar={() => setItemParaRemover(null)}
+          onConfirmar={() => removerImagem(itemParaRemover)}
+        />
+      )}
     </div>
   );
 }
@@ -1685,11 +1752,11 @@ export default function Admin() {
   const props = { mostrarToast, dark, estilos };
 
   return (
-    <div style={{ backgroundColor: bg, color: text, fontFamily: "Manrope, sans-serif", display: "flex", minHeight: "100vh" }}>
+    <div style={{ backgroundColor: bg, color: text, fontFamily: "Manrope, sans-serif", minHeight: "100vh" }}>
       {toast && <Toast mensagem={toast.mensagem} tipo={toast.tipo} onClose={() => setToast(null)} />}
 
-      {/* SIDEBAR desktop */}
-      <aside className="hidden md:flex" style={{ width: "220px", flexShrink: 0, backgroundColor: "#161513", flexDirection: "column", padding: "24px 14px", position: "sticky", top: 0, height: "100vh" }}>
+      {/* SIDEBAR desktop - fixa, sempre visível independente do tamanho da página */}
+      <aside className="hidden md:flex" style={{ width: "220px", flexShrink: 0, backgroundColor: "#161513", flexDirection: "column", padding: "24px 14px", position: "fixed", left: 0, top: 0, height: "100vh", zIndex: 30 }}>
         <div className="flex items-center px-2 mb-8">
           <img src="/LogoEmpresaMetzker.jpg" alt="Metzker" className="h-9 rounded-md object-contain" />
         </div>
@@ -1757,7 +1824,7 @@ export default function Admin() {
       </div>
 
       {/* CONTEÚDO */}
-      <div className="flex-1 min-w-0" style={{ padding: "40px 24px", marginTop: "0" }}>
+      <div className="min-w-0 md:ml-[220px]" style={{ padding: "40px 24px" }}>
         <div className="md:hidden" style={{ height: "56px" }} />
         <h1 style={{ fontFamily: "Newsreader, serif", fontStyle: "italic", fontWeight: 500, fontSize: "26px", color: text, marginBottom: "28px" }}>
           {abas.find(a => a.id === abaAtiva)?.label}

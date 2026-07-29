@@ -515,7 +515,7 @@ export default function Personalizado(){
           </div>
         </div>
 
-        {/* ══ ETAPA 1 - O QUE PRECISA ══ */}
+        {/* ETAPA 1 - O QUE PRECISA */}
         {etapa===1 && (
           <div style={{display:"flex",flexDirection:"column",gap:"28px"}}>
             <h2 style={h2Style}>O que você precisa?</h2>
@@ -545,12 +545,12 @@ export default function Personalizado(){
           </div>
         )}
 
-        {/* ══ ETAPA 2 - DETALHES DO PRODUTO ══ */}
+        {/* ETAPA 2 - DETALHES DO PRODUTO */}
         {etapa===2 && (
           <div style={{display:"flex",flexDirection:"column",gap:"28px"}}>
             <h2 style={h2Style}>Detalhes do Produto</h2>
 
-            {/* ══ ROUPAS ══ */}
+            {/* ROUPAS */}
             {form.categoria==="roupas" && (
               <div>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"8px"}}>
@@ -727,7 +727,7 @@ export default function Personalizado(){
               </div>
             )}
 
-            {/* ══ COMUNICAÇÃO VISUAL ══ */}
+            {/* COMUNICAÇÃO VISUAL */}
             {form.categoria==="comunicacao" && (
               <>
                 <div>
@@ -782,7 +782,7 @@ export default function Personalizado(){
           </div>
         )}
 
-        {/* ══ ETAPA 3 - REFERÊNCIAS E DESCRIÇÃO ══ */}
+        {/* ETAPA 3 - REFERÊNCIAS E DESCRIÇÃO */}
         {etapa===3 && (
           <div style={{display:"flex",flexDirection:"column",gap:"28px"}}>
             <h2 style={h2Style}>Referências e Descrição</h2>
@@ -827,7 +827,7 @@ export default function Personalizado(){
           </div>
         )}
 
-        {/* ══ ETAPA 4 - SEUS DADOS ══ */}
+        {/* ETAPA 4 - SEUS DADOS */}
         {etapa===4 && (
           <div style={{display:"flex",flexDirection:"column",gap:"20px"}}>
             <h2 style={h2Style}>Seus Dados</h2>
@@ -859,7 +859,7 @@ export default function Personalizado(){
           </div>
         )}
 
-        {/* ══ ETAPA 5 - ENTREGA ══ */}
+        {/* ETAPA 5 - ENTREGA */}
         {etapa===5 && (
           <div style={{display:"flex",flexDirection:"column",gap:"20px"}}>
             <h2 style={h2Style}>Entrega</h2>
@@ -991,7 +991,7 @@ export default function Personalizado(){
           </div>
         )}
 
-        {/* ══ ETAPA 6 - REVISÃO FINAL ══ */}
+        {/* ETAPA 6 - REVISÃO FINAL */}
         {etapa===6 && (
           <div style={{display:"flex",flexDirection:"column",gap:"16px"}}>
             <h2 style={h2Style}>Revisão final</h2>
@@ -1094,7 +1094,7 @@ export default function Personalizado(){
         )}
       </div>
 
-      {/* ══ MODAL TAMANHOS ══ */}
+      {/* MODAL TAMANHOS */}
       {modalTamanhos && getComb(modalTamanhos) && (()=>{
         const comb = getComb(modalTamanhos);
         const isCalca = comb.tipoId==="calcas";
@@ -1171,7 +1171,7 @@ export default function Personalizado(){
         );
       })()}
 
-      {/* ══ MODAL CORES ══ */}
+      {/* MODAL CORES */}
       {modalCores && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" style={{backgroundColor:"rgba(0,0,0,0.5)"}} onClick={e=>{if(e.target===e.currentTarget)setModalCores(null);}}>
           <div style={{backgroundColor:t.bgCard,width:"100%",maxWidth:"480px",maxHeight:"80vh",overflowY:"auto",borderRadius:"20px 20px 0 0"}}>
@@ -1197,7 +1197,7 @@ export default function Personalizado(){
         </div>
       )}
 
-      {/* ══ MODAL MATERIAL ══ */}
+      {/* MODAL MATERIAL */}
       {modalMaterial && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" style={{backgroundColor:"rgba(0,0,0,0.5)"}} onClick={e=>{if(e.target===e.currentTarget)setModalMaterial(null);}}>
           <div style={{backgroundColor:t.bgCard,width:"100%",maxWidth:"480px",maxHeight:"80vh",overflowY:"auto",borderRadius:"20px 20px 0 0"}}>
@@ -1222,7 +1222,7 @@ export default function Personalizado(){
         </div>
       )}
 
-      {/* ══ MODAL TABELA DE MEDIDAS ══ */}
+      {/* MODAL TABELA DE MEDIDAS */}
       {tabelaAberta && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center"
           style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
