@@ -2,19 +2,13 @@ import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 import api from "../services/api";
-import { WhatsAppIcon, CartIcon } from "../components/Icons";
+import { WhatsAppIcon, CartIcon, CheckIcon, WarningIcon, TruckIcon, RulerIcon, CloseIcon } from "../components/Icons";
 
 const t = {
-  bg: "#FFFFFF", bgSecundario: "#F2F2F2", bgCard: "#FFFFFF",
-  text: "#1a1a1a", textSecundario: "#6b6b6b",
-  border: "#E0E0E0", borderForte: "#B0B0B0",
-};
-
-const medidas = {
-  P:  { comprimento: "72 cm", largura: "54 cm", manga: "22 cm" },
-  M:  { comprimento: "75 cm", largura: "58 cm", manga: "23,5 cm" },
-  G:  { comprimento: "77 cm", largura: "60 cm", manga: "24 cm" },
-  GG: { comprimento: "79 cm", largura: "63 cm", manga: "25 cm" },
+  bg: "#FFFFFF", bgSecundario: "#F4F2EE", bgCard: "#FFFFFF",
+  text: "#161513", textSecundario: "#8A877F",
+  border: "rgba(0,0,0,0.08)", borderForte: "rgba(0,0,0,0.18)",
+  accent: "#C2660A",
 };
 
 export default function ProdutoDetalhe() {
@@ -80,12 +74,12 @@ export default function ProdutoDetalhe() {
   }
 
   return (
-    <div style={{ backgroundColor: t.bg, color: t.text }}>
+    <div style={{ backgroundColor: t.bg, color: t.text, fontFamily: "Manrope, sans-serif" }}>
 
       {adicionado && (
-        <div className="fixed top-[70px] left-1/2 z-[9999] px-5 py-4 shadow-2xl text-white text-sm font-medium rounded-xl"
-          style={{ backgroundColor: "#16a34a", transform: "translateX(-50%)", whiteSpace: "nowrap" }}>
-          ✅ Produto adicionado ao carrinho!
+        <div className="fixed top-[70px] left-1/2 z-[9999] px-5 py-3.5 shadow-2xl text-white text-sm font-semibold flex items-center gap-2"
+          style={{ backgroundColor: "#16A34A", transform: "translateX(-50%)", whiteSpace: "nowrap", borderRadius: "999px" }}>
+          <CheckIcon size={16} strokeWidth={2.2} /> Produto adicionado ao carrinho!
         </div>
       )}
 
@@ -107,7 +101,7 @@ export default function ProdutoDetalhe() {
               : produto.subcategoria }
             </span></>
           )}
-          {" › "}<span style={{ color: t.text }}>{produto.nome}</span>
+          {" › "}<span style={{ color: t.text, fontWeight: 600 }}>{produto.nome}</span>
         </p>
 
         <div className="grid md:grid-cols-2 gap-12">
@@ -115,7 +109,7 @@ export default function ProdutoDetalhe() {
           {/* GALERIA */}
           <div>
             <div className="relative overflow-hidden"
-              style={{ backgroundColor: t.bgSecundario, borderBottom: "2px solid " + t.borderForte }}>
+              style={{ backgroundColor: t.bgSecundario, borderRadius: "18px" }}>
               {imagens.length > 0
                 ? <img src={imagens[imagemIndex]} alt={produto.nome} className="w-full object-contain" style={{ height: "clamp(300px, 50vw, 540px)" }} />
                 : <div className="w-full flex items-center justify-center text-6xl" style={{ height: "clamp(300px, 50vw, 540px)" }}>
@@ -126,10 +120,10 @@ export default function ProdutoDetalhe() {
                 <>
                   <button onClick={() => setImagemIndex(i => i > 0 ? i - 1 : imagens.length - 1)}
                     className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold shadow"
-                    style={{ backgroundColor: t.bg, color: t.text }}>&#8249;</button>
+                    style={{ backgroundColor: t.bgCard, color: t.text }}>&#8249;</button>
                   <button onClick={() => setImagemIndex(i => i < imagens.length - 1 ? i + 1 : 0)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold shadow"
-                    style={{ backgroundColor: t.bg, color: t.text }}>&#8250;</button>
+                    style={{ backgroundColor: t.bgCard, color: t.text }}>&#8250;</button>
                 </>
               )}
             </div>
@@ -137,8 +131,8 @@ export default function ProdutoDetalhe() {
               <div className="flex gap-2 flex-wrap mt-3">
                 {imagens.map((src, i) => (
                   <button key={i} onClick={() => setImagemIndex(i)} className="overflow-hidden transition"
-                    style={{ width: "72px", height: "72px",
-                      border: i === imagemIndex ? "2px solid " + t.borderForte : "2px solid " + t.border,
+                    style={{ width: "72px", height: "72px", borderRadius: "10px",
+                      border: i === imagemIndex ? "2px solid " + t.accent : "2px solid " + t.border,
                       opacity: i === imagemIndex ? 1 : 0.55 }}>
                     <img src={src} alt="" className="w-full h-full object-cover" />
                   </button>
@@ -149,30 +143,30 @@ export default function ProdutoDetalhe() {
 
           {/* INFORMAÇÕES */}
           <div className="flex flex-col">
-            <h1 className="text-3xl font-bold mb-2" style={{ color: t.text }}>{produto.nome}</h1>
+            <h1 style={{ fontFamily: "Newsreader, serif", fontSize: "32px", fontWeight: 500, color: t.text, marginBottom: "8px" }}>{produto.nome}</h1>
 
             {produto.descricao && (
-              <p className="text-sm mb-4 leading-relaxed uppercase tracking-wider" style={{ color: t.textSecundario }}>
+              <p className="text-xs mb-4 leading-relaxed uppercase" style={{ color: t.textSecundario, letterSpacing: "0.08em", fontWeight: 600 }}>
                 {produto.descricao}
               </p>
             )}
 
-            <p className="text-3xl font-bold mb-6" style={{ color: t.text }}>
+            <p style={{ fontFamily: "Newsreader, serif", fontStyle: "italic", fontSize: "30px", fontWeight: 500, color: t.text, marginBottom: "24px" }}>
               R$ {Number(produto.preco).toFixed(2)}
             </p>
 
-            <div style={{ borderTop: "2px solid " + t.borderForte, marginBottom: "24px" }} />
+            <div style={{ borderTop: "1px solid " + t.border, marginBottom: "24px" }} />
 
-            {/* ══ TAMANHOS — ROUPA ══ */}
+            {/* ══ TAMANHOS - ROUPA ══ */}
             {!isComunicacao && (
               <div className="mb-6">
-                <p className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: t.textSecundario }}>
-                  Tamanho {tamanhoSelecionado ? "— " + tamanhoSelecionado : ""}
+                <p className="text-xs font-bold uppercase mb-3" style={{ color: t.textSecundario, letterSpacing: "0.1em" }}>
+                  Tamanho {tamanhoSelecionado ? "- " + tamanhoSelecionado : ""}
                 </p>
                 {alerta && (
                   <div className="px-3 py-2 text-sm font-medium flex items-center gap-2 mb-3"
-                    style={{ backgroundColor: "#fef2f2", color: "#ef4444", border: "1px solid #fecaca" }}>
-                    ⚠️ Selecione um tamanho antes de continuar
+                    style={{ backgroundColor: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA", borderRadius: "999px" }}>
+                    <WarningIcon size={15} strokeWidth={1.8} /> Selecione um tamanho antes de continuar
                   </div>
                 )}
                 <div className="flex gap-2 mb-2 flex-wrap">
@@ -183,16 +177,17 @@ export default function ProdutoDetalhe() {
                       <button key={est.tamanho}
                         onClick={() => { if (!semEstoque) { setTamanhoSelecionado(est.tamanho); setAlerta(false); } }}
                         disabled={semEstoque}
-                        className="relative px-4 py-2 text-sm font-medium transition"
+                        className="relative px-4 py-2 text-sm font-semibold transition"
                         style={{
+                          borderRadius: "999px",
                           border: "1px solid " + (selecionado ? t.text : t.border),
-                          backgroundColor: semEstoque ? t.bgSecundario : selecionado ? t.text : t.bg,
+                          backgroundColor: semEstoque ? t.bgSecundario : selecionado ? t.text : t.bgCard,
                           color: semEstoque ? t.textSecundario : selecionado ? "#ffffff" : t.text,
                           cursor: semEstoque ? "not-allowed" : "pointer",
                           textDecoration: semEstoque ? "line-through" : "none",
                         }}>
                         {est.tamanho}
-                        {semEstoque && <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full" style={{ backgroundColor: "#ef4444" }} />}
+                        {semEstoque && <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full" style={{ backgroundColor: "#DC2626" }} />}
                       </button>
                     );
                   }) : <p className="text-sm" style={{ color: t.textSecundario }}>Sem estoque disponível</p>}
@@ -201,16 +196,16 @@ export default function ProdutoDetalhe() {
               </div>
             )}
 
-            {/* ══ TAMANHOS — COMUNICAÇÃO VISUAL ══ */}
+            {/* ══ TAMANHOS - COMUNICAÇÃO VISUAL ══ */}
             {isComunicacao && todosTamanhos.length > 0 && (
               <div className="mb-6">
-                <p className="text-sm font-semibold uppercase tracking-wider mb-3" style={{ color: t.textSecundario }}>
+                <p className="text-xs font-bold uppercase mb-3" style={{ color: t.textSecundario, letterSpacing: "0.1em" }}>
                   Formato / Dimensões
                 </p>
                 {alerta && (
                   <div className="px-3 py-2 text-sm font-medium flex items-center gap-2 mb-3"
-                    style={{ backgroundColor: "#fef2f2", color: "#ef4444", border: "1px solid #fecaca" }}>
-                    ⚠️ Selecione um formato antes de continuar
+                    style={{ backgroundColor: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA", borderRadius: "999px" }}>
+                    <WarningIcon size={15} strokeWidth={1.8} /> Selecione um formato antes de continuar
                   </div>
                 )}
                 <div className="flex gap-2 flex-wrap">
@@ -221,10 +216,11 @@ export default function ProdutoDetalhe() {
                       <button key={est.tamanho}
                         onClick={() => { if (!semEstoque) { setTamanhoSelecionado(est.tamanho); setAlerta(false); } }}
                         disabled={semEstoque}
-                        className="px-4 py-2 text-sm font-medium transition"
+                        className="px-4 py-2 text-sm font-semibold transition"
                         style={{
+                          borderRadius: "999px",
                           border: "1px solid " + (selecionado ? t.text : t.border),
-                          backgroundColor: semEstoque ? t.bgSecundario : selecionado ? t.text : t.bg,
+                          backgroundColor: semEstoque ? t.bgSecundario : selecionado ? t.text : t.bgCard,
                           color: semEstoque ? t.textSecundario : selecionado ? "#ffffff" : t.text,
                           cursor: semEstoque ? "not-allowed" : "pointer",
                           opacity: semEstoque ? 0.45 : 1,
@@ -240,8 +236,8 @@ export default function ProdutoDetalhe() {
 
             {/* ══ QUANTIDADE ══ */}
             <div className="flex items-center gap-4 mb-6">
-              <p className="text-sm font-semibold uppercase tracking-wider" style={{ color: t.textSecundario }}>Quantidade</p>
-              <div className="flex items-center" style={{ border: "1px solid " + t.border }}>
+              <p className="text-xs font-bold uppercase" style={{ color: t.textSecundario, letterSpacing: "0.1em" }}>Quantidade</p>
+              <div className="flex items-center overflow-hidden" style={{ border: "1px solid " + t.border, borderRadius: "999px" }}>
                 <button onClick={() => setQuantidade(q => q > 1 ? q - 1 : 1)}
                   className="px-4 py-2 font-bold transition hover:opacity-70"
                   style={{ backgroundColor: t.bgSecundario, color: t.text, cursor: "pointer" }}>−</button>
@@ -255,11 +251,11 @@ export default function ProdutoDetalhe() {
             {/* ══ BOTÕES ══ */}
             <div className="flex flex-col gap-3 mb-6">
               <button onClick={handleComprar}
-                className="cursor-pointer w-full py-4 font-semibold text-white transition hover:opacity-90"
-                style={{ backgroundColor: t.text, cursor: "pointer" }}>Comprar agora</button>
+                className="cursor-pointer w-full py-4 font-bold text-white transition hover:opacity-90"
+                style={{ backgroundColor: t.text, cursor: "pointer", borderRadius: "999px" }}>Comprar agora</button>
               <button onClick={handleAdicionar}
-                className="cursor-pointer w-full py-4 font-semibold transition hover:opacity-80"
-                style={{ backgroundColor: t.bgSecundario, color: t.text, border: "1px solid " + t.border, cursor: "pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px" }}>
+                className="cursor-pointer w-full py-4 font-bold transition hover:opacity-80"
+                style={{ backgroundColor: "transparent", color: t.text, border: "1.5px solid " + t.borderForte, cursor: "pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:"8px", borderRadius: "999px" }}>
                 <CartIcon size={16} strokeWidth={1.7} /> Adicionar ao carrinho
               </button>
             </div>
@@ -267,23 +263,22 @@ export default function ProdutoDetalhe() {
             {/* Tabela de medidas só para ROUPAS */}
             {!isComunicacao && (
               <button onClick={() => setDrawerAberto(true)}
-                className="text-sm underline text-left transition hover:opacity-70 mb-6"
-                style={{ color: t.textSecundario }}>
-                📏 Ver tabela de medidas
+                className="text-sm underline text-left transition hover:opacity-70 mb-6 inline-flex items-center gap-1.5 w-fit"
+                style={{ color: t.accent, fontWeight: 600 }}>
+                <RulerIcon size={15} strokeWidth={1.8} /> Ver tabela de medidas
               </button>
             )}
 
             {/* INFO ENTREGA */}
-            <div className="p-4 space-y-2" style={{ backgroundColor: t.bgSecundario, border: "1px solid " + t.border }}>
-              <p className="text-sm flex items-center gap-2"><span>🚚</span><span style={{ color: t.textSecundario }}>Entrega para todo o Brasil</span></p>
-              {/* <p className="text-sm flex items-center gap-2"><span>🔄</span><span style={{ color: t.textSecundario }}>Trocas em até 7 dias</span></*p> */}
-              <p className="text-sm flex items-center gap-2"><span style={{ color: "#22c55e" }}><WhatsAppIcon size={16} strokeWidth={1.6} /></span><span style={{ color: t.textSecundario }}>Dúvidas? Fale pelo WhatsApp</span></p>
+            <div className="p-4 space-y-2.5" style={{ backgroundColor: t.bgSecundario, borderRadius: "14px" }}>
+              <p className="text-sm flex items-center gap-2.5"><span style={{ color: t.text }}><TruckIcon size={16} strokeWidth={1.7} /></span><span style={{ color: t.textSecundario }}>Entrega para todo o Brasil</span></p>
+              <p className="text-sm flex items-center gap-2.5"><span style={{ color: "#25D366" }}><WhatsAppIcon size={16} strokeWidth={1.6} /></span><span style={{ color: t.textSecundario }}>Dúvidas? Fale pelo WhatsApp</span></p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* DRAWER TABELA DE MEDIDAS — só para roupas */}
+      {/* DRAWER TABELA DE MEDIDAS - só para roupas */}
       {!isComunicacao && (
         <>
           {drawerAberto && (
@@ -291,17 +286,17 @@ export default function ProdutoDetalhe() {
               style={{ backgroundColor: "rgba(0,0,0,0.4)" }} />
           )}
           <div className="fixed top-0 right-0 h-full z-50 shadow-2xl overflow-y-auto transition-transform duration-300"
-            style={{ width: "min(420px, 95vw)", backgroundColor: t.bgCard, borderLeft: "2px solid " + t.borderForte,
+            style={{ width: "min(420px, 95vw)", backgroundColor: t.bgCard, borderLeft: "1px solid " + t.border,
               transform: drawerAberto ? "translateX(0)" : "translateX(100%)" }}>
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold" style={{ color: t.text }}>📏 Tabela de Medidas</h2>
-                <button onClick={() => setDrawerAberto(false)} className="text-xl hover:opacity-60 transition" style={{ color: t.text }}>✕</button>
+                <h2 style={{ fontFamily: "Newsreader, serif", fontStyle: "italic", fontSize: "22px", fontWeight: 500, color: t.text }}>Tabela de Medidas</h2>
+                <button onClick={() => setDrawerAberto(false)} className="hover:opacity-60 transition" style={{ color: t.text }}><CloseIcon size={20} strokeWidth={1.8} /></button>
               </div>
               <p className="text-sm mb-6" style={{ color: t.textSecundario }}>Medidas em centímetros (cm) da peça plana.</p>
-              {/* ── TABELA TRADICIONAL ── */}
-              <p className="text-sm font-bold uppercase mb-2" style={{ color: t.text }}>Tradicional</p>
-              <div className="overflow-x-auto mb-6" style={{ border: "1px solid " + t.border }}>
+              {/* TABELA TRADICIONAL */}
+              <p className="text-xs font-bold uppercase mb-2" style={{ color: t.text, letterSpacing: "0.08em" }}>Tradicional</p>
+              <div className="overflow-x-auto mb-6" style={{ border: "1px solid " + t.border, borderRadius: "12px" }}>
                 <table className="text-sm" style={{ minWidth: "400px", width: "100%" }}>
                   <thead>
                     <tr style={{ backgroundColor: t.bgSecundario }}>
@@ -331,9 +326,9 @@ export default function ProdutoDetalhe() {
                 </table>
               </div>
 
-              {/* ── TABELA BABY LOOK ── */}
-              <p className="text-sm font-bold uppercase mb-2" style={{ color: t.text }}>Baby Look</p>
-              <div className="overflow-x-auto mb-6" style={{ border: "1px solid " + t.border }}>
+              {/*TABELA BABY LOOK*/}
+              <p className="text-xs font-bold uppercase mb-2" style={{ color: t.text, letterSpacing: "0.08em" }}>Baby Look</p>
+              <div className="overflow-x-auto mb-6" style={{ border: "1px solid " + t.border, borderRadius: "12px" }}>
                 <table className="text-sm" style={{ minWidth: "300px", width: "100%" }}>
                   <thead>
                     <tr style={{ backgroundColor: t.bgSecundario }}>
@@ -362,7 +357,7 @@ export default function ProdutoDetalhe() {
               </div>
               <p className="text-sm font-semibold mb-3" style={{ color: t.text }}>Como medir:</p>
               <img src="https://hering.myvtex.com/api/dataentities/ET/documents/127a694a-63e5-11f0-b37f-f86067021982/image/attachments/3M9P-1ASN-T.jpg"
-                alt="Guia de medidas" className="w-full mb-4" />
+                alt="Guia de medidas" className="w-full mb-4" style={{ borderRadius: "10px" }} />
               <p className="text-xs" style={{ color: t.textSecundario }}>As medidas podem variar ±2 cm dependendo do processo de fabricação.</p>
             </div>
           </div>

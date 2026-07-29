@@ -226,7 +226,7 @@ class PedidoPersonalizadoViewSet(viewsets.ModelViewSet):
             import logging
             logging.getLogger(__name__).error(f"PedidoPersonalizado list error: {e}")
             # Se a tabela tiver colunas faltando, retorna lista vazia com aviso
-            return Response({"error": str(e), "pedidos": [], "aviso": "Migration pendente — rode python manage.py migrate"}, status=200)
+            return Response({"error": str(e), "pedidos": [], "aviso": "Migration pendente - rode python manage.py migrate"}, status=200)
 
     def create(self, request, *args, **kwargs):
         # Salva imagens separadamente (campos imagem1..5)

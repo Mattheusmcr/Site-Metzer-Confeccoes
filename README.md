@@ -1,4 +1,4 @@
-# Metzker Soluções — Documentação do Projeto
+# Metzker Soluções - Documentação do Projeto
 
 > Uniformes e Comunicação Visual para empresas · Vila Velha, ES  
 > Site: [www.metzkersolucoes.com.br](https://www.metzkersolucoes.com.br)
@@ -127,7 +127,7 @@ DB_HOST=NOME-DA-MAQUINA\SQLEXPRESS
 | `FRONTEND_URL` | `https://www.metzkersolucoes.com.br` |
 | `BACKEND_URL` | `https://api.metzkersolucoes.com.br` |
 
-> ⚠️ **Não adicionar** `CLOUDINARY_URL` — usar as 3 variáveis separadas.
+> ⚠️ **Não adicionar** `CLOUDINARY_URL` usar as 3 variáveis separadas.
 
 ### `frontend/.env`
 
@@ -153,7 +153,7 @@ git push
 
 ---
 
-## Mercado Pago — Checkout Pro
+## Mercado Pago Checkout Pro
 
 ### Fluxo de pagamento
 
@@ -235,9 +235,9 @@ Acesse: painel Mercado Pago → Configurações → Meios de pagamento → ative
 | `No module named 'mercadopago'` | Adicionar `mercadopago` ao `requirements.txt` |
 | `500` no MP webhook | Verificar `MP_ACCESS_TOKEN` no Railway |
 | Pix não aparece no MP | Ativar nas configurações da conta Mercado Pago |
-| CORS bloqueando | Backend caiu — verificar logs Railway |
+| CORS bloqueando | Backend caiu - verificar logs Railway |
 | Emails não enviando | Verificar `EMAIL_HOST_PASSWORD` (Senha de App Gmail) |
-| Imagens não aparecem localmente | Normal — Cloudinary só funciona em produção |
+| Imagens não aparecem localmente | Normal - Cloudinary só funciona em produção |
 
 ---
 

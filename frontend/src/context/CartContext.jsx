@@ -13,7 +13,7 @@ export function CartProvider({ children }) {
         item => item.produto.id === produto.id && item.tamanho === tamanho
       );
       if (existe) {
-        // Substitui a quantidade (não soma) — comportamento correto para "Comprar agora"
+        // Substitui a quantidade (não soma) comportamento correto para "Comprar agora"
         return prev.map(item =>
           item.produto.id === produto.id && item.tamanho === tamanho
             ? { ...item, quantidade: quantidade }

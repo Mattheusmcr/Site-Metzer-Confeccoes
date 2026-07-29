@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# CACHE_BUST — incrementar este número força rebuild completo a partir daqui
+# CACHE_BUST incrementar este número força rebuild completo a partir daqui
 ARG CACHE_BUST=99
 COPY . .
 

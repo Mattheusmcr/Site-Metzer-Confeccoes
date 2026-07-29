@@ -68,7 +68,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'metzker.wsgi.application'
 
-# ── BANCO DE DADOS ──────────────────────────────────────────────────────────
+# BANCO DE DADOS 
 # Em produção usa PostgreSQL (Railway), em dev usa SQL Server local
 if os.environ.get('DATABASE_URL'):
     import dj_database_url
@@ -103,12 +103,12 @@ TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
 USE_TZ = True
 
-# ── ARQUIVOS ESTÁTICOS ──────────────────────────────────────────────────────
+# ARQUIVOS ESTÁTICOS
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# ── MÍDIA / IMAGENS DOS PRODUTOS ────────────────────────────────────────────
+# MÍDIA / IMAGENS DOS PRODUTOS
 # Em produção usa Cloudinary, em dev usa pasta local
 if os.environ.get('CLOUDINARY_CLOUD_NAME'):
     import cloudinary
@@ -158,7 +158,7 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-    SECURE_SSL_REDIRECT = False  # Railway já serve HTTPS — evita loop de redirect
+    SECURE_SSL_REDIRECT = False  # Railway já serve HTTPS evita loop de redirect
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
@@ -166,7 +166,7 @@ if not DEBUG:
     X_FRAME_OPTIONS = 'DENY'
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# ── EMAIL (Gmail SMTP) ─────────────────────────────────────────────────────
+# EMAIL (Gmail SMTP) 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
@@ -174,11 +174,11 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 
-# Brevo (ex-Sendinblue) HTTP API — funciona no Railway (sem bloqueio SMTP)
+# Brevo (ex-Sendinblue) HTTP API funciona no Railway (sem bloqueio SMTP)
 BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')
 DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'andremetzkrr@gmail.com')
 
-# ── MERCADO PAGO ───────────────────────────────────────────────────────────────
+# MERCADO PAGO 
 MP_ACCESS_TOKEN  = os.environ.get('MP_ACCESS_TOKEN', '')
 MP_PUBLIC_KEY    = os.environ.get('MP_PUBLIC_KEY', '')
 MP_WEBHOOK_SECRET = os.environ.get('MP_WEBHOOK_SECRET', '')

@@ -27,13 +27,13 @@ def _validar_assinatura_webhook(request):
     Valida o header x-signature enviado pelo Mercado Pago (HMAC-SHA256).
     Docs: https://www.mercadopago.com.br/developers/pt/docs/checkout-pro/additional-content/notifications/webhooks
 
-    Se MP_WEBHOOK_SECRET não estiver configurado, deixa passar (com aviso no log) —
+    Se MP_WEBHOOK_SECRET não estiver configurado, deixa passar (com aviso no log)
     isso permite habilitar a validação em produção sem quebrar o webhook antes de
     a chave secreta ser cadastrada no Railway.
     """
     secret = getattr(settings, "MP_WEBHOOK_SECRET", "") or os.environ.get("MP_WEBHOOK_SECRET", "")
     if not secret:
-        logger.warning("MP_WEBHOOK_SECRET não configurado — validação de assinatura desativada.")
+        logger.warning("MP_WEBHOOK_SECRET não configurado - validação de assinatura desativada.")
         return True
 
     x_signature = request.headers.get("x-signature", "")
@@ -41,14 +41,14 @@ def _validar_assinatura_webhook(request):
     data_id = request.GET.get("data.id") or request.GET.get("id") or ""
 
     if not x_signature or not x_request_id or not data_id:
-        logger.warning("Webhook MP sem x-signature/x-request-id/data.id — rejeitado.")
+        logger.warning("Webhook MP sem x-signature/x-request-id/data.id - rejeitado.")
         return False
 
     partes = dict(p.split("=", 1) for p in x_signature.split(",") if "=" in p)
     ts = partes.get("ts", "")
     v1 = partes.get("v1", "")
     if not ts or not v1:
-        logger.warning("Webhook MP com x-signature malformado — rejeitado.")
+        logger.warning("Webhook MP com x-signature malformado - rejeitado.")
         return False
 
     manifest = f"id:{data_id.lower()};request-id:{x_request_id};ts:{ts};"
@@ -56,7 +56,7 @@ def _validar_assinatura_webhook(request):
 
     return hmac.compare_digest(esperado, v1)
 
-# REMOVIDO: MP_ACCESS_TOKEN no nível do módulo — leitura movida para get_sdk()
+# REMOVIDO: MP_ACCESS_TOKEN no nível do módulo - leitura movida para get_sdk()
 
 
 def get_sdk():
@@ -108,7 +108,7 @@ def criar_preferencia(request):
             }.get(frete_tipo, "Frete")
             mp_items.append({
                 "id": "frete",
-                "title": f"Frete — {frete_label}",
+                "title": f"Frete - {frete_label}",
                 "quantity": 1,
                 "unit_price": frete_valor,
                 "currency_id": "BRL",
@@ -192,7 +192,7 @@ def mp_webhook(request):
     """
     Recebe notificações do Mercado Pago sobre pagamentos.
     Quando aprovado, registra o pedido automaticamente.
-    Sempre responde 200 para o MP não reenviar a notificação — exceto quando a
+    Sempre responde 200 para o MP não reenviar a notificação exceto quando a
     assinatura é inválida, caso em que rejeitamos com 401.
     """
     if not _validar_assinatura_webhook(request):
@@ -203,7 +203,7 @@ def mp_webhook(request):
         topic = request.GET.get("topic") or request.data.get("type", "")
         payment_id = request.GET.get("id") or request.data.get("data", {}).get("id")
 
-        # CORREÇÃO 2: removido "merchant_order" — não contém payment_id diretamente
+        # CORREÇÃO 2: removido "merchant_order" não contém payment_id diretamente
         if not payment_id or topic not in ("payment",):
             logger.info(f"Webhook ignorado: topic='{topic}' payment_id='{payment_id}'")
             return HttpResponse(status=200)

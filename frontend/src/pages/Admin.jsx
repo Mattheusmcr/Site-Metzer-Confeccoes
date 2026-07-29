@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../services/api";
-import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../context/AuthContext";
 import {
   DashboardIcon, PlusIcon, PackageIcon, ReceiptIcon, ChartIcon, EditIcon,
   FolderIcon, CameraIcon, SaveIcon, CoinIcon, BagIcon, PaletteIcon,
@@ -8,7 +9,7 @@ import {
   ShirtIcon, ImageIcon, CheckIcon, CloseIcon, TrashIcon, TagIcon,
   ClockIcon, ChevronDownIcon, UserIcon, PinIcon, CardIcon, TruckIcon,
   StoreIcon, MailIcon, WhatsAppIcon, PrinterIcon, DownloadIcon,
-  SearchIcon, RefreshIcon,
+  SearchIcon, RefreshIcon, AdminIcon,
 } from "../components/Icons";
 
 const GALERIA_KEY = "metzker_galeria_trabalhos";
@@ -16,9 +17,9 @@ const GALERIA_KEY = "metzker_galeria_trabalhos";
 function Toast({ mensagem, tipo, onClose }) {
   useEffect(() => { const t = setTimeout(onClose, 3500); return () => clearTimeout(t); }, [onClose]);
   return (
-    <div className="fixed top-[70px] left-1/2 z-[9999] px-6 py-4 rounded-xl shadow-2xl text-white text-sm font-medium flex items-center gap-3"
-      style={{ transform: "translateX(-50%)", backgroundColor: tipo === "sucesso" ? "#16a34a" : "#dc2626",
-        fontFamily: "system-ui", maxWidth: "90vw", whiteSpace: "nowrap" }}>
+    <div className="fixed top-[64px] md:top-[24px] left-1/2 z-[9999] px-6 py-3.5 shadow-2xl text-white text-sm font-semibold flex items-center gap-3"
+      style={{ transform: "translateX(-50%)", backgroundColor: tipo === "sucesso" ? "#16A34A" : "#DC2626",
+        fontFamily: "Manrope, sans-serif", maxWidth: "90vw", whiteSpace: "nowrap", borderRadius: "999px" }}>
       {tipo === "sucesso" ? <CheckIcon size={16} strokeWidth={2.2} /> : <CloseIcon size={15} strokeWidth={2.2} />} {mensagem}
     </div>
   );
@@ -52,7 +53,7 @@ const CATEGORIAS_ADMIN = [
   },
 ];
 
-// ─── CADASTRAR PRODUTO ─────────────────────────────────────────────────────
+// CADASTRAR PRODUTO 
 function CadastrarProduto({ mostrarToast, dark, estilos }) {
   const { text, subtext, inputBg, inputBorder, border } = estilos;
   const [form, setForm] = useState({ nome: "", descricao: "", preco: "", categoria: "", subcategoria: "" });
@@ -89,7 +90,6 @@ function CadastrarProduto({ mostrarToast, dark, estilos }) {
 
   return (
     <div style={{ maxWidth: "560px" }}>
-      <h2 className="text-xl font-semibold mb-6" style={{ color: text }}>Cadastrar Produto</h2>
       <div className="flex flex-col gap-4">
         <div><label style={labelStyle}>Nome *</label><input name="nome" value={form.nome} onChange={handleChange} placeholder="Ex: Camiseta Polo" style={inputStyle} /></div>
         <div><label style={labelStyle}>Descrição {form.categoria === "comunicacao" ? "(ex: Banner 1,5m x 80cm)" : ""}</label>
@@ -98,7 +98,7 @@ function CadastrarProduto({ mostrarToast, dark, estilos }) {
         <div>
           <label style={labelStyle}>Categoria</label>
           <select name="categoria" value={form.categoria} onChange={handleChange} style={{ ...inputStyle, cursor: "pointer" }}>
-            <option value="">— Selecione —</option>
+            <option value="">- Selecione -</option>
             {CATEGORIAS_ADMIN.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
           </select>
         </div>
@@ -106,12 +106,12 @@ function CadastrarProduto({ mostrarToast, dark, estilos }) {
           <div>
             <label style={labelStyle}>Subcategoria</label>
             <select name="subcategoria" value={form.subcategoria} onChange={handleChange} style={{ ...inputStyle, cursor: "pointer" }}>
-              <option value="">— Selecione —</option>
+              <option value="">- Selecione -</option>
               {subcatsDisponiveis.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
             </select>
             {form.subcategoria && (
               <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium"
-                style={{ backgroundColor: dark ? "#374151" : "#F2F2F2", color: text, border: "1px solid " + border }}>
+                style={{ backgroundColor: dark ? "#374151" : "#F4F2EE", color: text, border: "1px solid " + border }}>
                 <FolderIcon size={13} strokeWidth={1.6} /> {CATEGORIAS_ADMIN.find(c => c.id === form.categoria)?.label} › {subcatsDisponiveis.find(s => s.id === form.subcategoria)?.label}
               </div>
             )}
@@ -119,7 +119,7 @@ function CadastrarProduto({ mostrarToast, dark, estilos }) {
         )}
         <div>
           <label style={labelStyle}>Imagens ({imagens.length} selecionada{imagens.length !== 1 ? "s" : ""})</label>
-          <label className="flex flex-col items-center justify-center cursor-pointer rounded-xl p-8"
+          <label className="flex flex-col items-center justify-center cursor-pointer rounded-2xl p-8"
             style={{ border: "2px dashed " + inputBorder, backgroundColor: dark ? "#374151" : "#F9F7F4" }}>
             <span className="mb-2" style={{ color: subtext }}><CameraIcon size={28} strokeWidth={1.4} /></span>
             <span style={{ color: subtext, fontSize: "14px" }}>Clique para selecionar imagens</span>
@@ -132,14 +132,14 @@ function CadastrarProduto({ mostrarToast, dark, estilos }) {
                   <img src={src} className="w-20 h-20 object-cover rounded-lg" style={{ border: "1px solid " + inputBorder }} />
                   <button onClick={() => { const n = imagens.filter((_, j) => j !== i); setImagens(n); setPreviews(n.map(f => URL.createObjectURL(f))); }}
                     className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs items-center justify-center opacity-0 group-hover:opacity-100 flex"
-                    style={{ backgroundColor: "#ef4444", color: "white" }}>✕</button>
+                    style={{ backgroundColor: "#DC2626", color: "white" }}>✕</button>
                 </div>
               ))}
             </div>
           )}
         </div>
-        <button onClick={handleSubmit} disabled={loading} className="cursor-pointer py-3 rounded-lg font-semibold text-white transition-all duration-300 hover:enabled:shadow-lg hover:enabled:-translate-y-0.5"
-          style={{ backgroundColor: loading ? "#9ca3af" : "#1a1a1a", cursor: loading ? "not-allowed" : "pointer" }}>
+        <button onClick={handleSubmit} disabled={loading} className="cursor-pointer py-3 rounded-full font-bold text-white transition-all duration-300 hover:enabled:shadow-lg hover:enabled:-translate-y-0.5"
+          style={{ backgroundColor: loading ? "#9ca3af" : "#161513", cursor: loading ? "not-allowed" : "pointer" }}>
           {loading ? "Salvando..." : "Salvar Produto"}
         </button>
       </div>
@@ -147,7 +147,7 @@ function CadastrarProduto({ mostrarToast, dark, estilos }) {
   );
 }
 
-// ─── LISTAR / EDITAR PRODUTOS ──────────────────────────────────────────────
+// LISTAR / EDITAR PRODUTOS
 function ListarProdutos({ mostrarToast, dark, estilos }) {
   const { text, subtext, cardBg, border, inputBg, inputBorder } = estilos;
   const [produtos, setProdutos] = useState([]);
@@ -232,10 +232,10 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-6" style={{ color: text }}>Produtos ({produtos.length})</h2>
+      <p className="text-sm mb-6" style={{ color: subtext }}>{produtos.length} produto{produtos.length !== 1 ? "s" : ""} cadastrado{produtos.length !== 1 ? "s" : ""}</p>
       <div className="space-y-3">
         {produtos.map(p => (
-          <div key={p.id} className="rounded-xl p-4" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
+          <div key={p.id} className="rounded-2xl p-4" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
             <div className="flex items-start gap-4">
               <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 flex items-center justify-center" style={{ backgroundColor: border, color: subtext }}>
                 {p.imagens?.[0]?.imagem ? <img src={p.imagens[0].imagem} className="w-full h-full object-cover" alt="" />
@@ -256,7 +256,7 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
                     <div>
                       <label style={labelStyle}>Categoria</label>
                       <select value={editando.categoria || ""} onChange={e => setEditando({ ...editando, categoria: e.target.value, subcategoria: "" })} style={{ ...inputStyle, cursor: "pointer" }}>
-                        <option value="">— Sem categoria —</option>
+                        <option value="">- Sem categoria -</option>
                         {CATEGORIAS_ADMIN.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
                       </select>
                     </div>
@@ -264,7 +264,7 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
                       <div>
                         <label style={labelStyle}>Subcategoria</label>
                         <select value={editando.subcategoria || ""} onChange={e => setEditando({ ...editando, subcategoria: e.target.value })} style={{ ...inputStyle, cursor: "pointer" }}>
-                          <option value="">— Sem subcategoria —</option>
+                          <option value="">- Sem subcategoria -</option>
                           {subcatsEdicao.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                         </select>
                       </div>
@@ -272,7 +272,7 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
                   </div>
                   {editando.categoria && (
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium"
-                      style={{ backgroundColor: dark ? "#374151" : "#F2F2F2", color: text, border: "1px solid " + border }}>
+                      style={{ backgroundColor: dark ? "#374151" : "#F4F2EE", color: text, border: "1px solid " + border }}>
                       <FolderIcon size={13} strokeWidth={1.6} /> {CATEGORIAS_ADMIN.find(c => c.id === editando.categoria)?.label}
                       {editando.subcategoria && ` › ${subcatsEdicao.find(sub => sub.id === editando.subcategoria)?.label}`}
                     </div>
@@ -281,7 +281,7 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
                     <label style={{ ...labelStyle, marginBottom: 0 }}>Visível no catálogo</label>
                     <button onClick={() => setEditando({ ...editando, ativo: !editando.ativo })}
                       className="px-3 py-1 rounded-lg text-sm font-medium inline-flex items-center gap-1.5"
-                      style={{ backgroundColor: editando.ativo ? "#16a34a" : "#dc2626", color: "white" }}>
+                      style={{ backgroundColor: editando.ativo ? "#16A34A" : "#DC2626", color: "white" }}>
                       {editando.ativo ? <><CheckIcon size={13} strokeWidth={2} />Ativo</> : <><CloseIcon size={12} strokeWidth={2} />Inativo</>}
                     </button>
                   </div>
@@ -300,10 +300,10 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
                     )}
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={salvarEdicao} className="cursor-pointer px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all duration-300 hover:shadow-md hover:-translate-y-0.5" style={{ backgroundColor: "#16a34a" }}>Salvar</button>
+                    <button onClick={salvarEdicao} className="cursor-pointer px-4 py-2 rounded-full text-sm font-semibold text-white transition-all duration-300 hover:shadow-md hover:-translate-y-0.5" style={{ backgroundColor: "#16A34A" }}>Salvar</button>
                     <button onClick={() => { setEditando(null); setNovasImagens([]); setPreviews([]); }}
                       className="px-4 py-2 rounded-lg text-sm font-semibold"
-                      style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: text }}>Cancelar</button>
+                      style={{ backgroundColor: dark ? "#374151" : "#F4F2EE", color: text }}>Cancelar</button>
                   </div>
                 </div>
               ) : (
@@ -313,25 +313,25 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
                     <p className="text-sm" style={{ color: subtext }}>R$ {Number(p.preco).toFixed(2)}</p>
                     {labelCategoria(p) && (
                       <span className="text-xs px-2 py-0.5 rounded-full mt-1 mr-2 inline-flex items-center gap-1"
-                        style={{ backgroundColor: dark ? "#374151" : "#F2F2F2", color: subtext }}>
+                        style={{ backgroundColor: dark ? "#374151" : "#F4F2EE", color: subtext }}>
                         <FolderIcon size={11} strokeWidth={1.6} /> {labelCategoria(p)}
                       </span>
                     )}
                     <span className="text-xs px-2 py-0.5 rounded-full mt-1 inline-block"
-                      style={{ backgroundColor: p.ativo ? "#dcfce7" : "#fee2e2", color: p.ativo ? "#16a34a" : "#dc2626" }}>
+                      style={{ backgroundColor: p.ativo ? "#F0FDF4" : "#FEF2F2", color: p.ativo ? "#16A34A" : "#DC2626" }}>
                       {p.ativo ? "● Ativo" : "● Inativo"}
                     </span>
                   </div>
                   <div className="flex gap-2 shrink-0 flex-wrap justify-end">
                     <button onClick={() => toggleAtivo(p)} className="px-3 py-1.5 text-sm rounded-lg font-medium"
-                      style={{ backgroundColor: p.ativo ? "#fee2e2" : "#dcfce7", color: p.ativo ? "#dc2626" : "#16a34a" }}>
+                      style={{ backgroundColor: p.ativo ? "#FEF2F2" : "#F0FDF4", color: p.ativo ? "#DC2626" : "#16A34A" }}>
                       {p.ativo ? "Desativar" : "Ativar"}
                     </button>
                     <button onClick={() => { setEditando({ ...p }); setNovasImagens([]); setPreviews([]); }}
                       className="px-3 py-1.5 text-sm rounded-lg"
-                      style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: text }}>Editar</button>
+                      style={{ backgroundColor: dark ? "#374151" : "#F4F2EE", color: text }}>Editar</button>
                     <button onClick={() => excluir(p)} className="px-3 py-1.5 text-sm rounded-lg"
-                      style={{ backgroundColor: "#fef2f2", color: "#dc2626" }}>Excluir</button>
+                      style={{ backgroundColor: "#FEF2F2", color: "#DC2626" }}>Excluir</button>
                   </div>
                 </>
               )}
@@ -344,7 +344,7 @@ function ListarProdutos({ mostrarToast, dark, estilos }) {
 }
 
 
-// ─── DASHBOARD ──────────────────────────────────────────────────────────────
+// DASHBOARD
 function Dashboard({ dark, estilos }) {
   const { text, subtext, cardBg, border } = estilos;
   const [pedidos, setPedidos] = useState([]);
@@ -362,7 +362,7 @@ function Dashboard({ dark, estilos }) {
   const totalGeral = pedidos.length + personalizados.length;
   const faturamento = pedidos.reduce((acc, p) => acc + (p.total || 0), 0);
   const STATUS_LABELS = { novo:"Novo", em_andamento:"Em andamento", concluido:"Concluido", cancelado:"Cancelado" };
-  const STATUS_CORES_D = { novo:"#2563eb", em_andamento:"#d97706", concluido:"#16a34a", cancelado:"#dc2626" };
+  const STATUS_CORES_D = { novo:"#2563EB", em_andamento:"#D97706", concluido:"#16A34A", cancelado:"#DC2626" };
 
   const statusCat = {novo:0, em_andamento:0, concluido:0, cancelado:0};
   pedidos.forEach(p => { const s = p.status||"novo"; statusCat[s] = (statusCat[s]||0)+1; });
@@ -376,35 +376,33 @@ function Dashboard({ dark, estilos }) {
   const topProdutos = Object.entries(contagem).sort((a,b)=>b[1]-a[1]).slice(0,5);
 
   const cards = [
-    { label: "Total de pedidos", valor: totalGeral, Icone: PackageIcon, cor: "#2563eb" },
-    { label: "Faturamento estimado", valor: "R$ " + faturamento.toFixed(2), Icone: CoinIcon, cor: "#16a34a" },
+    { label: "Total de pedidos", valor: totalGeral, Icone: PackageIcon, cor: "#2563EB" },
+    { label: "Faturamento estimado", valor: "R$ " + faturamento.toFixed(2), Icone: CoinIcon, cor: "#16A34A" },
     { label: "Catalogo", valor: pedidos.length, Icone: BagIcon, cor: "#7c3aed" },
-    { label: "Personalizados", valor: personalizados.length, Icone: PaletteIcon, cor: "#d97706" },
+    { label: "Personalizados", valor: personalizados.length, Icone: PaletteIcon, cor: "#D97706" },
   ];
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-6 flex items-center gap-2" style={{ color: text }}><DashboardIcon size={20} strokeWidth={1.6} /> Dashboard</h2>
-
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {cards.map((c, i) => (
-          <div key={i} className="rounded-xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
-            <div style={{ marginBottom: "8px", color: c.cor }}><c.Icone size={24} strokeWidth={1.5} /></div>
-            <p style={{ fontSize: "22px", fontWeight: "700", color: c.cor, fontFamily: "system-ui" }}>{c.valor}</p>
-            <p style={{ fontSize: "12px", color: subtext, fontFamily: "system-ui", marginTop: "4px" }}>{c.label}</p>
+          <div key={i} className="rounded-2xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
+            <div style={{ marginBottom: "10px", color: c.cor }}><c.Icone size={22} strokeWidth={1.5} /></div>
+            <p style={{ fontSize: "12px", color: subtext, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: "700", marginBottom: "4px" }}>{c.label}</p>
+            <p style={{ fontFamily: "Newsreader, serif", fontSize: "30px", fontWeight: "500", color: text }}>{c.valor}</p>
           </div>
         ))}
       </div>
 
-      <div className="rounded-xl p-5 mb-6" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
+      <div className="rounded-2xl p-5 mb-6" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"12px" }}>
           <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
             <span style={{ color: text }}><ChartIcon size={18} strokeWidth={1.6} /></span>
             <p style={{ fontWeight:"600", fontSize:"15px", color: text, margin:0 }}>Google Analytics</p>
           </div>
           <a href="https://analytics.google.com" target="_blank" rel="noreferrer"
-            style={{ fontSize:"12px", color:"#2563eb", fontFamily:"system-ui", fontWeight:"500",
-              textDecoration:"none", padding:"6px 12px", borderRadius:"6px", border:"1px solid #2563eb", display:"inline-block" }}>
+            style={{ fontSize:"12px", color:"#2563EB", fontFamily:"system-ui", fontWeight:"500",
+              textDecoration:"none", padding:"6px 12px", borderRadius:"6px", border:"1px solid #2563EB", display:"inline-block" }}>
             Abrir GA →
           </a>
         </div>
@@ -416,7 +414,7 @@ function Dashboard({ dark, estilos }) {
           ].map((item, i) => (
             <a key={i} href={item.url} target="_blank" rel="noreferrer"
               style={{ borderRadius:"8px", padding:"12px 10px", textAlign:"center",
-                backgroundColor: dark ? "#374151" : "#f9fafb", border: "1px solid " + border,
+                backgroundColor: dark ? "#374151" : "#F4F2EE", border: "1px solid " + border,
                 textDecoration:"none", display:"block" }}>
               <div style={{ marginBottom:"5px", color: text, display:"flex", justifyContent:"center" }}><item.Icone size={20} strokeWidth={1.5} /></div>
               <p style={{ fontSize:"12px", color: text, fontFamily:"system-ui", fontWeight:"600", margin:0 }}>{item.label}</p>
@@ -427,7 +425,7 @@ function Dashboard({ dark, estilos }) {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        <div className="rounded-xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
+        <div className="rounded-2xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
           <p className="font-semibold mb-4 flex items-center gap-2" style={{ color: text }}><TrophyIcon size={17} strokeWidth={1.6} /> Produtos mais pedidos</p>
           {topProdutos.length === 0 && <p style={{ color: subtext, fontSize: "13px" }}>Nenhum pedido ainda.</p>}
           {topProdutos.map(([nome, qtd], i) => {
@@ -439,15 +437,15 @@ function Dashboard({ dark, estilos }) {
                   <span style={{ fontSize: "13px", color: text }}>{nome}</span>
                   <span style={{ fontSize: "13px", fontWeight: "600", color: text }}>{qtd} un</span>
                 </div>
-                <div style={{ height: "6px", backgroundColor: dark ? "#374151" : "#e5e7eb", borderRadius: "3px" }}>
-                  <div style={{ height: "100%", width: pct + "%", backgroundColor: "#2563eb", borderRadius: "3px" }} />
+                <div style={{ height: "6px", backgroundColor: dark ? "#374151" : "#F4F2EE", borderRadius: "3px" }}>
+                  <div style={{ height: "100%", width: pct + "%", backgroundColor: "#2563EB", borderRadius: "3px" }} />
                 </div>
               </div>
             );
           })}
         </div>
 
-        <div className="rounded-xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
+        <div className="rounded-2xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
           <p className="font-semibold mb-4 flex items-center gap-2" style={{ color: text }}><ChartIcon size={17} strokeWidth={1.6} /> Status por tipo</p>
           <p style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", color: subtext, fontFamily: "system-ui", marginBottom: "8px" }}>
             Catalogo ({pedidos.length})
@@ -476,7 +474,7 @@ function Dashboard({ dark, estilos }) {
   );
 }
 
-// ─── PEDIDOS ───────────────────────────────────────────────────────────────
+//PEDIDOS 
 function VerPedidos({ mostrarToast, dark, estilos }) {
   const { text, subtext, cardBg, border } = estilos;
   const [pedidos, setPedidos] = useState([]);
@@ -495,7 +493,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
   const [historicoStatus, setHistoricoStatus] = useState({});
   const ultimoTotalRef = useRef(null);
 
-  // ── Notificação sonora de novo pedido ──
+  // Notificação sonora de novo pedido
   function tocarSom() {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -552,7 +550,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
   }, [carregar]);
 
 
-  // ── GERAR PDF DO PEDIDO (Admin) ─────────────────────────────────────────
+  // GERAR PDF DO PEDIDO (Admin)
   function gerarPDFPedido(p) {
     const isCat = !p.ramo;
     const prot = p.protocolo || (isCat ? "MTZ-" + String(p.id).padStart(4,"0") : "MTZ-PERS-" + String(p.id).padStart(4,"0"));
@@ -577,7 +575,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
       : "<p>Retirada no local</p>";
 
     const html = "<!DOCTYPE html><html lang='pt-BR'><head><meta charset='UTF-8'><title>Pedido " + prot + "</title>"
-      + "<style>*{box-sizing:border-box}body{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 24px;color:#1a1a1a}"
+      + "<style>*{box-sizing:border-box}body{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 24px;color:#161513}"
       + ".prot{font-family:monospace;font-size:16px;font-weight:700;padding:10px 16px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;display:inline-block;margin-bottom:16px}"
       + ".grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}"
       + ".block{padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px}"
@@ -585,7 +583,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
       + ".block p{font-size:13px;margin:2px 0;line-height:1.5}"
       + "table{width:100%;border-collapse:collapse;margin:12px 0}"
       + "th{background:#f3f4f6;padding:8px 4px;text-align:left;font-size:11px;text-transform:uppercase;font-weight:700}"
-      + "td{font-size:13px;color:#1a1a1a}"
+      + "td{font-size:13px;color:#161513}"
       + ".frete{margin:12px 0;padding:12px 16px;background:#fef9f0;border:1px solid #fde68a;border-radius:6px;font-size:13px}"
       + ".footer{margin-top:28px;padding-top:14px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af;text-align:center}"
       + "@media print{button{display:none}}</style></head><body>"
@@ -607,7 +605,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
       + "</tr></thead><tbody>" + itensHTML + "</tbody></table>"
       + (p.observacao||p.observacoes ? "<div style='margin-top:16px;padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px'><p style='font-size:13px'>" + (p.observacao||p.observacoes) + "</p></div>" : "")
       + "<div class='footer'>Metzker Solucoes - Polo Textil Santa Ines - Vila Velha, ES<br>Gerado em " + new Date().toLocaleDateString("pt-BR") + "</div>"
-      + "<div style='text-align:center;margin-top:16px'><button onclick='window.print()' style='padding:10px 24px;background:#1a1a1a;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px'>Imprimir/Salvar PDF</button></div>"
+      + "<div style='text-align:center;margin-top:16px'><button onclick='window.print()' style='padding:10px 24px;background:#161513;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px'>Imprimir/Salvar PDF</button></div>"
       + "</body></html>";
 
     const win = window.open("", "_blank");
@@ -650,10 +648,10 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
       return [
         cell(prot), cell("Personalizado"), cell(p.id), cell(p.nome_cliente), cell(p.telefone), cell(p.email),
         cell(p.status||"novo"), cell(new Date(p.data_pedido).toLocaleDateString("pt-BR")),
-        cell("A orçar"), cell("—"),
+        cell("A orçar"), cell("-"),
         cell(p.frete_tipo||"retirada"), cell(p.frete_tipo==="motoboy"?`~R$ ${p.frete_valor||"a combinar"}`:p.frete_tipo==="correios"?"Conforme Correios":"Grátis"),
-        cell(p.rua||"—"), cell(p.numero||"—"), cell(p.bairro||"—"),
-        cell(p.cidade||"—"), cell(p.estado||"—"), cell(p.cep||"—"),
+        cell(p.rua||"-"), cell(p.numero||"-"), cell(p.bairro||"-"),
+        cell(p.cidade||"-"), cell(p.estado||"-"), cell(p.cep||"-"),
         cell(refParts), cell(obs),
       ].join(";");
     });
@@ -720,17 +718,16 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
     }
   }
 
-  const STATUS_CORES = { novo: "#2563eb", em_andamento: "#d97706", concluido: "#16a34a", cancelado: "#dc2626" };
+  const STATUS_CORES = { novo: "#2563EB", em_andamento: "#D97706", concluido: "#16A34A", cancelado: "#DC2626" };
 
   if (loading) return <p style={{ color: subtext }}>Carregando...</p>;
 
   return (
     <div>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-        <h2 className="text-xl font-semibold" style={{ color: text }}>Pedidos</h2>
+      <div className="flex flex-col md:flex-row md:items-center justify-end gap-4 mb-4">
         <button onClick={exportarExcel}
-          className="cursor-pointer px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center gap-2"
-          style={{ backgroundColor: "#16a34a", cursor: "pointer", fontFamily: "system-ui" }}>
+          className="cursor-pointer px-4 py-2 rounded-full text-sm font-semibold text-white flex items-center gap-2"
+          style={{ backgroundColor: "#16A34A", cursor: "pointer", fontFamily: "system-ui" }}>
           <DownloadIcon size={15} strokeWidth={1.8} /> Exportar Excel
         </button>
       </div>
@@ -744,7 +741,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
           <input value={busca} onChange={e => setBusca(e.target.value)}
             placeholder="Buscar por nome ou email..."
             style={{ width: "100%", padding: "9px 14px 9px 36px", border: "1px solid " + border, backgroundColor: dark ? "#374151" : "#fff",
-              color: text, borderRadius: "8px", fontSize: "13px", fontFamily: "system-ui", outline: "none", boxSizing: "border-box" }} />
+              color: text, borderRadius: "999px", fontSize: "13px", fontFamily: "system-ui", outline: "none", boxSizing: "border-box" }} />
         </div>
         <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)}
           style={{ padding: "9px 14px", border: "1px solid " + border, backgroundColor: dark ? "#374151" : "#fff",
@@ -779,7 +776,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
         ))}
       </div>
 
-      {/* ── PEDIDOS DO CATÁLOGO ── */}
+      {/* PEDIDOS DO CATÁLOGO */}
       {aba === "catalogo" && (
         <div className="space-y-3">
           {(() => {
@@ -803,20 +800,20 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
             const expandido = aberto === `cat-${p.id}`;
             const totalPedido = p.total || p.itens?.reduce((acc, i) => acc + parseFloat(i.produto_preco) * i.quantidade, 0) || 0;
             return (
-              <div key={p.id} className="rounded-xl overflow-hidden" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
+              <div key={p.id} className="rounded-2xl overflow-hidden" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
                 <button onClick={() => setAberto(expandido ? null : `cat-${p.id}`)}
                   className="w-full p-5 flex items-center justify-between text-left">
                   <div className="flex items-center gap-4">
-                    <span className="text-xs px-2 py-1 rounded-lg font-mono" style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: subtext }}>#{p.id}</span>
+                    <span className="text-xs px-2 py-1 rounded-lg font-mono" style={{ backgroundColor: dark ? "#374151" : "#F4F2EE", color: subtext }}>#{p.id}</span>
                     <div>
                       <p className="font-semibold" style={{ color: text }}>{p.nome_cliente}</p>
-                      <p className="text-xs font-mono flex items-center gap-1" style={{ color: "#2563eb" }}>
+                      <p className="text-xs font-mono flex items-center gap-1" style={{ color: "#2563EB" }}>
                         <TagIcon size={11} strokeWidth={1.8} /> {p.protocolo || `MTZ-${String(p.id).padStart(4,"0")}`}
                       </p>
                       <p className="text-xs" style={{ color: subtext }}>{new Date(p.data_pedido).toLocaleString("pt-BR")}</p>
                       {historicoStatus[`cat-${p.id}`]?.length > 0 && (
-                        <p className="text-xs font-semibold mt-0.5 flex items-center gap-1" style={{ color: "#d97706" }}>
-                          <ClockIcon size={11} strokeWidth={1.8} /> Status: {historicoStatus[`cat-${p.id}`].slice(-1)[0]?.status} — {historicoStatus[`cat-${p.id}`].slice(-1)[0]?.data}
+                        <p className="text-xs font-semibold mt-0.5 flex items-center gap-1" style={{ color: "#D97706" }}>
+                          <ClockIcon size={11} strokeWidth={1.8} /> Status: {historicoStatus[`cat-${p.id}`].slice(-1)[0]?.status} - {historicoStatus[`cat-${p.id}`].slice(-1)[0]?.data}
                         </p>
                       )}
                     </div>
@@ -830,10 +827,10 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                   <div className="px-5 pb-5 space-y-4" style={{ borderTop: "1px solid " + border }}>
                     <div className="grid md:grid-cols-3 gap-4 pt-4">
                       {[
-                        { titulo: "Cliente", Icone: UserIcon, cor: "#2563eb", conteudo: <><p className="font-semibold text-sm" style={{ color: text }}>{p.nome_cliente}</p><p className="text-sm mt-1 flex items-center gap-1.5" style={{ color: subtext }}><PhoneIcon size={13} strokeWidth={1.6} />{p.telefone}</p></> },
-                        { titulo: "Endereço", Icone: PinIcon, cor: "#c41e3a", conteudo: p.rua ? <div className="text-sm space-y-0.5" style={{ color: text }}><p>{p.rua}, {p.numero}</p><p>{p.bairro} — {p.cidade}/{p.estado}</p></div> : <p className="text-sm" style={{ color: subtext }}>Retirada no local</p> },
-                        { titulo: "Pagamento", Icone: CardIcon, cor: "#16a34a", conteudo: <p className="font-semibold text-sm" style={{ color: text }}>{p.forma_pagamento || "Não informado"}</p> },
-                        { titulo: "Entrega", Icone: TruckIcon, cor: "#d97706", conteudo: (
+                        { titulo: "Cliente", Icone: UserIcon, cor: "#2563EB", conteudo: <><p className="font-semibold text-sm" style={{ color: text }}>{p.nome_cliente}</p><p className="text-sm mt-1 flex items-center gap-1.5" style={{ color: subtext }}><PhoneIcon size={13} strokeWidth={1.6} />{p.telefone}</p></> },
+                        { titulo: "Endereço", Icone: PinIcon, cor: "#c41e3a", conteudo: p.rua ? <div className="text-sm space-y-0.5" style={{ color: text }}><p>{p.rua}, {p.numero}</p><p>{p.bairro} - {p.cidade}/{p.estado}</p></div> : <p className="text-sm" style={{ color: subtext }}>Retirada no local</p> },
+                        { titulo: "Pagamento", Icone: CardIcon, cor: "#16A34A", conteudo: <p className="font-semibold text-sm" style={{ color: text }}>{p.forma_pagamento || "Não informado"}</p> },
+                        { titulo: "Entrega", Icone: TruckIcon, cor: "#D97706", conteudo: (
                           <div>
                             <p className="font-semibold text-sm flex items-center gap-1.5" style={{ color: text }}>
                               {p.frete_tipo === "retirada" ? <><StoreIcon size={14} strokeWidth={1.6} />Retirada no local</> :
@@ -841,13 +838,13 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                                p.frete_tipo === "correios" ? <><MailIcon size={14} strokeWidth={1.6} />Correios</> : "Não informado"}
                             </p>
                             {p.frete_tipo === "motoboy" && (
-                              <p className="text-xs mt-1" style={{ color: "#d97706" }}>
-                                Apenas Grande Vitoria/ES — confirmar via WhatsApp
+                              <p className="text-xs mt-1" style={{ color: "#D97706" }}>
+                                Apenas Grande Vitoria/ES - confirmar via WhatsApp
                               </p>
                             )}
                             {p.frete_tipo === "correios" && (
                               <p className="text-xs mt-1" style={{ color: subtext }}>
-                                Valor conforme Correios — confirmar com o cliente
+                                Valor conforme Correios - confirmar com o cliente
                               </p>
                             )}
                             {p.frete_tipo === "motoboy" && p.frete_valor > 0 && (
@@ -856,12 +853,12 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                               </p>
                             )}
                             {p.frete_tipo === "retirada" && (
-                              <p className="text-xs mt-1" style={{ color: "#16a34a", fontWeight:"600" }}>Grátis</p>
+                              <p className="text-xs mt-1" style={{ color: "#16A34A", fontWeight:"600" }}>Grátis</p>
                             )}
                           </div>
                         ) },
                       ].map(({ titulo, Icone, cor, conteudo }) => (
-                        <div key={titulo} className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
+                        <div key={titulo} className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#F4F2EE" }}>
                           <div className="flex items-center gap-2 mb-3">
                             <IconBadge Icone={Icone} cor={cor} />
                             <p className="text-xs font-bold uppercase" style={{ color: subtext }}>{titulo}</p>
@@ -872,7 +869,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                     </div>
                     <div className="rounded-lg overflow-hidden" style={{ border: "1px solid " + border }}>
                       <table className="w-full text-sm">
-                        <thead><tr style={{ backgroundColor: dark ? "#374151" : "#f3f4f6" }}>
+                        <thead><tr style={{ backgroundColor: dark ? "#374151" : "#F4F2EE" }}>
                           <th className="text-left p-3 font-semibold" style={{ color: text }}>Produto</th>
                           <th className="text-center p-3 font-semibold" style={{ color: text }}>Tamanho</th>
                           <th className="text-center p-3 font-semibold" style={{ color: text }}>Qtd.</th>
@@ -881,7 +878,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                         </tr></thead>
                         <tbody>
                           {(p.itens || []).map((item, i) => (
-                            <tr key={i} style={{ backgroundColor: i % 2 === 0 ? (dark ? "#1f2937" : "#fff") : (dark ? "#111827" : "#f9fafb") }}>
+                            <tr key={i} style={{ backgroundColor: i % 2 === 0 ? (dark ? "#1f2937" : "#fff") : (dark ? "#111827" : "#F4F2EE") }}>
                               <td className="p-3 font-medium" style={{ color: text }}>{item.produto_nome}</td>
                               <td className="p-3 text-center" style={{ color: subtext }}>{item.tamanho}</td>
                               <td className="p-3 text-center" style={{ color: subtext }}>{item.quantidade}</td>
@@ -891,7 +888,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                           ))}
                         </tbody>
                         <tfoot>
-                          <tr style={{ backgroundColor: dark ? "#374151" : "#f3f4f6", borderTop: "2px solid " + border }}>
+                          <tr style={{ backgroundColor: dark ? "#374151" : "#F4F2EE", borderTop: "2px solid " + border }}>
                             <td colSpan={4} className="p-3 text-right font-bold" style={{ color: text }}>Total do Pedido</td>
                             <td className="p-3 text-right font-bold text-base" style={{ color: text }}>
                               R$ {((p.itens || []).reduce((acc, i) => acc + parseFloat(i.produto_preco) * i.quantidade, 0)).toFixed(2)}
@@ -905,16 +902,16 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                       <p className="text-xs uppercase tracking-wider mb-2" style={{ color: subtext }}>Status do pedido</p>
                       <div className="flex gap-2 flex-wrap">
                         {[
-                          { id: "novo",         label: "Novo",         cor: "#2563eb" },
-                          { id: "em_andamento", label: "Em andamento", cor: "#d97706" },
-                          { id: "concluido",    label: "Concluído",    cor: "#16a34a" },
-                          { id: "cancelado",    label: "Cancelado",    cor: "#dc2626" },
+                          { id: "novo",         label: "Novo",         cor: "#2563EB" },
+                          { id: "em_andamento", label: "Em andamento", cor: "#D97706" },
+                          { id: "concluido",    label: "Concluído",    cor: "#16A34A" },
+                          { id: "cancelado",    label: "Cancelado",    cor: "#DC2626" },
                         ].map(s => (
                           <button key={s.id} onClick={() => atualizarStatusCatalogo(p.id, s.id)}
                             style={{
                               padding: "5px 12px", fontSize: "12px", fontWeight: "600",
                               cursor: "pointer", border: "none", borderRadius: "6px", fontFamily: "system-ui",
-                              backgroundColor: (p.status || "novo") === s.id ? s.cor : (dark ? "#374151" : "#e5e7eb"),
+                              backgroundColor: (p.status || "novo") === s.id ? s.cor : (dark ? "#374151" : "#F4F2EE"),
                               color: (p.status || "novo") === s.id ? "white" : text,
                             }}>{s.label}</button>
                         ))}
@@ -923,7 +920,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
 
                     {/* HISTÓRICO DE STATUS */}
                     {historicoStatus[`cat-${p.id}`]?.length > 0 && (
-                      <div className="rounded-lg p-3 mt-2 mb-3" style={{ backgroundColor: dark ? "#111827" : "#f9fafb", border: "1px solid " + border }}>
+                      <div className="rounded-lg p-3 mt-2 mb-3" style={{ backgroundColor: dark ? "#111827" : "#F4F2EE", border: "1px solid " + border }}>
                         <p className="text-xs font-bold uppercase mb-2 flex items-center gap-1.5" style={{ color: subtext }}><ListIcon size={12} strokeWidth={1.7} />Histórico de status</p>
                         {historicoStatus[`cat-${p.id}`].map((h, i) => (
                           <p key={i} style={{ fontSize: "11px", color: subtext, fontFamily: "system-ui" }}>
@@ -936,10 +933,10 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                     <div className="flex items-center gap-3">
                       <a href={("https://wa.me/55" + p.telefone.split("").filter(ch => ch >= "0" && ch <= "9").join(""))} target="_blank" rel="noreferrer"
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white"
-                        style={{ backgroundColor: "#16a34a" }}><WhatsAppIcon size={15} strokeWidth={1.6} />WhatsApp</a>
+                        style={{ backgroundColor: "#16A34A" }}><WhatsAppIcon size={15} strokeWidth={1.6} />WhatsApp</a>
                       <button onClick={() => setPedidoParaExcluir({ id: p.id, tipo: "catalogo", nome: p.nome_cliente })}
                         className="px-4 py-2 rounded-lg text-sm font-medium inline-flex items-center gap-2"
-                        style={{ backgroundColor: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}>
+                        style={{ backgroundColor: "#FEF2F2", color: "#DC2626", border: "1px solid #fecaca" }}>
                         <TrashIcon size={14} strokeWidth={1.7} /> Excluir pedido
                       </button>
                     </div>
@@ -951,7 +948,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
         </div>
       )}
 
-      {/* ── PEDIDOS PERSONALIZADOS ── */}
+      {/* PEDIDOS PERSONALIZADOS */}
       {aba === "personalizado" && (
         <div className="space-y-3">
           {personalizados.filter(p => {
@@ -969,20 +966,20 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
           }).map(p => {
             const expandido = aberto === `per-${p.id}`;
             return (
-              <div key={p.id} className="rounded-xl overflow-hidden" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
+              <div key={p.id} className="rounded-2xl overflow-hidden" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
                 <button onClick={() => setAberto(expandido ? null : `per-${p.id}`)}
                   className="w-full p-5 flex items-center justify-between text-left">
                   <div className="flex items-center gap-4">
-                    <span className="text-xs px-2 py-1 rounded-lg font-mono" style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: subtext }}>#{p.id}</span>
+                    <span className="text-xs px-2 py-1 rounded-lg font-mono" style={{ backgroundColor: dark ? "#374151" : "#F4F2EE", color: subtext }}>#{p.id}</span>
                     <div>
                       <p className="font-semibold" style={{ color: text }}>{p.nome_cliente}</p>
-                      <p className="text-xs font-mono flex items-center gap-1" style={{ color: "#2563eb" }}>
+                      <p className="text-xs font-mono flex items-center gap-1" style={{ color: "#2563EB" }}>
                         <TagIcon size={11} strokeWidth={1.8} /> {p.protocolo || `MTZ-PERS-${String(p.id).padStart(4,"0")}`}
                       </p>
                       <p className="text-xs" style={{ color: subtext }}>{new Date(p.data_pedido).toLocaleString("pt-BR")}</p>
                       {historicoStatus[`pers-${p.id}`]?.length > 0 && (
-                        <p className="text-xs font-semibold mt-0.5 flex items-center gap-1" style={{ color: "#d97706" }}>
-                          <ClockIcon size={11} strokeWidth={1.8} /> Status: {historicoStatus[`pers-${p.id}`].slice(-1)[0]?.status} — {historicoStatus[`pers-${p.id}`].slice(-1)[0]?.data}
+                        <p className="text-xs font-semibold mt-0.5 flex items-center gap-1" style={{ color: "#D97706" }}>
+                          <ClockIcon size={11} strokeWidth={1.8} /> Status: {historicoStatus[`pers-${p.id}`].slice(-1)[0]?.status} - {historicoStatus[`pers-${p.id}`].slice(-1)[0]?.data}
                         </p>
                       )}
                     </div>
@@ -1001,9 +998,9 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                     <div className="grid md:grid-cols-2 gap-4 pt-4">
 
                       {/* CONTATO */}
-                      <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
+                      <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: dark ? "#111827" : "#F4F2EE" }}>
                         <div className="flex items-center gap-2 mb-1">
-                          <IconBadge Icone={UserIcon} cor="#2563eb" />
+                          <IconBadge Icone={UserIcon} cor="#2563EB" />
                           <p className="text-xs font-bold uppercase" style={{ color: subtext }}>Contato</p>
                         </div>
                         <p className="font-semibold text-sm" style={{ color: text }}>{p.nome_cliente}</p>
@@ -1017,7 +1014,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                       </div>
 
                       {/* CATEGORIA E TIPO */}
-                      <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
+                      <div className="rounded-lg p-4 space-y-2" style={{ backgroundColor: dark ? "#111827" : "#F4F2EE" }}>
                         <div className="flex items-center gap-2 mb-1">
                           <IconBadge Icone={PackageIcon} cor="#7c3aed" />
                           <p className="text-xs font-bold uppercase" style={{ color: subtext }}>Pedido</p>
@@ -1030,9 +1027,9 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                       </div>
                     </div>
 
-                    {/* COMBINAÇÕES — exibe o campo referencia formatado */}
+                    {/* COMBINAÇÕES exibe o campo referencia formatado */}
                     {p.referencia && (
-                      <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
+                      <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#F4F2EE" }}>
                         <div className="flex items-center gap-2 mb-3">
                           <IconBadge Icone={PaletteIcon} cor="#c41e3a" />
                           <p className="text-xs font-bold uppercase" style={{ color: subtext }}>Combinações | Detalhes</p>
@@ -1063,7 +1060,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                                         {grupo && <p className="text-xs font-semibold" style={{ color: subtext }}>{grupo}:</p>}
                                         <div className="flex flex-wrap gap-1 mt-1">
                                           {tams.map((t, k) => (
-                                            <span key={k} className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: dark ? "#374151" : "#e5e7eb", color: text }}>{t}</span>
+                                            <span key={k} className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: dark ? "#374151" : "#F4F2EE", color: text }}>{t}</span>
                                           ))}
                                         </div>
                                       </div>
@@ -1082,11 +1079,11 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
 
                     {/* DESCRIÇÃO */}
                     {p.observacoes && (
-                      <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
+                      <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#F4F2EE" }}>
                         <p className="text-xs font-bold uppercase mb-2 flex items-center gap-1.5" style={{ color: subtext }}><EditIcon size={13} strokeWidth={1.6} />Descrição do cliente</p>
                         <p className="text-sm" style={{ color: subtext, whiteSpace: "pre-wrap" }}>
                           {p.observacoes.includes("Descrição:") 
-                            ? p.observacoes.split("Descrição:")[1]?.trim() || "—"
+                            ? p.observacoes.split("Descrição:")[1]?.trim() || "-"
                             : p.observacoes}
                         </p>
                       </div>
@@ -1094,7 +1091,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
 
                     {/* HISTÓRICO DE STATUS */}
                     {historicoStatus[`pers-${p.id}`]?.length > 0 && (
-                      <div className="rounded-lg p-3 mt-2" style={{ backgroundColor: dark ? "#111827" : "#f9fafb", border: "1px solid " + border }}>
+                      <div className="rounded-lg p-3 mt-2" style={{ backgroundColor: dark ? "#111827" : "#F4F2EE", border: "1px solid " + border }}>
                         <p className="text-xs font-bold uppercase mb-2 flex items-center gap-1.5" style={{ color: subtext }}><ListIcon size={12} strokeWidth={1.7} />Histórico de status</p>
                         {historicoStatus[`pers-${p.id}`].map((h, i) => (
                           <p key={i} style={{ fontSize: "11px", color: subtext, fontFamily: "system-ui" }}>
@@ -1106,7 +1103,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
 
                     {/* IMAGENS DE REFERÊNCIA */}
                     {(p.imagem1 || p.imagem2 || p.imagem3 || p.imagem4 || p.imagem5) && (
-                      <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#f3f4f6" }}>
+                      <div className="rounded-lg p-4" style={{ backgroundColor: dark ? "#111827" : "#F4F2EE" }}>
                         <p className="text-xs font-bold uppercase mb-3 flex items-center gap-1.5" style={{ color: subtext }}><ImageIcon size={13} strokeWidth={1.6} />Imagens de referência</p>
                         <div className="flex gap-3 flex-wrap">
                           {[p.imagem1, p.imagem2, p.imagem3, p.imagem4, p.imagem5].filter(Boolean).map((url, i) => (
@@ -1125,16 +1122,16 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                       <p className="text-xs uppercase tracking-wider mb-2" style={{ color: subtext }}>Atualizar status</p>
                       <div className="flex gap-2 flex-wrap">
                         {[
-                          { id: "novo",         label: "Novo",         cor: "#2563eb" },
-                          { id: "em_andamento", label: "Em andamento", cor: "#d97706" },
-                          { id: "concluido",    label: "Concluído",    cor: "#16a34a" },
-                          { id: "cancelado",    label: "Cancelado",    cor: "#dc2626" },
+                          { id: "novo",         label: "Novo",         cor: "#2563EB" },
+                          { id: "em_andamento", label: "Em andamento", cor: "#D97706" },
+                          { id: "concluido",    label: "Concluído",    cor: "#16A34A" },
+                          { id: "cancelado",    label: "Cancelado",    cor: "#DC2626" },
                         ].map(s => (
                           <button key={s.id}
                             onClick={() => atualizarStatus(p.id, s.id)}
                             className="px-3 py-1.5 rounded-lg text-xs font-semibold transition"
                             style={{
-                              backgroundColor: p.status === s.id ? s.cor : (dark ? "#374151" : "#e5e7eb"),
+                              backgroundColor: p.status === s.id ? s.cor : (dark ? "#374151" : "#F4F2EE"),
                               color: p.status === s.id ? "white" : text,
                               cursor: "pointer",
                             }}>
@@ -1148,21 +1145,21 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
                       {p.telefone && (
                         <a href={("https://wa.me/55" + p.telefone.split("").filter(ch => ch >= "0" && ch <= "9").join(""))} target="_blank" rel="noreferrer"
                           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white"
-                          style={{ backgroundColor: "#16a34a" }}>
+                          style={{ backgroundColor: "#16A34A" }}>
                           <WhatsAppIcon size={15} strokeWidth={1.6} />
                           Falar com {p.nome_cliente} pelo WhatsApp
                         </a>
                       )}
                       <button onClick={() => setPedidoParaExcluir({ id: p.id, tipo: "personalizado", nome: p.nome_empresa })}
                         className="px-4 py-2 rounded-lg text-sm font-medium inline-flex items-center gap-2"
-                        style={{ backgroundColor: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}>
+                        style={{ backgroundColor: "#FEF2F2", color: "#DC2626", border: "1px solid #fecaca" }}>
                         <TrashIcon size={14} strokeWidth={1.7} /> Excluir pedido
                       </button>
                       <button
                         onClick={() => gerarPDFPedido(p)}
                         style={{ padding:"7px 14px", fontSize:"12px", fontWeight:"600",
                           cursor:"pointer", border:"1px solid "+border, borderRadius:"6px",
-                          backgroundColor: dark ? "#374151" : "#f3f4f6", color: text,
+                          backgroundColor: dark ? "#374151" : "#F4F2EE", color: text,
                           fontFamily:"system-ui", display:"flex", alignItems:"center", gap:"6px" }}>
                         <PrinterIcon size={14} strokeWidth={1.6} /> Gerar PDF
                       </button>
@@ -1181,24 +1178,24 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
           <div className="rounded-2xl p-8 shadow-2xl max-w-md w-full mx-4"
             style={{ backgroundColor: dark ? "#1f2937" : "#ffffff" }}>
             <div className="text-center mb-6">
-              <p className="mb-4 flex justify-center" style={{ color: "#dc2626" }}><TrashIcon size={36} strokeWidth={1.4} /></p>
+              <p className="mb-4 flex justify-center" style={{ color: "#DC2626" }}><TrashIcon size={36} strokeWidth={1.4} /></p>
               <h3 className="text-xl font-bold mb-2" style={{ color: text }}>Excluir pedido?</h3>
               <p className="text-sm" style={{ color: subtext }}>
                 Você está prestes a excluir o pedido de <strong style={{ color: text }}>{pedidoParaExcluir.nome}</strong>.
               </p>
-              <p className="text-sm mt-2 font-medium" style={{ color: "#dc2626" }}>
+              <p className="text-sm mt-2 font-medium" style={{ color: "#DC2626" }}>
                 Esta ação é irreversível. O pedido será removido permanentemente do painel e o cliente perderá o registro.
               </p>
             </div>
             <div className="flex gap-3">
               <button onClick={() => setPedidoParaExcluir(null)}
-                className="flex-1 py-3 rounded-lg font-semibold transition hover:opacity-70"
+                className="flex-1 py-3 rounded-full font-semibold transition hover:opacity-70"
                 style={{ border: "1px solid " + border, color: text, backgroundColor: "transparent" }}>
                 Cancelar
               </button>
               <button onClick={excluirPedido}
-                className="cursor-pointer flex-1 py-3 rounded-lg font-semibold text-white transition hover:opacity-80"
-                style={{ backgroundColor: "#dc2626" }}>
+                className="cursor-pointer flex-1 py-3 rounded-full font-semibold text-white transition hover:opacity-80"
+                style={{ backgroundColor: "#DC2626" }}>
                 Sim, excluir
               </button>
             </div>
@@ -1209,7 +1206,7 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
   );
 }
 
-// ─── ESTOQUE ───────────────────────────────────────────────────────────────
+// ESTOQUE 
 function GerenciarEstoque({ mostrarToast, dark, estilos }) {
   const { text, subtext, cardBg, border, inputBg, inputBorder } = estilos;
   const [produtos, setProdutos] = useState([]);
@@ -1272,12 +1269,11 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
   const abas = [
     { id: "todos",       label: "Todos (" + produtos.length + ")",        cor: text, Icone: PackageIcon },
     { id: "roupas",      label: "Roupas (" + roupas.length + ")",      cor: "#7c3aed", Icone: ShirtIcon },
-    { id: "comunicacao", label: "Comunicação (" + comunicacao.length + ")", cor: "#2563eb", Icone: ImageIcon },
+    { id: "comunicacao", label: "Comunicação (" + comunicacao.length + ")", cor: "#2563EB", Icone: ImageIcon },
   ];
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-1" style={{ color: text }}>Gerenciar Estoque</h2>
       <p className="text-sm mb-4" style={{ color: subtext }}>
         Para <strong>Comunicação Visual</strong>, use "tamanhos" para informar dimensões (ex: A4, Banner 1m).
         Para <strong>Roupas</strong>, use P, M, G, G1, G2, G3, GG, EXG, EXGG.
@@ -1304,18 +1300,18 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
           const isComunicacao = p.categoria === "comunicacao";
           const totalEstoque = Object.values(valores[p.id] || {}).reduce((s, q) => s + (parseInt(q) || 0), 0);
           return (
-            <div key={p.id} className="rounded-xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
+            <div key={p.id} className="rounded-2xl p-5" style={{ backgroundColor: cardBg, border: "1px solid " + border }}>
               <div className="flex items-center gap-3 mb-4 flex-wrap">
                 <p className="font-semibold" style={{ color: text }}>{p.nome}</p>
                 <span className="text-xs px-2 py-0.5 rounded-full inline-flex items-center gap-1"
                   style={{ backgroundColor: isComunicacao ? "#eff6ff" : "#f5f3ff",
-                    color: isComunicacao ? "#2563eb" : "#7c3aed" }}>
+                    color: isComunicacao ? "#2563EB" : "#7c3aed" }}>
                   {isComunicacao ? <ImageIcon size={11} strokeWidth={1.8} /> : <ShirtIcon size={11} strokeWidth={1.8} />}
                   {isComunicacao ? "Com. Visual" : "Roupa"}
                 </span>
                 {totalEstoque > 0 && (
                   <span className="text-xs px-2 py-0.5 rounded-full"
-                    style={{ backgroundColor: "#f0fdf4", color: "#000000" }}>
+                    style={{ backgroundColor: "#F0FDF4", color: "#16A34A", fontWeight: 700 }}>
                     {totalEstoque} un. em estoque
                   </span>
                 )}
@@ -1328,50 +1324,56 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
               )}
 
               <div className="flex gap-3 flex-wrap mb-4">
-                {tams.map(tam => (
-                  <div key={tam} className="flex flex-col items-center gap-1">
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs font-bold" style={{ color: subtext }}>{tam}</span>
+                {tams.map(tam => {
+                  const esgotado = parseInt(valores[p.id]?.[tam]) === 0;
+                  return (
+                  <div key={tam} className="flex flex-col items-center gap-1.5 px-3 py-2"
+                    style={{ borderRadius: "12px", border: "1px solid " + (esgotado ? "#FECACA" : border), backgroundColor: esgotado ? "#FEF2F2" : "#F4F2EE" }}>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold" style={{ color: text }}>{tam}</span>
                       <button onClick={() => removerTamanho(p.id, tam)}
-                        className="text-xs leading-none" style={{ color: "#ef4444" }}>✕</button>
+                        className="text-xs leading-none" style={{ color: "#DC2626", cursor: "pointer" }}>✕</button>
                     </div>
                     <input type="number" min="0" value={valores[p.id]?.[tam] ?? 0}
                       onChange={e => setValores(prev => ({ ...prev, [p.id]: { ...prev[p.id], [tam]: e.target.value } }))}
                       className="text-center text-sm rounded-lg"
-                      style={{ width: "64px", padding: "6px", border: "1px solid " + inputBorder,
-                        backgroundColor: inputBg, color: text, outline: "none",
-                        borderColor: parseInt(valores[p.id]?.[tam]) === 0 ? "#fca5a5" : inputBorder }} />
-                    {parseInt(valores[p.id]?.[tam]) === 0 && (
-                      <span style={{ fontSize: "9px", color: "#dc2626" }}>sem estoque</span>
+                      style={{ width: "60px", padding: "5px", border: "1px solid " + (esgotado ? "#FECACA" : inputBorder),
+                        backgroundColor: inputBg, color: text, outline: "none" }} />
+                    {esgotado && (
+                      <span style={{ fontSize: "9px", color: "#DC2626", fontWeight: 700 }}>esgotado</span>
                     )}
                   </div>
-                ))}
-              </div>
+                  );
+                })}
 
-              <div className="flex items-center gap-2 mb-4 flex-wrap">
-                <input value={novoTamanho[p.id] || ""}
-                  onChange={e => setNovoTamanho(prev => ({ ...prev, [p.id]: e.target.value }))}
-                  onKeyDown={e => {
-                    if (e.key === "Enter") {
+                {/* Adicionar tamanho chip pontilhado */}
+                <div className="flex flex-col justify-center px-3 py-2" style={{ borderRadius: "12px", border: "1.5px dashed " + inputBorder }}>
+                  <input value={novoTamanho[p.id] || ""}
+                    onChange={e => setNovoTamanho(prev => ({ ...prev, [p.id]: e.target.value }))}
+                    onKeyDown={e => {
+                      if (e.key === "Enter") {
+                        const tam = (novoTamanho[p.id] || "").trim().toUpperCase();
+                        if (!tam || valores[p.id]?.[tam] !== undefined) return;
+                        setValores(prev => ({ ...prev, [p.id]: { ...prev[p.id], [tam]: 0 } }));
+                        setNovoTamanho(prev => ({ ...prev, [p.id]: "" }));
+                      }
+                    }}
+                    placeholder={isComunicacao ? "A4, Banner..." : "PP, P, M..."}
+                    style={{ border: "none", outline: "none", background: "transparent", color: text, fontSize: "13px", width: "90px" }} />
+                  <button onClick={() => {
                       const tam = (novoTamanho[p.id] || "").trim().toUpperCase();
                       if (!tam || valores[p.id]?.[tam] !== undefined) return;
                       setValores(prev => ({ ...prev, [p.id]: { ...prev[p.id], [tam]: 0 } }));
                       setNovoTamanho(prev => ({ ...prev, [p.id]: "" }));
-                    }
-                  }}
-                  placeholder={isComunicacao ? "A4, Banner 1m, 80x60cm..." : "PP, P, M, G, G1..."}
-                  style={{ padding: "6px 10px", border: "1px solid " + inputBorder, backgroundColor: inputBg,
-                    color: text, outline: "none", width: "160px", borderRadius: "6px", fontSize: "13px" }} />
-                <button onClick={() => {
-                    const tam = (novoTamanho[p.id] || "").trim().toUpperCase();
-                    if (!tam || valores[p.id]?.[tam] !== undefined) return;
-                    setValores(prev => ({ ...prev, [p.id]: { ...prev[p.id], [tam]: 0 } }));
-                    setNovoTamanho(prev => ({ ...prev, [p.id]: "" }));
-                  }}
-                  className="px-3 py-1.5 text-sm rounded-lg font-medium text-white inline-flex items-center gap-1.5"
-                  style={{ backgroundColor: "#374151" }}>
-                  <PlusIcon size={13} strokeWidth={2} /> {isComunicacao ? "Formato" : "Tamanho"}
-                </button>
+                    }}
+                    className="text-xs font-bold inline-flex items-center gap-1"
+                    style={{ background: "none", border: "none", cursor: "pointer", color: "#C2660A", padding: 0 }}>
+                    <PlusIcon size={12} strokeWidth={2.2} /> Adicionar {isComunicacao ? "formato" : "tamanho"}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 mb-4 flex-wrap">
                 {!isComunicacao && (
                   <div className="flex gap-1 flex-wrap">
                     {["PP","P","M","G","G1","G2","G3","GG","EXG","EXGG"].map(tam => (
@@ -1388,8 +1390,8 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
               </div>
 
               <button onClick={() => salvarEstoque(p.id)} disabled={salvando[p.id]}
-                className="px-6 py-2 rounded-lg text-sm font-semibold text-white inline-flex items-center gap-2"
-                style={{ backgroundColor: salvando[p.id] ? "#9ca3af" : "#16a34a",
+                className="px-6 py-2 rounded-full text-sm font-semibold text-white inline-flex items-center gap-2"
+                style={{ backgroundColor: salvando[p.id] ? "#9ca3af" : "#16A34A",
                   cursor: salvando[p.id] ? "not-allowed" : "pointer" }}>
                 <SaveIcon size={15} strokeWidth={1.6} /> {salvando[p.id] ? "Salvando..." : "Salvar"}
               </button>
@@ -1404,7 +1406,7 @@ function GerenciarEstoque({ mostrarToast, dark, estilos }) {
   );
 }
 
-// ─── INFORMAÇÕES & IMAGENS DO SITE ───────────────────────────────────────────
+// INFORMAÇÕES & IMAGENS DO SITE 
 const HERO_ESTATICAS = [
   { id: null, titulo: "hero_01", imagem: "/ImagemPrincipal.jpg",  _static: true },
   { id: null, titulo: "hero_02", imagem: "/ImagemPrincipal2.jpg", _static: true },
@@ -1425,7 +1427,7 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
   const [loading, setLoading]           = useState(true);
   const [uploading, setUploading]       = useState({});
 
-  const cardStyle = { backgroundColor: cardBg, border: "1px solid " + border, borderRadius: "12px", padding: "20px", marginBottom: "24px" };
+  const cardStyle = { backgroundColor: cardBg, border: "1px solid " + border, borderRadius: "18px", padding: "20px", marginBottom: "24px" };
 
   async function carregarImagens() {
     try {
@@ -1494,8 +1496,8 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
     const isStatic = item?._static;
 
     return (
-      <div className="relative group rounded-xl overflow-hidden"
-        style={{ backgroundColor: dark ? "#374151" : "#f3f4f6",
+      <div className="relative group rounded-2xl overflow-hidden"
+        style={{ backgroundColor: dark ? "#374151" : "#F4F2EE",
           border: "2px " + (isNew ? "dashed" : "solid") + " " + (item?.imagem ? border : inputBorder),
           aspectRatio: "1" }}>
         {item?.imagem ? (
@@ -1510,7 +1512,7 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
               style={{ backgroundColor: "rgba(0,0,0,0.65)" }}>
               <label className="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-semibold text-white inline-flex items-center gap-1.5"
-                style={{ backgroundColor: "#2563eb" }}>
+                style={{ backgroundColor: "#2563EB" }}>
                 <RefreshIcon size={13} strokeWidth={1.8} /> Substituir
                 <input type="file" accept="image/*" className="hidden"
                   onChange={e => { if (e.target.files[0]) uploadImagem(e.target.files[0], tipo, item); }} />
@@ -1518,7 +1520,7 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
               {!isStatic && (
                 <button onClick={() => removerImagem(item)}
                   className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white inline-flex items-center gap-1.5"
-                  style={{ backgroundColor: "#dc2626" }}>
+                  style={{ backgroundColor: "#DC2626" }}>
                   <TrashIcon size={13} strokeWidth={1.8} /> Remover
                 </button>
               )}
@@ -1555,13 +1557,11 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-6" style={{ color: text }}>Gerenciar Imagens do Site</h2>
-
-      {/* ── GALERIA / PROJETOS ENTREGUES ── */}
+      {/* GALERIA / PROJETOS ENTREGUES*/}
       <div style={cardStyle}>
         <div className="flex items-start justify-between mb-1 flex-wrap gap-2">
           <h3 className="text-base font-semibold" style={{ color: text }}>Galeria de Projetos Entregues</h3>
-          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "#f0fdf4", color: "#000000" }}>
+          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "#F0FDF4", color: text }}>
             Recomendado: 800×800 px (quadrado)
           </span>
         </div>
@@ -1577,11 +1577,11 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
         </div>
       </div>
 
-      {/* ── BANNER PRINCIPAL ── */}
+      {/* BANNER PRINCIPAL */}
       <div style={cardStyle}>
         <div className="flex items-start justify-between mb-1 flex-wrap gap-2">
           <h3 className="text-base font-semibold" style={{ color: text }}>Banner Principal</h3>
-          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "#eff6ff", color: "#000000" }}>
+          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "#eff6ff", color: text }}>
             Recomendado: 1920×900 px (horizontal)
           </span>
         </div>
@@ -1599,11 +1599,11 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
         </div>
       </div>
 
-      {/* ── FOTO SOBRE NÓS ── */}
+      {/* FOTO SOBRE NÓS */}
       <div style={cardStyle}>
         <div className="flex items-start justify-between mb-1 flex-wrap gap-2">
           <h3 className="text-base font-semibold" style={{ color: text }}>Imagem "Sobre Nós"</h3>
-          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "#fef9f0", color: "#000000" }}>
+          <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: "#FEF9F0", color: text }}>
             Recomendado: 600×700 px (retrato)
           </span>
         </div>
@@ -1622,8 +1622,8 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
                 }
               </div>
               <div>
-                <label className="cursor-pointer px-4 py-2 rounded-lg text-sm font-semibold text-white inline-flex items-center gap-2"
-                  style={{ backgroundColor: "#1a1a1a" }}>
+                <label className="cursor-pointer px-4 py-2 rounded-full text-sm font-semibold text-white inline-flex items-center gap-2"
+                  style={{ backgroundColor: "#161513" }}>
                   <CameraIcon size={15} strokeWidth={1.6} /> {sobreItem ? "Substituir foto" : "Enviar nova foto"}
                   <input type="file" accept="image/*" className="hidden"
                     onChange={async e => {
@@ -1657,45 +1657,111 @@ function EditarInfos({ mostrarToast, dark, estilos }) {
   );
 }
 
-// ─── ADMIN PRINCIPAL ───────────────────────────────────────────────────────
+// ADMIN PRINCIPAL
 const abas = [
   { id: "dashboard", label: "Dashboard",  Icone: DashboardIcon },
-  { id: "cadastrar", label: "Cadastrar",  Icone: PlusIcon },
+  { id: "cadastrar", label: "Cadastrar produto",  Icone: PlusIcon },
   { id: "produtos",  label: "Produtos",   Icone: PackageIcon },
   { id: "pedidos",   label: "Pedidos",    Icone: ReceiptIcon },
   { id: "estoque",   label: "Estoque",    Icone: ChartIcon },
-  { id: "infos",     label: "Informações", Icone: EditIcon },
+  { id: "infos",     label: "Site", Icone: EditIcon },
 ];
 
 export default function Admin() {
-  const { dark } = useTheme();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const [abaAtiva, setAbaAtiva] = useState("dashboard");
   const [toast, setToast] = useState(null);
+  const [menuMobileAberto, setMenuMobileAberto] = useState(false);
+  const dark = false;
 
-  const bg = dark ? "#111827" : "#ffffff";
-  const text = dark ? "#ffffff" : "#000000";
-  const border = dark ? "#374151" : "#e5e7eb";
-  const estilos = { text, subtext: dark ? "#9ca3af" : "#6b7280", cardBg: dark ? "#1f2937" : "#f9fafb", border, inputBg: dark ? "#374151" : "#ffffff", inputBorder: dark ? "#4b5563" : "#d1d5db" };
+  const bg = "#FFFFFF";
+  const text = "#161513";
+  const border = "rgba(0,0,0,0.08)";
+  const estilos = { text, subtext: "#8A877F", cardBg: "#FFFFFF", border, inputBg: "#FFFFFF", inputBorder: "rgba(0,0,0,0.12)" };
 
   function mostrarToast(mensagem, tipo) { setToast({ mensagem, tipo }); }
+  function sair() { logout(); navigate("/"); }
   const props = { mostrarToast, dark, estilos };
 
   return (
-    <div style={{ backgroundColor: bg, color: text }}>
+    <div style={{ backgroundColor: bg, color: text, fontFamily: "Manrope, sans-serif", display: "flex", minHeight: "100vh" }}>
       {toast && <Toast mensagem={toast.mensagem} tipo={toast.tipo} onClose={() => setToast(null)} />}
-      <div className="max-w-5xl mx-auto px-6 py-10">
-        <h1 className="text-3xl font-bold mb-8" style={{ color: text }}>Painel Administrativo</h1>
-        <div className="flex gap-2 flex-wrap mb-8 pb-4" style={{ borderBottom: "1px solid " + border }}>
-          {abas.map(aba => (
-            <button key={aba.id} onClick={() => setAbaAtiva(aba.id)}
-              className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 inline-flex items-center gap-2"
-              style={{ backgroundColor: abaAtiva === aba.id ? (dark ? "#ffffff" : "#000000") : (dark ? "#1f2937" : "#f3f4f6"),
-                color: abaAtiva === aba.id ? (dark ? "#000000" : "#ffffff") : text,
-                border: "1px solid " + (abaAtiva === aba.id ? "transparent" : border) }}>
-              <aba.Icone size={15} strokeWidth={1.7} /> {aba.label}
-            </button>
-          ))}
+
+      {/* SIDEBAR desktop */}
+      <aside className="hidden md:flex" style={{ width: "220px", flexShrink: 0, backgroundColor: "#161513", flexDirection: "column", padding: "24px 14px", position: "sticky", top: 0, height: "100vh" }}>
+        <div className="flex items-center px-2 mb-8">
+          <img src="/LogoEmpresaMetzker.jpg" alt="Metzker" className="h-9 rounded-md object-contain" />
         </div>
+        <nav className="flex flex-col gap-1">
+          {abas.map(aba => {
+            const ativo = abaAtiva === aba.id;
+            return (
+              <button key={aba.id} onClick={() => setAbaAtiva(aba.id)}
+                className="text-left transition-all duration-200 inline-flex items-center gap-3"
+                style={{
+                  padding: "10px 14px", borderRadius: "10px", fontSize: "13.5px",
+                  backgroundColor: ativo ? "rgba(255,255,255,0.08)" : "transparent",
+                  color: ativo ? "#FFFFFF" : "rgba(255,255,255,0.6)",
+                  fontWeight: ativo ? "700" : "500", border: "none", cursor: "pointer",
+                }}>
+                <aba.Icone size={16} strokeWidth={1.7} /> {aba.label}
+              </button>
+            );
+          })}
+        </nav>
+        <div style={{ marginTop: "auto", paddingTop: "14px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+          <button onClick={sair}
+            className="text-left transition-all duration-200 inline-flex items-center gap-3 w-full"
+            style={{ padding: "10px 14px", borderRadius: "10px", fontSize: "13.5px",
+              backgroundColor: "transparent", color: "rgba(255,255,255,0.6)", fontWeight: "500", border: "none", cursor: "pointer" }}>
+            <AdminIcon size={16} strokeWidth={1.7} /> Sair
+          </button>
+        </div>
+      </aside>
+
+      {/* TAB BAR mobile */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40" style={{ backgroundColor: "#161513" }}>
+        <div className="flex items-center justify-between px-4 py-3">
+          <img src="/LogoEmpresaMetzker.jpg" alt="Metzker" className="h-8 rounded-md object-contain" />
+          <button onClick={() => setMenuMobileAberto(v => !v)} style={{ color: "#fff", background: "none", border: "none", cursor: "pointer" }} aria-label="Menu">
+            {menuMobileAberto ? <CloseIcon size={22} strokeWidth={1.8} /> : <ListIcon size={22} strokeWidth={1.8} />}
+          </button>
+        </div>
+        {menuMobileAberto && (
+          <nav className="flex flex-col gap-1 px-3 pb-3">
+            {abas.map(aba => {
+              const ativo = abaAtiva === aba.id;
+              return (
+                <button key={aba.id} onClick={() => { setAbaAtiva(aba.id); setMenuMobileAberto(false); }}
+                  className="text-left transition-all duration-200 inline-flex items-center gap-3"
+                  style={{
+                    padding: "10px 14px", borderRadius: "10px", fontSize: "14px",
+                    backgroundColor: ativo ? "rgba(255,255,255,0.08)" : "transparent",
+                    color: ativo ? "#FFFFFF" : "rgba(255,255,255,0.6)",
+                    fontWeight: ativo ? "700" : "500", border: "none", cursor: "pointer",
+                  }}>
+                  <aba.Icone size={16} strokeWidth={1.7} /> {aba.label}
+                </button>
+              );
+            })}
+            <button onClick={() => { setMenuMobileAberto(false); sair(); }}
+              className="text-left transition-all duration-200 inline-flex items-center gap-3 mt-2"
+              style={{ padding: "10px 14px", borderRadius: "10px", fontSize: "14px",
+                backgroundColor: "transparent", color: "rgba(255,255,255,0.6)", fontWeight: "500",
+                border: "none", borderTop: "1px solid rgba(255,255,255,0.1)", cursor: "pointer" }}>
+              <AdminIcon size={16} strokeWidth={1.7} /> Sair
+            </button>
+          </nav>
+        )}
+      </div>
+
+      {/* CONTEÚDO */}
+      <div className="flex-1 min-w-0" style={{ padding: "40px 24px", marginTop: "0" }}>
+        <div className="md:hidden" style={{ height: "56px" }} />
+        <h1 style={{ fontFamily: "Newsreader, serif", fontStyle: "italic", fontWeight: 500, fontSize: "26px", color: text, marginBottom: "28px" }}>
+          {abas.find(a => a.id === abaAtiva)?.label}
+        </h1>
         {abaAtiva === "dashboard" && <Dashboard        {...props} />}
         {abaAtiva === "cadastrar" && <CadastrarProduto {...props} />}
         {abaAtiva === "produtos"  && <ListarProdutos   {...props} />}

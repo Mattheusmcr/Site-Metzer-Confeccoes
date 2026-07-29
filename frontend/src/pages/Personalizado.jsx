@@ -3,11 +3,11 @@ import { useNavigate } from "react-router-dom";
 import {
   ShirtIcon, ImageIcon, PaletteIcon, ThreadIcon, RulerIcon, CheckIcon,
   WarningIcon, PaperclipIcon, DocIcon, TruckIcon, StoreIcon, MailIcon,
-  InfoIcon, PartyIcon, TagIcon, CopyIcon, PrinterIcon, CloseIcon,
-  UserIcon, ListIcon, PinIcon,
+  PartyIcon, TagIcon, CopyIcon, PrinterIcon, CloseIcon,
+  UserIcon, PinIcon,
 } from "../components/Icons";
 
-// ── CÁLCULO DE FRETE ─────────────────────────────────────────────────────────
+// CÁLCULO DE FRETE
 const REGIAO_METRO_ES_P = ["vitoria","vila velha","cariacica","serra","viana","guarapari","fundao"];
 function estimarMotoboyP(cidade, estado) {
   if ((estado||"").toUpperCase() !== "ES") return null;
@@ -61,10 +61,11 @@ function parseValorMinimoP(faixaStr) {
 import api from "../services/api";
 
 const t = {
-  bg: "#FFFFFF", bgSecundario: "#F2F2F2", bgCard: "#FFFFFF",
-  text: "#1a1a1a", textSecundario: "#595959",
-  border: "#E0E0E0", borderForte: "#B0B0B0",
-  btnPrimarioBg: "#1a1a1a", btnPrimarioText: "#FFFFFF",
+  bg: "#FFFFFF", bgSecundario: "#F4F2EE", bgCard: "#FFFFFF", bgDark: "#161513",
+  text: "#161513", textSecundario: "#8A877F",
+  border: "rgba(0,0,0,0.08)", borderForte: "rgba(0,0,0,0.18)",
+  accent: "#C2660A",
+  btnPrimarioBg: "#161513", btnPrimarioText: "#FFFFFF",
 };
 
 const CATEGORIAS = [
@@ -97,8 +98,8 @@ const CORES_OPCOES = [
   { id:"cinza",         label:"Cinza",              hex:"#9ca3af" },
   { id:"azul-marinho",  label:"Azul Marinho",       hex:"#1e3a8a" },
   { id:"azul-royal",    label:"Azul Royal",         hex:"#2563eb" },
-  { id:"vermelho",      label:"Vermelho",           hex:"#dc2626" },
-  { id:"verde",         label:"Verde",              hex:"#16a34a" },
+  { id:"vermelho",      label:"Vermelho",           hex:"#DC2626" },
+  { id:"verde",         label:"Verde",              hex:"#16A34A" },
   { id:"amarelo",       label:"Amarelo",            hex:"#ca8a04" },
   { id:"laranja",       label:"Laranja",            hex:"#ea580c" },
   { id:"rosa",          label:"Rosa",               hex:"#db2777" },
@@ -111,10 +112,10 @@ const MATERIAIS_OPCOES = [
   { id:"pv",      label:"PV",            descricao:"Mistura de poliéster e viscose, caimento elegante" },
   { id:"algodao", label:"100% Algodão",  descricao:"Macio, respirável, ideal para o dia a dia" },
   { id:"dry-fit", label:"Dry Fit",       descricao:"Alta performance, absorve suor" },
-  { id:"outro",   label:"Outro — nos indique", descricao:"Descreva o material na descrição do pedido" },
+  { id:"outro",   label:"Outro - nos indique", descricao:"Descreva o material na descrição do pedido" },
 ];
 
-// ── helpers ──
+// helpers 
 function emailValido(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
 function validarTel(v){ const n=v.replace(/\D/g,""); if(!n) return "Obrigatório"; if(n.length<10) return "Mínimo 10 dígitos"; if(n.length>11) return "Máximo 11 dígitos"; return ""; }
 function formatTel(v){ const n=v.replace(/\D/g,"").slice(0,11); if(n.length<=2) return n; if(n.length<=6) return `(${n.slice(0,2)}) ${n.slice(2)}`; if(n.length<=10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`; return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`; }
@@ -147,7 +148,7 @@ const FORM_INICIAL = {
   frete_tipo:"", frete_valor:0,
 };
 
-const ETAPAS_LABELS = ["O que precisa","Detalhes","Referências","Seus dados","Entrega"];
+const ETAPAS_LABELS = ["O que precisa","Detalhes","Referências","Seus dados","Entrega","Revisão"];
 
 export default function Personalizado(){
   const navigate = useNavigate();
@@ -164,11 +165,13 @@ export default function Personalizado(){
   const [modalMaterial, setModalMaterial] = useState(null); // combId
   const [tabelaAberta, setTabelaAberta] = useState(false);
 
-  const inputStyle = { width:"100%", padding:"12px 14px", outline:"none", border:"1px solid "+t.border, borderRadius:"10px", backgroundColor:t.bgCard, color:t.text, fontSize:"14px", lineHeight:1.5, boxSizing:"border-box", fontFamily:"system-ui", transition:"border-color 0.2s" };
-  const labelStyle = { display:"block", fontSize:"12px", fontWeight:"600", color:t.textSecundario, marginBottom:"6px", textTransform:"uppercase", letterSpacing:"0.08em", fontFamily:"system-ui" };
-  const btnP = (a)=>({ padding:"14px", fontWeight:"700", fontSize:"14px", fontFamily:"system-ui", cursor:a?"pointer":"not-allowed", border:"none", borderRadius:"10px", backgroundColor:a?t.btnPrimarioBg:t.border, color:a?t.btnPrimarioText:t.textSecundario });
+  const inputStyle = { width:"100%", padding:"12px 14px", outline:"none", border:"1px solid "+t.border, borderRadius:"12px", backgroundColor:t.bgCard, color:t.text, fontSize:"14px", lineHeight:1.5, boxSizing:"border-box", fontFamily:"Manrope, sans-serif", transition:"border-color 0.2s" };
+  const labelStyle = { display:"block", fontSize:"11px", fontWeight:"700", color:t.textSecundario, marginBottom:"6px", textTransform:"uppercase", letterSpacing:"0.1em" };
+  const btnP = (a)=>({ padding:"14px", fontWeight:"700", fontSize:"14px", cursor:a?"pointer":"not-allowed", border:"none", borderRadius:"999px", backgroundColor:a?t.btnPrimarioBg:t.border, color:a?t.btnPrimarioText:t.textSecundario });
+  const btnVoltar = { flex:1, padding:"14px", borderRadius:"999px", border:"1.5px solid "+t.borderForte, color:t.text, backgroundColor:t.bg, cursor:"pointer", fontWeight:"700" };
+  const h2Style = { fontSize:"1.5rem", fontWeight:"500", color:t.text, fontFamily:"Newsreader, serif", fontStyle:"italic" };
 
-  // ── combinações helpers ──
+  // combinações helpers 
   function addCombinacao(tipoId){
     const idx = form.combinacoes.filter(c=>c.tipoId===tipoId).length;
     setForm(p=>({...p, combinacoes:[...p.combinacoes, novaCombinacao(tipoId, idx)]}));
@@ -189,7 +192,7 @@ export default function Personalizado(){
   function totalComb(comb){ return Object.values(comb.quantidades).reduce((a,g)=>a+Object.values(g).reduce((x,y)=>x+y,0),0); }
   const totalGeral = form.combinacoes.reduce((a,c)=>a+totalComb(c),0);
 
-  // ── validação por etapa ──
+  // validação por etapa
   const categoriaValida = !!form.categoria;
 
   const detalhesValida = (()=>{
@@ -221,7 +224,7 @@ export default function Personalizado(){
 
   const finalizacaoValida = Boolean(contatoValida && enderecoValida && form.frete_tipo);
 
-  // ── salvar ──
+  // salvar
   function gerarPDFPersonalizado() {
     const combinacoesHTML = form.categoria === "roupas"
       ? form.combinacoes.map((c, i) => {
@@ -255,19 +258,19 @@ export default function Personalizado(){
       .logo{font-size:28px;font-weight:300;letter-spacing:2px;margin-bottom:4px}
       .logo span{color:#c41e3a;font-weight:700}
       h2{font-size:20px;font-weight:600;margin:24px 0 4px}
-      .badge{display:inline-block;padding:4px 14px;background:#fef9f0;color:#92400e;border:1px solid #fde68a;border-radius:999px;font-size:12px;font-weight:600;margin-bottom:20px}
+      .badge{display:inline-block;padding:4px 14px;background:#FEF9F0;color:#92400E;border:1px solid #FDE68A;border-radius:999px;font-size:12px;font-weight:600;margin-bottom:20px}
       .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
       .info-block{padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px}
       .info-block h3{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;margin:0 0 6px}
       .info-block p{font-size:13px;margin:2px 0}
-      .aviso{background:#fef9f0;border:1px solid #fde68a;padding:14px;border-radius:6px;font-size:12px;color:#92400e;margin-top:20px}
+      .aviso{background:#FEF9F0;border:1px solid #FDE68A;padding:14px;border-radius:6px;font-size:12px;color:#92400E;margin-top:20px}
       .footer{margin-top:32px;padding-top:16px;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280;text-align:center}
     </style></head><body>
       <div class="logo"><span>m</span>etzker soluções</div>
       <p style="color:#6b7280;font-size:12px;margin:0 0 20px">Vila Velha, ES · (27) 99787-8391 · andremetzkrr@gmail.com</p>
       <h2>Comprovante de Pedido Personalizado</h2>
       <span class="badge">Pedido personalizado registrado</span>
-      <div style="margin:12px 0;padding:12px 16px;background:#fef9f0;border:1px solid #fde68a;border-radius:8px;font-family:monospace;font-size:18px;font-weight:700;letter-spacing:0.05em">
+      <div style="margin:12px 0;padding:12px 16px;background:#FEF9F0;border:1px solid #FDE68A;border-radius:8px;font-family:monospace;font-size:18px;font-weight:700;letter-spacing:0.05em">
         ${protocolo}
       </div>
 
@@ -280,8 +283,8 @@ export default function Personalizado(){
         </div>
         <div class="info-block">
           <h3>Endereço</h3>
-          <p>${form.rua||"-"}, ${form.numero||"-"}${form.complemento ? " — " + form.complemento : ""}</p>
-          <p>${form.bairro||"-"} — ${form.cidade||"-"}/${form.estado||"-"}</p>
+          <p>${form.rua||"-"}, ${form.numero||"-"}${form.complemento ? " - " + form.complemento : ""}</p>
+          <p>${form.bairro||"-"} - ${form.cidade||"-"}/${form.estado||"-"}</p>
           <p>CEP: ${form.cep||"-"}</p>
         </div>
         <div class="info-block">
@@ -292,9 +295,9 @@ export default function Personalizado(){
         <div class="info-block">
           <h3>Entrega</h3>
           <p><strong>${form.frete_tipo === "retirada" ? "Retirada no local" : form.frete_tipo === "motoboy" ? "Motoboy" : form.frete_tipo === "correios" ? "Correios (PAC/SEDEX)" : "A confirmar"}</strong></p>
-          ${form.frete_tipo === "motoboy" ? `<p style="color:#d97706;font-size:12px">Apenas Grande Vitória / ES</p>` : ""}
+          ${form.frete_tipo === "motoboy" ? `<p style="color:#D97706;font-size:12px">Apenas Grande Vitória / ES</p>` : ""}
           ${form.frete_tipo === "correios" ? `<p style="color:#6b7280;font-size:12px">Valor confirmado pela loja</p>` : ""}
-          ${form.frete_tipo === "retirada" ? `<p style="color:#16a34a;font-weight:600">Grátis</p>` : ""}
+          ${form.frete_tipo === "retirada" ? `<p style="color:#16A34A;font-weight:600">Grátis</p>` : ""}
         </div>
         <div class="info-block">
           <h3>Data</h3>
@@ -413,23 +416,23 @@ export default function Personalizado(){
       const tipo=TIPOS_COMUNICACAO.find(t=>t.id===form.tipoComunicacao);
       detalhes=`*${tipo?.label}*\nDimensões: ${form.dimensoes}`;
     }
-    const msg=`*PEDIDO PERSONALIZADO — METZKER*\n\n*Categoria:* ${form.categoria==="roupas"?"Item de Roupa":"Comunicação Visual"}\n\n${detalhes}\n\n*Descrição:* ${form.descricao||"—"}\n*Obs:* ${form.observacoes||"—"}\n\n${form.nomeCliente}\n${form.telefone}\n${form.email}\n${form.rua}, ${form.numero}${form.complemento?" — "+form.complemento:""}\n   ${form.bairro} — ${form.cidade}/${form.estado} — CEP: ${form.cep}`;
+    const msg=`*PEDIDO PERSONALIZADO - METZKER*\n\n*Categoria:* ${form.categoria==="roupas"?"Item de Roupa":"Comunicação Visual"}\n\n${detalhes}\n\n*Descrição:* ${form.descricao||"-"}\n*Obs:* ${form.observacoes||"-"}\n\n${form.nomeCliente}\n${form.telefone}\n${form.email}\n${form.rua}, ${form.numero}${form.complemento?" - "+form.complemento:""}\n   ${form.bairro} - ${form.cidade}/${form.estado} - CEP: ${form.cep}`;
     return encodeURIComponent(msg);
   }
 
   async function finalizarComWhatsApp(){ await salvarNoBanco(); window.open(`https://wa.me/5527997878391?text=${montarMsgWpp()}`,"_blank"); }
 
   if(enviado) return (
-    <div style={{backgroundColor:t.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center"}}>
+    <div style={{backgroundColor:t.bg,minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"Manrope, sans-serif"}}>
       <div className="text-center px-6" style={{maxWidth:"480px"}}>
         <div style={{display:"flex", justifyContent:"center", marginBottom:"24px"}}>
           <span style={{display:"flex", alignItems:"center", justifyContent:"center",
-            width:"72px", height:"72px", borderRadius:"50%", backgroundColor:"#fef9f0", color:"#d97706"}}>
+            width:"72px", height:"72px", borderRadius:"50%", backgroundColor:"#FEF9F0", color:"#D97706"}}>
             <PartyIcon size={36} strokeWidth={1.4} />
           </span>
         </div>
-        <h2 style={{fontSize:"2rem",fontWeight:"300",color:t.text,marginBottom:"16px",fontFamily:"Georgia, serif"}}>Pedido recebido!</h2>
-        <p style={{color:t.textSecundario,lineHeight:1.8,marginBottom:"20px",fontFamily:"system-ui"}}>Seu pedido foi registrado. Nossa equipe entrará em contato em breve pelo WhatsApp para confirmar detalhes e orçamento.</p>
+        <h2 style={{fontSize:"2rem",fontWeight:"500",fontStyle:"italic",color:t.text,marginBottom:"16px",fontFamily:"Newsreader, serif"}}>Pedido recebido!</h2>
+        <p style={{color:t.textSecundario,lineHeight:1.8,marginBottom:"20px"}}>Seu pedido foi registrado. Nossa equipe entrará em contato em breve pelo WhatsApp para confirmar detalhes e orçamento.</p>
 
         {/* PROTOCOLO */}
         <div style={{backgroundColor:t.bgSecundario, border:"1px solid "+t.border, borderRadius:"16px", padding:"24px", marginBottom:"24px"}}>
@@ -443,7 +446,7 @@ export default function Personalizado(){
             <button
               onClick={() => { navigator.clipboard.writeText(protocolo).then(() => { setCopiado(true); setTimeout(()=>setCopiado(false),2500); }); }}
               className="transition-all duration-300 hover:shadow-md"
-              style={{padding:"6px 16px", backgroundColor:copiado?"#16a34a":t.btnPrimarioBg, color:t.btnPrimarioText,
+              style={{padding:"6px 16px", backgroundColor:copiado?"#16A34A":t.btnPrimarioBg, color:t.btnPrimarioText,
                 border:"none", cursor:"pointer", fontFamily:"system-ui", fontSize:"12px", fontWeight:"600",
                 borderRadius:"8px", display:"inline-flex", alignItems:"center", gap:"6px"}}>
               {copiado ? <><CheckIcon size={14} strokeWidth={2.2} />Copiado!</> : <><CopyIcon size={14} strokeWidth={1.8} />Copiar</>}
@@ -456,50 +459,66 @@ export default function Personalizado(){
         <div style={{display:"flex",gap:"12px",justifyContent:"center",flexWrap:"wrap"}}>
           <button onClick={gerarPDFPersonalizado}
             className="transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
-            style={{padding:"12px 24px",borderRadius:"10px",backgroundColor:t.btnPrimarioBg,color:t.btnPrimarioText,border:"none",cursor:"pointer",fontFamily:"system-ui",display:"inline-flex",alignItems:"center",gap:"8px"}}>
+            style={{padding:"12px 24px",borderRadius:"999px",backgroundColor:t.btnPrimarioBg,color:t.btnPrimarioText,border:"none",cursor:"pointer",display:"inline-flex",alignItems:"center",gap:"8px"}}>
             <PrinterIcon size={16} strokeWidth={1.6} /> Salvar / Imprimir PDF
           </button>
           <button onClick={()=>navigate("/")}
             className="transition-all duration-300 hover:shadow-md"
-            style={{padding:"12px 24px",borderRadius:"10px",border:"1px solid "+t.border,color:t.text,backgroundColor:t.bg,cursor:"pointer",fontFamily:"system-ui"}}>Voltar ao início</button>
+            style={{padding:"12px 24px",borderRadius:"999px",border:"1px solid "+t.border,color:t.text,backgroundColor:t.bg,cursor:"pointer"}}>Voltar ao início</button>
           <button onClick={()=>{setEnviado(false);setEtapa(1);setForm(FORM_INICIAL);}}
             className="transition-all duration-300 hover:shadow-md"
-            style={{padding:"12px 24px",borderRadius:"10px",backgroundColor:t.bgSecundario,color:t.text,border:"1px solid "+t.border,cursor:"pointer",fontFamily:"system-ui"}}>Novo pedido</button>
+            style={{padding:"12px 24px",borderRadius:"999px",backgroundColor:t.bgSecundario,color:t.text,border:"1px solid "+t.border,cursor:"pointer"}}>Novo pedido</button>
         </div>
       </div>
     </div>
   );
 
-  // ── Modal helper component ──
+  // Modal helper component 
   const getComb = (id) => form.combinacoes.find(c=>c.id===id);
 
+  function CardResumo({ titulo, Icone, etapaAlvo, children }) {
+    return (
+      <div style={{border:"1px solid "+t.border,borderRadius:"14px",overflow:"hidden",backgroundColor:t.bgCard}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 16px",backgroundColor:t.bgSecundario,borderBottom:"1px solid "+t.border}}>
+          <span style={{fontSize:"11px",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",color:t.text,display:"flex",alignItems:"center",gap:"8px"}}>
+            <IconBadge Icone={Icone} cor={t.text} size={12} box={22} /> {titulo}
+          </span>
+          <button onClick={()=>setEtapa(etapaAlvo)} style={{background:"none",border:"none",cursor:"pointer",color:t.accent,fontSize:"12px",fontWeight:700}}>Editar</button>
+        </div>
+        <div style={{padding:"14px 16px",display:"flex",flexDirection:"column",gap:"6px"}}>
+          {children}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div style={{backgroundColor:t.bg,color:t.text,overflowX:"hidden"}}>
+    <div style={{backgroundColor:t.bg,color:t.text,overflowX:"hidden",fontFamily:"Manrope, sans-serif"}}>
       <div style={{maxWidth:"680px",margin:"0 auto",padding:"48px 20px"}}>
 
         {/* HEADER */}
         <div className="text-center" style={{marginBottom:"40px"}}>
-          <p style={{fontSize:"11px",textTransform:"uppercase",letterSpacing:"0.25em",color:t.textSecundario,marginBottom:"8px",fontFamily:"system-ui"}}>Comunicação Visual</p>
-          <h1 style={{fontSize:"clamp(1.8rem,5vw,3rem)",fontWeight:"300",color:t.text,fontFamily:"Georgia, serif"}}>Faça o Seu <em style={{fontStyle:"italic"}}>Personalizado</em></h1>
-          <p style={{color:t.textSecundario,marginTop:"12px",fontFamily:"system-ui",lineHeight:1.7}}>Crie sua logo ou identidade visual do zero com a gente.</p>
+          <p style={{fontSize:"11px",textTransform:"uppercase",letterSpacing:"0.25em",color:t.accent,marginBottom:"8px",fontWeight:700}}>Comunicação Visual</p>
+          <h1 style={{fontSize:"clamp(1.8rem,5vw,3rem)",fontWeight:"500",color:t.text,fontFamily:"Newsreader, serif"}}>Faça o Seu <em style={{fontStyle:"italic",fontWeight:400}}>Personalizado</em></h1>
+          <p style={{color:t.textSecundario,marginTop:"12px",lineHeight:1.7}}>Crie sua logo ou identidade visual do zero com a gente.</p>
         </div>
 
         {/* PROGRESSO */}
         <div style={{marginBottom:"40px"}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:"8px",gap:"4px"}}>
             {ETAPAS_LABELS.map((label,i)=>(
-              <span key={i} style={{fontSize:"9px",textTransform:"uppercase",letterSpacing:"0.05em",fontFamily:"system-ui",color:etapa>i?t.text:t.textSecundario,fontWeight:etapa===i+1?"700":"400",textAlign:i===0?"left":i===ETAPAS_LABELS.length-1?"right":"center",flex:1}}>{label}</span>
+              <span key={i} style={{fontSize:"9px",textTransform:"uppercase",letterSpacing:"0.05em",color:etapa===i+1?t.accent:etapa>i?t.text:t.textSecundario,fontWeight:etapa===i+1?"700":"600",textAlign:i===0?"left":i===ETAPAS_LABELS.length-1?"right":"center",flex:1}}>{label}</span>
             ))}
           </div>
-          <div style={{height:"2px",backgroundColor:t.border}}>
-            <div style={{height:"100%",width:(etapa/ETAPAS_LABELS.length*100)+"%",backgroundColor:t.text,transition:"width 0.4s ease"}}/>
+          <div style={{height:"3px",backgroundColor:t.border,borderRadius:"999px"}}>
+            <div style={{height:"100%",width:(etapa/ETAPAS_LABELS.length*100)+"%",backgroundColor:t.accent,transition:"width 0.4s ease",borderRadius:"999px"}}/>
           </div>
         </div>
 
-        {/* ══ ETAPA 1 — O QUE PRECISA ══ */}
+        {/* ══ ETAPA 1 - O QUE PRECISA ══ */}
         {etapa===1 && (
           <div style={{display:"flex",flexDirection:"column",gap:"28px"}}>
-            <h2 style={{fontSize:"1.4rem",fontWeight:"400",color:t.text,fontFamily:"Georgia, serif"}}>O que você precisa?</h2>
+            <h2 style={h2Style}>O que você precisa?</h2>
 
             <div>
               <label style={labelStyle}>Escolha uma categoria *</label>
@@ -526,10 +545,10 @@ export default function Personalizado(){
           </div>
         )}
 
-        {/* ══ ETAPA 2 — DETALHES DO PRODUTO ══ */}
+        {/* ══ ETAPA 2 - DETALHES DO PRODUTO ══ */}
         {etapa===2 && (
           <div style={{display:"flex",flexDirection:"column",gap:"28px"}}>
-            <h2 style={{fontSize:"1.4rem",fontWeight:"400",color:t.text,fontFamily:"Georgia, serif"}}>Detalhes do Produto</h2>
+            <h2 style={h2Style}>Detalhes do Produto</h2>
 
             {/* ══ ROUPAS ══ */}
             {form.categoria==="roupas" && (
@@ -542,101 +561,117 @@ export default function Personalizado(){
                 {form.combinacoes.map((comb)=>{
                   const tipo = TIPOS_ROUPA.find(t=>t.id===comb.tipoId);
                   const corObj = CORES_OPCOES.find(c=>c.id===comb.cor);
+                  const matLabel = comb.tipoId==="calcas" ? comb.material : MATERIAIS_OPCOES.find(m=>m.id===comb.material)?.label;
                   const total = totalComb(comb);
+                  const corClara = corObj?.hex==="#FFFFFF" || corObj?.hex==="#d4b896";
                   return (
-                    <div key={comb.id} className="transition-shadow duration-300 hover:shadow-md" style={{marginBottom:"14px",borderRadius:"14px",overflow:"hidden",border:"1px solid "+t.border,backgroundColor:t.bgCard}}>
-                      {/* Header combinação */}
-                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 16px",backgroundColor:t.bgSecundario,borderBottom:"1px solid "+t.border}}>
-                        <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
-                          <IconBadge Icone={ShirtIcon} cor={t.text} size={12} box={22} />
-                          {corObj?.hex && <span style={{width:"14px",height:"14px",borderRadius:"50%",backgroundColor:corObj.hex,border:"1px solid "+t.border,display:"inline-block",flexShrink:0}}/>}
-                          <span style={{fontWeight:"600",fontSize:"13px",color:t.text,fontFamily:"system-ui"}}>
-                            {tipo?.label}{corObj?" — "+corObj.label:""}
-                            {total>0&&<span style={{color:t.textSecundario,fontWeight:"400"}}> ({total} un)</span>}
-                          </span>
+                    <div key={comb.id} className="transition-shadow duration-300 hover:shadow-md" style={{marginBottom:"14px",borderRadius:"18px",overflow:"hidden",border:"1px solid "+t.border}}>
+                      {/* Header combinação - gradiente escuro */}
+                      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 16px",background:"linear-gradient(135deg,#161513 0%,#332e26 100%)"}}>
+                        <div style={{display:"flex",alignItems:"center",gap:"12px",minWidth:0}}>
+                          <div style={{width:"48px",height:"48px",borderRadius:"14px",backgroundColor:corObj?.hex||"rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,border:corObj?.hex?"1px solid rgba(0,0,0,0.15)":"none"}}>
+                            <ShirtIcon size={22} strokeWidth={1.6} style={{color: corObj ? (corClara?"#161513":"#fff") : "rgba(255,255,255,0.8)"}} />
+                          </div>
+                          <div style={{minWidth:0}}>
+                            <p style={{fontFamily:"Newsreader, serif",fontStyle:"italic",fontWeight:500,fontSize:"18px",color:"#fff",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                              {tipo?.label}{corObj?" - "+corObj.label:""}
+                            </p>
+                            <p style={{fontSize:"12px",color:"rgba(255,255,255,0.6)",marginTop:"2px"}}>
+                              {matLabel?matLabel+" · ":""}{total} unidade{total!==1?"s":""}
+                            </p>
+                          </div>
                         </div>
-                        <button onClick={()=>removeCombinacao(comb.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#ef4444",display:"flex"}}><CloseIcon size={16} strokeWidth={2} /></button>
+                        <button onClick={()=>removeCombinacao(comb.id)} style={{background:"none",border:"none",cursor:"pointer",color:"rgba(255,255,255,0.7)",display:"flex",flexShrink:0}}><CloseIcon size={17} strokeWidth={2} /></button>
                       </div>
 
-                      <div style={{padding:"14px 16px",display:"flex",flexDirection:"column",gap:"12px"}}>
-                        {/* Cor */}
-                        <div>
-                          <label style={{...labelStyle,marginBottom:"6px"}}>Cor *</label>
-                          {comb.cor ? (
-                            <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
-                              {corObj?.hex && <span style={{width:"16px",height:"16px",borderRadius:"50%",backgroundColor:corObj.hex,border:"1px solid "+t.border,display:"inline-block"}}/>}
-                              <span style={{fontSize:"13px",color:t.text,fontFamily:"system-ui"}}>{corObj?.label}</span>
-                              <button onClick={()=>setModalCores(comb.id)} style={{fontSize:"11px",color:t.textSecundario,background:"none",border:"1px solid "+t.border,borderRadius:"6px",cursor:"pointer",padding:"3px 10px",fontFamily:"system-ui"}}>Trocar</button>
-                            </div>
-                          ) : (
-                            <button onClick={()=>setModalCores(comb.id)} style={{display:"inline-flex",alignItems:"center",gap:"6px",padding:"8px 14px",borderRadius:"8px",border:"1px dashed "+t.borderForte,backgroundColor:t.bgCard,color:t.text,cursor:"pointer",fontSize:"12px",fontFamily:"system-ui"}}>
-                              <PaletteIcon size={14} strokeWidth={1.6} /> Selecionar cor
-                            </button>
-                          )}
-                        </div>
-
-                        {/* Material calças */}
-                        {comb.tipoId==="calcas" && (
+                      <div style={{padding:"16px",display:"flex",flexDirection:"column",gap:"14px",backgroundColor:t.bgCard}}>
+                        <div className="grid grid-cols-2 gap-3">
+                          {/* Cor */}
                           <div>
-                            <label style={{...labelStyle,marginBottom:"6px"}}>Material *</label>
-                            <div style={{display:"flex",gap:"8px"}}>
-                              {MATERIAL_CALCAS.map(mat=>(
-                                <button key={mat} onClick={()=>updateComb(comb.id,"material",mat)}
-                                  className="transition-all duration-200 hover:shadow-sm"
-                                  style={{padding:"7px 18px",borderRadius:"8px",cursor:"pointer",fontFamily:"system-ui",fontSize:"13px",border:"2px solid "+(comb.material===mat?t.text:t.border),backgroundColor:comb.material===mat?t.text:t.bgCard,color:comb.material===mat?t.btnPrimarioText:t.text}}>
-                                  {mat}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Material camisa/polo */}
-                        {(comb.tipoId==="camisa-comum"||comb.tipoId==="polo") && (
-                          <div>
-                            <label style={{...labelStyle,marginBottom:"6px"}}>Material *</label>
-                            {comb.material ? (
-                              <div style={{display:"flex",alignItems:"center",gap:"8px"}}>
-                                <span style={{fontSize:"13px",color:t.text,fontFamily:"system-ui"}}>{MATERIAIS_OPCOES.find(m=>m.id===comb.material)?.label}</span>
-                                <button onClick={()=>setModalMaterial(comb.id)} style={{fontSize:"11px",color:t.textSecundario,background:"none",border:"1px solid "+t.border,borderRadius:"6px",cursor:"pointer",padding:"3px 10px",fontFamily:"system-ui"}}>Trocar</button>
+                            <label style={{...labelStyle,marginBottom:"6px"}}>Cor</label>
+                            {comb.cor ? (
+                              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:"8px",padding:"9px 12px",borderRadius:"12px",backgroundColor:"#F4F2EE"}}>
+                                <span style={{display:"flex",alignItems:"center",gap:"8px",minWidth:0}}>
+                                  {corObj?.hex && <span style={{width:"14px",height:"14px",borderRadius:"50%",backgroundColor:corObj.hex,border:"1px solid "+t.border,display:"inline-block",flexShrink:0}}/>}
+                                  <span style={{fontSize:"13px",fontWeight:600,color:t.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{corObj?.label}</span>
+                                </span>
+                                <button onClick={()=>setModalCores(comb.id)} style={{fontSize:"12px",color:t.accent,fontWeight:700,background:"none",border:"none",cursor:"pointer",flexShrink:0}}>Trocar</button>
                               </div>
                             ) : (
-                              <button onClick={()=>setModalMaterial(comb.id)} style={{display:"inline-flex",alignItems:"center",gap:"6px",padding:"8px 14px",borderRadius:"8px",border:"1px dashed "+t.borderForte,backgroundColor:t.bgCard,color:t.text,cursor:"pointer",fontSize:"12px",fontFamily:"system-ui"}}>
-                                <ThreadIcon size={14} strokeWidth={1.6} /> Selecionar material
+                              <button onClick={()=>setModalCores(comb.id)} className="w-full transition-all duration-300 hover:shadow-sm" style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"6px",padding:"9px 12px",borderRadius:"999px",border:"1.5px dashed "+t.borderForte,backgroundColor:t.bgCard,color:t.text,cursor:"pointer",fontSize:"12px"}}>
+                                <PaletteIcon size={13} strokeWidth={1.6} /> Selecionar
                               </button>
                             )}
                           </div>
-                        )}
+
+                          {/* Material calças */}
+                          {comb.tipoId==="calcas" && (
+                            <div>
+                              <label style={{...labelStyle,marginBottom:"6px"}}>Material</label>
+                              {comb.material ? (
+                                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:"8px",padding:"9px 12px",borderRadius:"12px",backgroundColor:"#F4F2EE"}}>
+                                  <span style={{fontSize:"13px",fontWeight:600,color:t.text}}>{comb.material}</span>
+                                  <button onClick={()=>updateComb(comb.id,"material","")} style={{fontSize:"12px",color:t.accent,fontWeight:700,background:"none",border:"none",cursor:"pointer"}}>Trocar</button>
+                                </div>
+                              ) : (
+                                <div style={{display:"flex",gap:"6px"}}>
+                                  {MATERIAL_CALCAS.map(mat=>(
+                                    <button key={mat} onClick={()=>updateComb(comb.id,"material",mat)}
+                                      className="transition-all duration-200 hover:shadow-sm flex-1"
+                                      style={{padding:"9px 10px",borderRadius:"999px",cursor:"pointer",fontSize:"12px",border:"1.5px dashed "+t.borderForte,backgroundColor:t.bgCard,color:t.text}}>
+                                      {mat}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Material camisa/polo */}
+                          {(comb.tipoId==="camisa-comum"||comb.tipoId==="polo") && (
+                            <div>
+                              <label style={{...labelStyle,marginBottom:"6px"}}>Material</label>
+                              {comb.material ? (
+                                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:"8px",padding:"9px 12px",borderRadius:"12px",backgroundColor:"#F4F2EE"}}>
+                                  <span style={{fontSize:"13px",fontWeight:600,color:t.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{MATERIAIS_OPCOES.find(m=>m.id===comb.material)?.label}</span>
+                                  <button onClick={()=>setModalMaterial(comb.id)} style={{fontSize:"12px",color:t.accent,fontWeight:700,background:"none",border:"none",cursor:"pointer",flexShrink:0}}>Trocar</button>
+                                </div>
+                              ) : (
+                                <button onClick={()=>setModalMaterial(comb.id)} className="w-full transition-all duration-300 hover:shadow-sm" style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"6px",padding:"9px 12px",borderRadius:"999px",border:"1.5px dashed "+t.borderForte,backgroundColor:t.bgCard,color:t.text,cursor:"pointer",fontSize:"12px"}}>
+                                  <ThreadIcon size={13} strokeWidth={1.6} /> Selecionar
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
 
                         {/* Tamanhos */}
                         <div>
-                          <label style={{...labelStyle,marginBottom:"6px"}}>Tamanhos e quantidades *</label>
-                          <button onClick={()=>setModalTamanhos(comb.id)} className="transition-all duration-300 hover:shadow-sm" style={{display:"inline-flex",alignItems:"center",gap:"8px",padding:"8px 14px",borderRadius:"8px",border:"1px solid "+t.borderForte,backgroundColor:t.bgCard,color:t.text,cursor:"pointer",fontSize:"12px",fontFamily:"system-ui"}}>
-                            <RulerIcon size={14} strokeWidth={1.6} /> {total>0?`Editar tamanhos (${total} un)`:"Selecionar tamanhos e quantidades"}
-                          </button>
+                          <label style={{...labelStyle,marginBottom:"8px"}}>Tamanhos e quantidades</label>
                           {total>0 && (
-                            <div style={{marginTop:"8px",display:"flex",flexDirection:"column",gap:"3px"}}>
+                            <div style={{display:"flex",flexDirection:"column",gap:"6px",marginBottom:"8px"}}>
                               {(comb.tipoId==="calcas"?[{id:"calcas",label:""}]:GRUPOS_TAMANHO).map(g=>{
                                 const qtds=comb.tipoId==="calcas"
                                   ?Object.entries(comb.quantidades.calcas||{}).filter(([,v])=>v>0)
                                   :Object.entries(comb.quantidades[g.id]||{}).filter(([,v])=>v>0);
                                 if(!qtds.length) return null;
                                 return (
-                                  <div key={g.id} style={{display:"flex",alignItems:"center",gap:"6px",flexWrap:"wrap"}}>
-                                    {g.label&&<p style={{fontSize:"10px",fontWeight:"700",color:t.textSecundario,fontFamily:"system-ui",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:"4px"}}>{g.label}</p>}
-                                    <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
+                                  <div key={g.id} style={{display:"flex",flexDirection:"column",gap:"6px"}}>
+                                    {g.label&&<p style={{fontSize:"10px",fontWeight:"700",color:t.textSecundario,textTransform:"uppercase",letterSpacing:"0.08em"}}>{g.label}</p>}
                                     {qtds.map(([tam,qtd])=>(
-                                      <div key={tam} style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"4px 10px",borderRadius:"8px",backgroundColor:t.bgCard,border:"1px solid "+t.borderForte,minWidth:"44px"}}>
-                                        <span style={{fontSize:"12px",fontWeight:"700",color:t.text,fontFamily:"system-ui"}}>{tam}</span>
-                                        <span style={{fontSize:"10px",color:t.textSecundario,fontFamily:"system-ui"}}>{qtd} {parseInt(qtd)===1?"pç":"pçs"}</span>
+                                      <div key={tam} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"11px 16px",borderRadius:"12px",backgroundColor:t.text,color:"#fff"}}>
+                                        <span style={{fontSize:"13px",fontWeight:700}}>Tamanho {tam}</span>
+                                        <span style={{fontSize:"13px",color:"rgba(255,255,255,0.75)"}}>{qtd} unidade{parseInt(qtd)!==1?"s":""}</span>
                                       </div>
                                     ))}
-                                    </div>
                                   </div>
                                 );
                               })}
                             </div>
                           )}
+                          <button onClick={()=>setModalTamanhos(comb.id)} className="w-full transition-all duration-300 hover:shadow-sm" style={{padding:"11px 16px",borderRadius:"999px",border:"1.5px dashed "+t.borderForte,backgroundColor:t.bgCard,color:t.textSecundario,cursor:"pointer",fontSize:"13px",fontWeight:600,textAlign:"center"}}>
+                            + {total>0?"editar tamanhos":"selecionar tamanhos"}
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -650,7 +685,7 @@ export default function Personalizado(){
                     {TIPOS_ROUPA.map(tipo=>(
                       <button key={tipo.id} onClick={()=>addCombinacao(tipo.id)}
                         className="transition-all duration-300 hover:shadow-sm"
-                        style={{display:"inline-flex",alignItems:"center",gap:"6px",padding:"9px 14px",borderRadius:"8px",border:"1px solid "+t.borderForte,backgroundColor:t.bgCard,color:t.text,cursor:"pointer",fontSize:"13px",fontFamily:"system-ui"}}>
+                        style={{display:"inline-flex",alignItems:"center",gap:"6px",padding:"9px 14px",borderRadius:"999px",border:"1px solid "+t.borderForte,backgroundColor:t.bgCard,color:t.text,cursor:"pointer",fontSize:"13px",fontFamily:"system-ui"}}>
                         + {tipo.label}
                       </button>
                     ))}
@@ -665,8 +700,8 @@ export default function Personalizado(){
 
                 {/* Contador e checklist */}
                 {form.combinacoes.length>0 && (
-                  <div style={{backgroundColor:totalGeral>0?"#f0fdf4":"#fef9f0",border:"1px solid "+(totalGeral>0?"#86efac":"#fde68a"),borderRadius:"12px",padding:"14px"}}>
-                    <p style={{fontSize:"13px",fontWeight:"600",fontFamily:"system-ui",marginBottom:"6px",color:totalGeral>0?"#16a34a":"#92400e",display:"flex",alignItems:"center",gap:"6px"}}>
+                  <div style={{backgroundColor:totalGeral>0?"#F0FDF4":"#FEF9F0",border:"1px solid "+(totalGeral>0?"#86EFAC":"#FDE68A"),borderRadius:"12px",padding:"14px"}}>
+                    <p style={{fontSize:"13px",fontWeight:"600",fontFamily:"system-ui",marginBottom:"6px",color:totalGeral>0?"#16A34A":"#92400E",display:"flex",alignItems:"center",gap:"6px"}}>
                       {totalGeral>0
                         ? <><CheckIcon size={15} strokeWidth={2.2} />{totalGeral} unidade{totalGeral>1?"s":""} selecionada{totalGeral>1?"s":""}</>
                         : <><WarningIcon size={15} strokeWidth={1.8} />Selecione ao menos 1 unidade</>}
@@ -682,7 +717,7 @@ export default function Personalizado(){
                         if(totalComb(c)===0) itens.push(`${label}: informe os tamanhos`);
                       }
                       return itens.length>0?(
-                        <ul style={{fontSize:"12px",color:"#92400e",fontFamily:"system-ui",lineHeight:1.8,paddingLeft:"16px",margin:0}}>
+                        <ul style={{fontSize:"12px",color:"#92400E",fontFamily:"system-ui",lineHeight:1.8,paddingLeft:"16px",margin:0}}>
                           {itens.map((item,i)=><li key={i}>{item}</li>)}
                         </ul>
                       ):null;
@@ -704,7 +739,7 @@ export default function Personalizado(){
                         <button key={tipo.id} onClick={()=>setForm(p=>({...p,tipoComunicacao:tipo.id}))}
                           className="transition-all duration-300 hover:shadow-md"
                           style={{display:"flex",alignItems:"center",gap:"12px",padding:"14px 16px",borderRadius:"12px",cursor:"pointer",textAlign:"left",fontFamily:"system-ui",fontSize:"14px",border:"2px solid "+(sel?t.text:t.border),backgroundColor:sel?t.bgSecundario:t.bgCard,color:t.text,fontWeight:sel?"600":"400"}}>
-                          {sel ? <CheckIcon size={15} strokeWidth={2.2} style={{color:"#16a34a"}} /> : <span style={{width:"15px",height:"15px",borderRadius:"50%",border:"1.5px solid "+t.border,display:"inline-block"}} />}
+                          {sel ? <CheckIcon size={15} strokeWidth={2.2} style={{color:"#16A34A"}} /> : <span style={{width:"15px",height:"15px",borderRadius:"50%",border:"1.5px solid "+t.border,display:"inline-block"}} />}
                           {tipo.label}
                         </button>
                       );
@@ -718,9 +753,9 @@ export default function Personalizado(){
                       Informe a largura × altura desejada. Ex: <strong style={{color:t.text}}>1,2m × 0,8m</strong> ou <strong style={{color:t.text}}>A4</strong> ou <strong style={{color:t.text}}>80cm × 60cm</strong>
                     </p>
                     <input value={form.dimensoes} onChange={e=>setForm(p=>({...p,dimensoes:e.target.value}))}
-                      placeholder="Ex: 1,2m × 0,8m — largura × altura" style={inputStyle}/>
+                      placeholder="Ex: 1,2m × 0,8m - largura × altura" style={inputStyle}/>
                     {form.dimensoes && (
-                      <p style={{ fontSize:"11px", color:"#16a34a", fontFamily:"system-ui", marginTop:"4px", display:"flex", alignItems:"center", gap:"5px" }}>
+                      <p style={{ fontSize:"11px", color:"#16A34A", fontFamily:"system-ui", marginTop:"4px", display:"flex", alignItems:"center", gap:"5px" }}>
                         <CheckIcon size={12} strokeWidth={2.2} /> Dimensões: {form.dimensoes}
                       </p>
                     )}
@@ -729,9 +764,17 @@ export default function Personalizado(){
               </>
             )}
 
+            {/* Observações do produto (opcional) */}
+            <div>
+              <label style={labelStyle}>Observações (opcional)</label>
+              <textarea value={form.observacoes} onChange={e=>setForm(p=>({...p,observacoes:e.target.value}))} rows={3}
+                placeholder="Ex: preferência de gola, ajuste de caimento, outros detalhes do produto..."
+                style={{...inputStyle,resize:"none"}}/>
+            </div>
+
             <div style={{display:"flex",gap:"12px"}}>
               <button onClick={()=>setEtapa(1)} className="transition-all duration-300 hover:shadow-md"
-                style={{flex:1,padding:"14px",borderRadius:"10px",border:"1px solid "+t.border,color:t.text,backgroundColor:t.bg,cursor:"pointer",fontFamily:"system-ui",fontWeight:"600"}}>← Voltar</button>
+                style={btnVoltar}>← Voltar</button>
               <button onClick={()=>{if(detalhesValida)setEtapa(3);}} disabled={!detalhesValida}
                 className="transition-all duration-300 hover:enabled:shadow-lg hover:enabled:-translate-y-0.5"
                 style={{...btnP(detalhesValida),flex:2}}>Próximo →</button>
@@ -739,10 +782,10 @@ export default function Personalizado(){
           </div>
         )}
 
-        {/* ══ ETAPA 3 — REFERÊNCIAS E DESCRIÇÃO ══ */}
+        {/* ══ ETAPA 3 - REFERÊNCIAS E DESCRIÇÃO ══ */}
         {etapa===3 && (
           <div style={{display:"flex",flexDirection:"column",gap:"28px"}}>
-            <h2 style={{fontSize:"1.4rem",fontWeight:"400",color:t.text,fontFamily:"Georgia, serif"}}>Referências e Descrição</h2>
+            <h2 style={h2Style}>Referências e Descrição</h2>
 
             <div>
               <label style={labelStyle}>{form.categoria==="roupas"?"Descrição (estampa, tema, arte...)":"Descrição do projeto"}</label>
@@ -751,11 +794,11 @@ export default function Personalizado(){
                 style={{...inputStyle,resize:"none"}}/>
             </div>
             <div>
-              <label style={labelStyle}>{form.categoria==="roupas"?"Artes e estampas (opcional — até 5)":"Arquivos de referência (opcional — até 5)"}</label>
+              <label style={labelStyle}>{form.categoria==="roupas"?"Artes e estampas (opcional - até 5)":"Arquivos de referência (opcional - até 5)"}</label>
               <label className="transition-all duration-300 hover:shadow-sm" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"28px",borderRadius:"14px",cursor:"pointer",border:"2px dashed "+t.borderForte,backgroundColor:t.bgCard}}>
                 <span style={{marginBottom:"10px"}}><IconBadge Icone={PaperclipIcon} cor={t.text} size={20} box={44} /></span>
                 <span style={{fontSize:"13px",fontWeight:"500",color:t.text,fontFamily:"system-ui"}}>Clique para selecionar arquivos</span>
-                <span style={{fontSize:"11px",color:t.textSecundario,marginTop:"4px",fontFamily:"system-ui"}}>PNG, JPG, PDF — até 5 arquivos</span>
+                <span style={{fontSize:"11px",color:t.textSecundario,marginTop:"4px",fontFamily:"system-ui"}}>PNG, JPG, PDF - até 5 arquivos</span>
                 <input type="file" multiple accept="image/*,.pdf" style={{display:"none"}} onChange={e=>{const files=Array.from(e.target.files).slice(0,5);setForm(p=>({...p,fotos:files.map(f=>({file:f,url:f.type.startsWith("image/")?URL.createObjectURL(f):null,name:f.name}))}));}}/>
               </label>
               {form.fotos.length>0&&(
@@ -767,20 +810,16 @@ export default function Personalizado(){
                             <DocIcon size={20} strokeWidth={1.5} />
                             <span style={{fontSize:"9px"}}>{foto.name.split(".").pop().toUpperCase()}</span>
                           </div>}
-                      <button onClick={()=>setForm(p=>({...p,fotos:p.fotos.filter((_,j)=>j!==i)}))} style={{position:"absolute",top:"-5px",right:"-5px",width:"18px",height:"18px",borderRadius:"50%",backgroundColor:"#ef4444",color:"white",border:"none",cursor:"pointer",fontSize:"10px"}}>✕</button>
+                      <button onClick={()=>setForm(p=>({...p,fotos:p.fotos.filter((_,j)=>j!==i)}))} style={{position:"absolute",top:"-5px",right:"-5px",width:"18px",height:"18px",borderRadius:"50%",backgroundColor:"#DC2626",color:"white",border:"none",cursor:"pointer",fontSize:"10px"}}>✕</button>
                     </div>
                   ))}
                 </div>
               )}
             </div>
-            <div>
-              <label style={labelStyle}>Observações finais (opcional)</label>
-              <textarea value={form.observacoes} onChange={e=>setForm(p=>({...p,observacoes:e.target.value}))} rows={3} placeholder="Alguma informação extra..." style={{...inputStyle,resize:"none"}}/>
-            </div>
 
             <div style={{display:"flex",gap:"12px"}}>
               <button onClick={()=>setEtapa(2)} className="transition-all duration-300 hover:shadow-md"
-                style={{flex:1,padding:"14px",borderRadius:"10px",border:"1px solid "+t.border,color:t.text,backgroundColor:t.bg,cursor:"pointer",fontFamily:"system-ui",fontWeight:"600"}}>← Voltar</button>
+                style={btnVoltar}>← Voltar</button>
               <button onClick={()=>setEtapa(4)}
                 className="transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
                 style={{...btnP(true),flex:2}}>Próximo →</button>
@@ -788,10 +827,10 @@ export default function Personalizado(){
           </div>
         )}
 
-        {/* ══ ETAPA 4 — SEUS DADOS ══ */}
+        {/* ══ ETAPA 4 - SEUS DADOS ══ */}
         {etapa===4 && (
           <div style={{display:"flex",flexDirection:"column",gap:"20px"}}>
-            <h2 style={{fontSize:"1.4rem",fontWeight:"400",color:t.text,fontFamily:"Georgia, serif"}}>Seus Dados</h2>
+            <h2 style={h2Style}>Seus Dados</h2>
             <p style={{fontSize:"13px",color:t.textSecundario,fontFamily:"system-ui",lineHeight:1.6,marginTop:"-12px"}}>
               Para nossa equipe entrar em contato e confirmar os detalhes do seu pedido.
             </p>
@@ -799,20 +838,20 @@ export default function Personalizado(){
               <div><label style={labelStyle}>Nome completo *</label><input value={form.nomeCliente} onChange={e=>setForm(p=>({...p,nomeCliente:e.target.value}))} placeholder="Ex: João Silva" style={inputStyle}/></div>
               <div>
                 <label style={labelStyle}>Telefone / WhatsApp *</label>
-                <input value={form.telefone} onChange={e=>setForm(p=>({...p,telefone:formatTel(e.target.value)}))} placeholder="(27) 99999-9999" maxLength={15} inputMode="tel" style={{...inputStyle,borderColor:form.telefone&&validarTel(form.telefone)?"#ef4444":t.border}}/>
-                {form.telefone&&validarTel(form.telefone)&&<p style={{fontSize:"11px",color:"#ef4444",marginTop:"4px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"4px"}}><WarningIcon size={12} strokeWidth={1.8} /> {validarTel(form.telefone)}</p>}
+                <input value={form.telefone} onChange={e=>setForm(p=>({...p,telefone:formatTel(e.target.value)}))} placeholder="(27) 99999-9999" maxLength={15} inputMode="tel" style={{...inputStyle,borderColor:form.telefone&&validarTel(form.telefone)?"#DC2626":t.border}}/>
+                {form.telefone&&validarTel(form.telefone)&&<p style={{fontSize:"11px",color:"#DC2626",marginTop:"4px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"4px"}}><WarningIcon size={12} strokeWidth={1.8} /> {validarTel(form.telefone)}</p>}
               </div>
               <div>
                 <label style={labelStyle}>E-mail *</label>
-                <input value={form.email} type="email" onChange={e=>setForm(p=>({...p,email:e.target.value}))} placeholder="Ex: joao@email.com" style={{...inputStyle,borderColor:form.email&&!emailValido(form.email)?"#ef4444":t.border}}/>
-                {form.email&&!emailValido(form.email)&&<p style={{fontSize:"11px",color:"#ef4444",marginTop:"4px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"4px"}}><WarningIcon size={12} strokeWidth={1.8} /> E-mail inválido</p>}
-                {form.email&&emailValido(form.email)&&<p style={{fontSize:"11px",color:"#16a34a",marginTop:"4px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"4px"}}><CheckIcon size={12} strokeWidth={2.2} /> E-mail válido</p>}
+                <input value={form.email} type="email" onChange={e=>setForm(p=>({...p,email:e.target.value}))} placeholder="Ex: joao@email.com" style={{...inputStyle,borderColor:form.email&&!emailValido(form.email)?"#DC2626":t.border}}/>
+                {form.email&&!emailValido(form.email)&&<p style={{fontSize:"11px",color:"#DC2626",marginTop:"4px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"4px"}}><WarningIcon size={12} strokeWidth={1.8} /> E-mail inválido</p>}
+                {form.email&&emailValido(form.email)&&<p style={{fontSize:"11px",color:"#16A34A",marginTop:"4px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"4px"}}><CheckIcon size={12} strokeWidth={2.2} /> E-mail válido</p>}
               </div>
             </div>
 
             <div style={{display:"flex",gap:"12px"}}>
               <button onClick={()=>setEtapa(3)} className="transition-all duration-300 hover:shadow-md"
-                style={{flex:1,padding:"14px",borderRadius:"10px",border:"1px solid "+t.border,color:t.text,backgroundColor:t.bg,cursor:"pointer",fontFamily:"system-ui",fontWeight:"600"}}>← Voltar</button>
+                style={btnVoltar}>← Voltar</button>
               <button onClick={()=>{if(contatoValida)setEtapa(5);}} disabled={!contatoValida}
                 className="transition-all duration-300 hover:enabled:shadow-lg hover:enabled:-translate-y-0.5"
                 style={{...btnP(contatoValida),flex:2}}>Próximo →</button>
@@ -820,77 +859,21 @@ export default function Personalizado(){
           </div>
         )}
 
-        {/* ══ ETAPA 5 — ENTREGA E REVISÃO ══ */}
+        {/* ══ ETAPA 5 - ENTREGA ══ */}
         {etapa===5 && (
           <div style={{display:"flex",flexDirection:"column",gap:"20px"}}>
-            <h2 style={{fontSize:"1.4rem",fontWeight:"400",color:t.text,fontFamily:"Georgia, serif"}}>Entrega e Revisão</h2>
-
-            {/* RESUMO */}
-            <div style={{border:"1px solid "+t.border,borderRadius:"14px",padding:"20px",backgroundColor:t.bgCard}}>
-              <p style={{fontSize:"11px",textTransform:"uppercase",letterSpacing:"0.1em",color:t.textSecundario,fontFamily:"system-ui",marginBottom:"14px",display:"flex",alignItems:"center",gap:"8px"}}>
-                <IconBadge Icone={ListIcon} cor="#6b6b6b" size={12} box={22} /> Resumo do pedido
-              </p>
-              <div style={{padding:"8px 0",borderBottom:"1px solid "+t.border}}>
-                <p style={{fontSize:"13px",fontWeight:"600",color:t.text,fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"7px"}}>
-                  {form.categoria==="roupas" ? <ShirtIcon size={15} strokeWidth={1.7} style={{color:"#2563eb"}} /> : <ImageIcon size={15} strokeWidth={1.7} style={{color:"#7c3aed"}} />}
-                  {form.categoria==="roupas"?"Item de Roupa":"Comunicação Visual"}
-                </p>
-                {form.categoria==="roupas"&&<p style={{fontSize:"12px",color:t.textSecundario,fontFamily:"system-ui"}}>Total: {totalGeral} unidades em {form.combinacoes.length} combinação{form.combinacoes.length!==1?"ões":""}</p>}
-              </div>
-
-              {form.categoria==="roupas" && form.combinacoes.map((comb,i)=>{
-                const tipo=TIPOS_ROUPA.find(t=>t.id===comb.tipoId);
-                const cor=CORES_OPCOES.find(x=>x.id===comb.cor);
-                const mat=comb.tipoId==="calcas"?comb.material:MATERIAIS_OPCOES.find(m=>m.id===comb.material)?.label;
-                return (
-                  <div key={comb.id} style={{padding:"10px 0",borderBottom:"1px solid "+t.border}}>
-                    <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"6px"}}>
-                      {cor?.hex&&<span style={{width:"12px",height:"12px",borderRadius:"50%",backgroundColor:cor.hex,border:"1px solid "+t.border,display:"inline-block"}}/>}
-                      <span style={{fontSize:"13px",fontWeight:"600",color:t.text,fontFamily:"system-ui"}}>Comb. {i+1}: {tipo?.label} — {cor?.label}</span>
-                      <span style={{fontSize:"12px",color:t.textSecundario,fontFamily:"system-ui"}}>{totalComb(comb)} un</span>
-                    </div>
-                    {mat&&<p style={{fontSize:"12px",color:t.textSecundario,fontFamily:"system-ui"}}>Material: {mat}</p>}
-                    {(comb.tipoId==="calcas"?[{id:"calcas",label:""}]:GRUPOS_TAMANHO).map(g=>{
-                      const qtds=comb.tipoId==="calcas"
-                        ?Object.entries(comb.quantidades.calcas||{}).filter(([,v])=>v>0)
-                        :Object.entries(comb.quantidades[g.id]||{}).filter(([,v])=>v>0);
-                      if(!qtds.length) return null;
-                      return (
-                        <div key={g.id} style={{display:"flex",gap:"5px",flexWrap:"wrap",marginTop:"4px",alignItems:"center"}}>
-                          {g.label&&<span style={{fontSize:"10px",color:t.textSecundario,fontFamily:"system-ui",textTransform:"uppercase"}}>{g.label}:</span>}
-                          {qtds.map(([tam,qtd])=><span key={tam} style={{fontSize:"11px",padding:"2px 6px",backgroundColor:t.bgSecundario,border:"1px solid "+t.border,fontFamily:"system-ui"}}>{tam}: {qtd}</span>)}
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-
-              {form.categoria==="comunicacao"&&(
-                <div style={{padding:"10px 0",borderBottom:"1px solid "+t.border}}>
-                  <p style={{fontSize:"13px",fontWeight:"600",color:t.text,fontFamily:"system-ui"}}>{TIPOS_COMUNICACAO.find(t=>t.id===form.tipoComunicacao)?.label}</p>
-                  {form.dimensoes&&<p style={{fontSize:"12px",color:t.textSecundario,fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"5px"}}><RulerIcon size={12} strokeWidth={1.6} /> Dimensões: <strong style={{color:t.text}}>{form.dimensoes}</strong></p>}
-                </div>
-              )}
-
-              {form.descricao&&(
-                <div style={{padding:"10px 0"}}>
-                  <span style={{fontSize:"11px",color:t.textSecundario,fontFamily:"system-ui",textTransform:"uppercase"}}>Descrição</span>
-                  <p style={{fontSize:"13px",color:t.text,fontFamily:"system-ui",marginTop:"4px"}}>{form.descricao}</p>
-                </div>
-              )}
-            </div>
+            <h2 style={h2Style}>Entrega</h2>
 
             {/* ENDEREÇO */}
             <div>
-              <p style={{fontSize:"13px",fontWeight:"600",color:t.text,fontFamily:"system-ui",marginBottom:"16px",display:"flex",alignItems:"center",gap:"8px"}}>
+              <p style={{fontSize:"13px",fontWeight:"600",color:t.text,marginBottom:"16px",display:"flex",alignItems:"center",gap:"8px"}}>
                 <IconBadge Icone={PinIcon} cor={t.text} size={12} box={22} /> Endereço de Entrega *
               </p>
               <div style={{display:"flex",flexDirection:"column",gap:"14px"}}>
                 <div>
                   <label style={labelStyle}>CEP *</label>
-                  <input value={form.cep} onChange={e=>{const fmt=formatCEP(e.target.value);setForm(p=>({...p,cep:fmt}));if(fmt.replace(/\D/g,"").length===8)buscarCEP(fmt,setForm);}} placeholder="29000-000" maxLength={9} inputMode="numeric" style={{...inputStyle,borderColor:form.cep&&form.cep.replace(/\D/g,"").length<8?"#ef4444":t.border}}/>
-                  {form.cep&&form.cep.replace(/\D/g,"").length===8&&form.cidade&&<p style={{fontSize:"11px",color:"#16a34a",marginTop:"4px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"4px"}}><CheckIcon size={12} strokeWidth={2.2} /> {form.cidade}/{form.estado}</p>}
+                  <input value={form.cep} onChange={e=>{const fmt=formatCEP(e.target.value);setForm(p=>({...p,cep:fmt}));if(fmt.replace(/\D/g,"").length===8)buscarCEP(fmt,setForm);}} placeholder="29000-000" maxLength={9} inputMode="numeric" style={{...inputStyle,borderColor:form.cep&&form.cep.replace(/\D/g,"").length<8?"#DC2626":t.border}}/>
+                  {form.cep&&form.cep.replace(/\D/g,"").length===8&&form.cidade&&<p style={{fontSize:"11px",color:"#16A34A",marginTop:"4px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"4px"}}><CheckIcon size={12} strokeWidth={2.2} /> {form.cidade}/{form.estado}</p>}
                 </div>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 80px",gap:"12px"}}>
                   <div><label style={labelStyle}>Cidade *</label><input value={form.cidade} onChange={e=>setForm(p=>({...p,cidade:e.target.value}))} placeholder="Vila Velha" style={inputStyle}/></div>
@@ -914,7 +897,7 @@ export default function Personalizado(){
                     <div>
                       <label style={{...labelStyle, marginBottom:"10px", display:"flex", alignItems:"center", gap:"8px"}}><IconBadge Icone={TruckIcon} cor="#6b6b6b" size={11} box={20} /> Como deseja receber? *</label>
                       <p style={{fontSize:"12px",color:t.textSecundario,fontFamily:"system-ui",marginBottom:"10px",lineHeight:1.5}}>
-                        Escolha uma opção. Os valores de motoboy e Correios são estimativas — confirmamos o valor exato pelo WhatsApp.
+                        Escolha uma opção. Os valores de motoboy e Correios são estimativas - confirmamos o valor exato pelo WhatsApp.
                       </p>
                       <div style={{display:"flex",flexDirection:"column",gap:"10px"}}>
 
@@ -927,14 +910,14 @@ export default function Personalizado(){
                           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                             <div>
                               <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0,display:"flex",alignItems:"center",gap:"8px"}}><IconBadge Icone={StoreIcon} cor={t.text} size={12} box={22} /> Retirada no local</p>
-                              <p style={{fontSize:"11px",color:t.textSecundario,margin:"3px 0 0"}}>Polo Têxtil Santa Inês — Vila Velha, ES</p>
+                              <p style={{fontSize:"11px",color:t.textSecundario,margin:"3px 0 0"}}>Polo Têxtil Santa Inês - Vila Velha, ES</p>
                             </div>
-                            <span style={{fontSize:"13px",fontWeight:"700",color:"#16a34a",whiteSpace:"nowrap",marginLeft:"12px"}}>Grátis</span>
+                            <span style={{fontSize:"13px",fontWeight:"700",color:"#16A34A",whiteSpace:"nowrap",marginLeft:"12px"}}>Grátis</span>
                           </div>
                           {form.frete_tipo==="retirada" && <p style={{fontSize:"11px",color:t.text,marginTop:"6px",fontWeight:"600",display:"flex",alignItems:"center",gap:"4px"}}><CheckIcon size={12} strokeWidth={2.2} /> Selecionado</p>}
                         </button>
 
-                        {/* Motoboy — sempre visível, desativado se fora da região */}
+                        {/* Motoboy - sempre visível, desativado se fora da região */}
                         <button onClick={()=>{ if(motoP) setForm(p=>({...p,frete_tipo:"motoboy",frete_valor:motoP.min})); }}
                           className="transition-all duration-300 hover:shadow-md"
                           style={{padding:"12px 14px",borderRadius:"10px",textAlign:"left",cursor: motoP?"pointer":"default",
@@ -946,7 +929,7 @@ export default function Personalizado(){
                               <p style={{fontSize:"13px",fontWeight:"600",color:t.text,margin:0,display:"flex",alignItems:"center",gap:"8px"}}><IconBadge Icone={TruckIcon} cor={t.text} size={12} box={22} /> Entrega por motoboy</p>
                               <p style={{fontSize:"11px",color:t.textSecundario,margin:"3px 0 0"}}>
                                 {motoP
-                                  ? `Entrega própria${cidadeL} — estimativa de R$ ${motoP.min} a R$ ${motoP.max}`
+                                  ? `Entrega própria${cidadeL} - estimativa de R$ ${motoP.min} a R$ ${motoP.max}`
                                   : "Disponível apenas para a região da Grande Vitória / ES"}
                               </p>
                             </div>
@@ -957,7 +940,7 @@ export default function Personalizado(){
                           {form.frete_tipo==="motoboy" && <p style={{fontSize:"11px",color:t.text,marginTop:"6px",fontWeight:"600",display:"flex",alignItems:"center",gap:"4px"}}><CheckIcon size={12} strokeWidth={2.2} /> Selecionado</p>}
                         </button>
 
-                        {/* Correios — sempre visível */}
+                        {/* Correios - sempre visível */}
                         <button onClick={()=>setForm(p=>({...p,frete_tipo:"correios",frete_valor:parseValorMinimoP(corP.pac)}))}
                           className="transition-all duration-300 hover:shadow-md"
                           style={{padding:"12px 14px",borderRadius:"10px",textAlign:"left",cursor:"pointer",
@@ -983,18 +966,10 @@ export default function Personalizado(){
               </div>
             </div>
 
-            <div style={{backgroundColor:t.bgSecundario,border:"1px solid "+t.border,borderRadius:"12px",padding:"14px",display:"flex",gap:"10px",alignItems:"flex-start"}}>
-              <span style={{color:t.textSecundario, marginTop:"1px", flexShrink:0}}><InfoIcon size={16} strokeWidth={1.7} /></span>
-              <p style={{fontSize:"13px",color:t.textSecundario,lineHeight:1.7,fontFamily:"system-ui",margin:0}}>
-                Ao confirmar o pedido, nossa equipe entrará em contato pelo WhatsApp para confirmar detalhes, prazo e orçamento.
-                {form.fotos.length>0&&" As imagens de referência enviadas serão salvas junto ao pedido."}
-              </p>
-            </div>
-
             {!finalizacaoValida&&(
-              <div style={{backgroundColor:"#fef9f0",border:"1px solid #fde68a",borderRadius:"12px",padding:"14px"}}>
-                <p style={{fontSize:"12px",fontWeight:"600",color:"#92400e",marginBottom:"8px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"6px"}}><WarningIcon size={14} strokeWidth={1.8} /> Preencha os campos obrigatórios para finalizar:</p>
-                <ul style={{fontSize:"12px",color:"#92400e",fontFamily:"system-ui",lineHeight:1.8,paddingLeft:"16px",margin:0}}>
+              <div style={{backgroundColor:"#FEF9F0",border:"1px solid #FDE68A",borderRadius:"12px",padding:"14px"}}>
+                <p style={{fontSize:"12px",fontWeight:"600",color:"#92400E",marginBottom:"8px",display:"flex",alignItems:"center",gap:"6px"}}><WarningIcon size={14} strokeWidth={1.8} /> Preencha os campos obrigatórios para continuar:</p>
+                <ul style={{fontSize:"12px",color:"#92400E",lineHeight:1.8,paddingLeft:"16px",margin:0}}>
                   {(!form.cep||form.cep.replace(/\D/g,"").length<8)&&<li>CEP completo</li>}
                   {!form.cidade.trim()&&<li>Cidade</li>}
                   {!form.estado.trim()&&<li>Estado</li>}
@@ -1006,16 +981,114 @@ export default function Personalizado(){
               </div>
             )}
 
-            {erro&&<div style={{backgroundColor:"#fef2f2",border:"1px solid #fecaca",borderRadius:"12px",padding:"12px",color:"#dc2626",fontSize:"13px",fontFamily:"system-ui",display:"flex",alignItems:"center",gap:"6px"}}><WarningIcon size={14} strokeWidth={1.8} /> {erro}</div>}
-
             <div style={{display:"flex",gap:"12px"}}>
               <button onClick={()=>setEtapa(4)} className="transition-all duration-300 hover:shadow-md"
-                style={{flex:1,padding:"14px",borderRadius:"10px",border:"1px solid "+t.border,color:t.text,backgroundColor:t.bg,cursor:"pointer",fontFamily:"system-ui",fontWeight:"600"}}>← Voltar</button>
+                style={btnVoltar}>← Voltar</button>
+              <button onClick={()=>{if(finalizacaoValida)setEtapa(6);}} disabled={!finalizacaoValida}
+                className="transition-all duration-300 hover:enabled:shadow-lg hover:enabled:-translate-y-0.5"
+                style={{...btnP(finalizacaoValida),flex:2}}>Revisar pedido →</button>
+            </div>
+          </div>
+        )}
+
+        {/* ══ ETAPA 6 - REVISÃO FINAL ══ */}
+        {etapa===6 && (
+          <div style={{display:"flex",flexDirection:"column",gap:"16px"}}>
+            <h2 style={h2Style}>Revisão final</h2>
+            <p style={{fontSize:"13px",color:t.textSecundario,marginTop:"-8px"}}>Confira os dados antes de enviar seu pedido.</p>
+
+            {/* CARD - PRODUTO */}
+            <CardResumo titulo="Produto" Icone={form.categoria==="roupas"?ShirtIcon:ImageIcon} etapaAlvo={2}>
+              <p style={{fontSize:"13px",fontWeight:"600",color:t.text}}>
+                {form.categoria==="roupas"?"Item de Roupa":"Comunicação Visual"}
+              </p>
+              {form.categoria==="roupas"&&<p style={{fontSize:"12px",color:t.textSecundario}}>Total: {totalGeral} unidades em {form.combinacoes.length} combinação{form.combinacoes.length!==1?"ões":""}</p>}
+
+              {form.categoria==="roupas" && form.combinacoes.map((comb,i)=>{
+                const tipo=TIPOS_ROUPA.find(t=>t.id===comb.tipoId);
+                const cor=CORES_OPCOES.find(x=>x.id===comb.cor);
+                const mat=comb.tipoId==="calcas"?comb.material:MATERIAIS_OPCOES.find(m=>m.id===comb.material)?.label;
+                return (
+                  <div key={comb.id} style={{padding:"10px 0",borderTop:"1px solid "+t.border}}>
+                    <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"6px"}}>
+                      {cor?.hex&&<span style={{width:"12px",height:"12px",borderRadius:"50%",backgroundColor:cor.hex,border:"1px solid "+t.border,display:"inline-block"}}/>}
+                      <span style={{fontSize:"13px",fontWeight:"600",color:t.text}}>Comb. {i+1}: {tipo?.label} - {cor?.label}</span>
+                      <span style={{fontSize:"12px",color:t.textSecundario}}>{totalComb(comb)} un</span>
+                    </div>
+                    {mat&&<p style={{fontSize:"12px",color:t.textSecundario}}>Material: {mat}</p>}
+                    {(comb.tipoId==="calcas"?[{id:"calcas",label:""}]:GRUPOS_TAMANHO).map(g=>{
+                      const qtds=comb.tipoId==="calcas"
+                        ?Object.entries(comb.quantidades.calcas||{}).filter(([,v])=>v>0)
+                        :Object.entries(comb.quantidades[g.id]||{}).filter(([,v])=>v>0);
+                      if(!qtds.length) return null;
+                      return (
+                        <div key={g.id} style={{display:"flex",gap:"5px",flexWrap:"wrap",marginTop:"4px",alignItems:"center"}}>
+                          {g.label&&<span style={{fontSize:"10px",color:t.textSecundario,textTransform:"uppercase"}}>{g.label}:</span>}
+                          {qtds.map(([tam,qtd])=>(
+                            <span key={tam} style={{fontSize:"11.5px",fontWeight:600,padding:"4px 11px",backgroundColor:t.text,color:"#fff",borderRadius:"999px",whiteSpace:"nowrap"}}>
+                              Tam. {tam} <span style={{opacity:0.7,fontWeight:400}}>· {qtd} un</span>
+                            </span>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+
+              {form.categoria==="comunicacao"&&(
+                <div style={{padding:"10px 0",borderTop:"1px solid "+t.border}}>
+                  <p style={{fontSize:"13px",fontWeight:"600",color:t.text}}>{TIPOS_COMUNICACAO.find(t=>t.id===form.tipoComunicacao)?.label}</p>
+                  {form.dimensoes&&<p style={{fontSize:"12px",color:t.textSecundario,display:"flex",alignItems:"center",gap:"5px"}}><RulerIcon size={12} strokeWidth={1.6} /> Dimensões: <strong style={{color:t.text}}>{form.dimensoes}</strong></p>}
+                </div>
+              )}
+            </CardResumo>
+
+            {/* CARD - SEUS DADOS */}
+            <CardResumo titulo="Seus dados" Icone={UserIcon} etapaAlvo={4}>
+              <p style={{fontSize:"13px",fontWeight:"600",color:t.text}}>{form.nomeCliente}</p>
+              <p style={{fontSize:"12px",color:t.textSecundario}}>{form.telefone}</p>
+              <p style={{fontSize:"12px",color:t.textSecundario}}>{form.email}</p>
+            </CardResumo>
+
+            {/* CARD - ENTREGA */}
+            <CardResumo titulo="Entrega" Icone={PinIcon} etapaAlvo={5}>
+              <p style={{fontSize:"13px",color:t.text}}>{form.rua}, {form.numero}{form.complemento?" - "+form.complemento:""}</p>
+              <p style={{fontSize:"12px",color:t.textSecundario}}>{form.bairro} - {form.cidade}/{form.estado} - CEP: {form.cep}</p>
+              <p style={{fontSize:"13px",fontWeight:"600",color:t.text,marginTop:"6px",display:"flex",alignItems:"center",gap:"6px"}}>
+                {form.frete_tipo==="retirada"?<StoreIcon size={14} strokeWidth={1.7}/>:form.frete_tipo==="motoboy"?<TruckIcon size={14} strokeWidth={1.7}/>:<MailIcon size={14} strokeWidth={1.7}/>}
+                {form.frete_tipo==="retirada"?"Retirada no local":form.frete_tipo==="motoboy"?"Entrega por motoboy":"Correios (PAC/SEDEX)"}
+                {form.frete_tipo==="retirada"&&<span style={{color:"#16A34A",fontWeight:700}}>· Grátis</span>}
+              </p>
+            </CardResumo>
+
+            {/* CARD - OBSERVAÇÕES */}
+            {(form.descricao||form.observacoes||form.fotos.length>0)&&(
+              <CardResumo titulo="Observações" Icone={DocIcon} etapaAlvo={form.descricao||form.fotos.length>0?3:2}>
+                {form.descricao&&<p style={{fontSize:"13px",color:t.text}}>{form.descricao}</p>}
+                {form.observacoes&&<p style={{fontSize:"12px",color:t.textSecundario}}>{form.observacoes}</p>}
+                {form.fotos.length>0&&<p style={{fontSize:"12px",color:t.textSecundario,display:"flex",alignItems:"center",gap:"5px"}}><PaperclipIcon size={13} strokeWidth={1.7}/> {form.fotos.length} arquivo{form.fotos.length!==1?"s":""} anexado{form.fotos.length!==1?"s":""}</p>}
+              </CardResumo>
+            )}
+
+            <div style={{backgroundColor:"#FEF9F0",border:"1px solid #FDE68A",borderRadius:"12px",padding:"14px",display:"flex",gap:"10px",alignItems:"flex-start"}}>
+              <span style={{color:"#92400E", marginTop:"1px", flexShrink:0}}><WarningIcon size={16} strokeWidth={1.8} /></span>
+              <p style={{fontSize:"13px",color:"#92400E",lineHeight:1.7,margin:0}}>
+                O valor final será confirmado pela nossa equipe pelo WhatsApp após a análise do pedido.
+                {form.fotos.length>0&&" As imagens de referência enviadas serão salvas junto ao pedido."}
+              </p>
+            </div>
+
+            {erro&&<div style={{backgroundColor:"#FEF2F2",border:"1px solid #FECACA",borderRadius:"12px",padding:"12px",color:"#DC2626",fontSize:"13px",display:"flex",alignItems:"center",gap:"6px"}}><WarningIcon size={14} strokeWidth={1.8} /> {erro}</div>}
+
+            <div style={{display:"flex",gap:"12px"}}>
+              <button onClick={()=>setEtapa(5)} className="transition-all duration-300 hover:shadow-md"
+                style={btnVoltar}>← Voltar e corrigir</button>
             </div>
             <button onClick={salvarNoBanco} disabled={salvando||!finalizacaoValida}
               className="transition-all duration-300 hover:enabled:shadow-lg hover:enabled:-translate-y-0.5"
               style={{ cursor: "pointer",...btnP(!salvando&&finalizacaoValida),width:"100%",padding:"18px",fontSize:"16px",display:"flex",alignItems:"center",justifyContent:"center",gap:"8px"}}>
-              {salvando ? "Salvando..." : <><CheckIcon size={17} strokeWidth={2.2} /> Confirmar Pedido</>}
+              {salvando ? "Salvando..." : <><CheckIcon size={17} strokeWidth={2.2} /> Confirmar e enviar pedido</>}
             </button>
           </div>
         )}
@@ -1032,7 +1105,7 @@ export default function Personalizado(){
             <div style={{backgroundColor:t.bgCard,width:"100%",maxWidth:"500px",maxHeight:"85vh",overflowY:"auto",borderRadius:"20px 20px 0 0"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 16px",borderBottom:"1px solid "+t.border}}>
                 <div>
-                  <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Georgia, serif"}}>{tipo?.label} {cor?"— "+cor.label:""}</h3>
+                  <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Newsreader, serif",fontStyle:"italic"}}>{tipo?.label} {cor?"- "+cor.label:""}</h3>
                   <p style={{fontSize:"12px",color:t.textSecundario,fontFamily:"system-ui",marginTop:"2px"}}>Total: {totalComb(comb)} unidades</p>
                 </div>
                 <button onClick={()=>setModalTamanhos(null)} style={{background:"none",border:"none",cursor:"pointer",color:t.text,display:"flex"}}><CloseIcon size={20} strokeWidth={1.8} /></button>
@@ -1103,7 +1176,7 @@ export default function Personalizado(){
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" style={{backgroundColor:"rgba(0,0,0,0.5)"}} onClick={e=>{if(e.target===e.currentTarget)setModalCores(null);}}>
           <div style={{backgroundColor:t.bgCard,width:"100%",maxWidth:"480px",maxHeight:"80vh",overflowY:"auto",borderRadius:"20px 20px 0 0"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 16px",borderBottom:"1px solid "+t.border}}>
-              <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Georgia, serif",display:"flex",alignItems:"center",gap:"10px"}}><IconBadge Icone={PaletteIcon} cor={t.text} size={15} box={28} /> Selecionar cor</h3>
+              <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Newsreader, serif",fontStyle:"italic",display:"flex",alignItems:"center",gap:"10px"}}><IconBadge Icone={PaletteIcon} cor={t.text} size={15} box={28} /> Selecionar cor</h3>
               <button onClick={()=>setModalCores(null)} style={{background:"none",border:"none",cursor:"pointer",color:t.text,display:"flex"}}><CloseIcon size={20} strokeWidth={1.8} /></button>
             </div>
             <div style={{padding:"16px",display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:"8px"}}>
@@ -1115,7 +1188,7 @@ export default function Personalizado(){
                     style={{display:"flex",alignItems:"center",gap:"10px",padding:"12px 14px",borderRadius:"10px",cursor:"pointer",textAlign:"left",fontFamily:"system-ui",fontSize:"13px",border:"2px solid "+(sel?t.text:t.border),backgroundColor:sel?t.bgSecundario:t.bgCard,color:t.text}}>
                     <span style={{width:"20px",height:"20px",borderRadius:"50%",flexShrink:0,display:"inline-block",backgroundColor:cor.hex||"transparent",border:cor.hex?"1px solid "+t.border:"2px dashed "+t.border}}/>
                     <span style={{fontWeight:sel?"600":"400"}}>{cor.label}</span>
-                    {sel&&<span style={{marginLeft:"auto",color:"#16a34a",display:"flex"}}><CheckIcon size={15} strokeWidth={2.2} /></span>}
+                    {sel&&<span style={{marginLeft:"auto",color:"#16A34A",display:"flex"}}><CheckIcon size={15} strokeWidth={2.2} /></span>}
                   </button>
                 );
               })}
@@ -1129,7 +1202,7 @@ export default function Personalizado(){
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center" style={{backgroundColor:"rgba(0,0,0,0.5)"}} onClick={e=>{if(e.target===e.currentTarget)setModalMaterial(null);}}>
           <div style={{backgroundColor:t.bgCard,width:"100%",maxWidth:"480px",maxHeight:"80vh",overflowY:"auto",borderRadius:"20px 20px 0 0"}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"20px 20px 16px",borderBottom:"1px solid "+t.border}}>
-              <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Georgia, serif",display:"flex",alignItems:"center",gap:"10px"}}><IconBadge Icone={ThreadIcon} cor={t.text} size={15} box={28} /> Selecionar material</h3>
+              <h3 style={{fontSize:"16px",fontWeight:"600",color:t.text,fontFamily:"Newsreader, serif",fontStyle:"italic",display:"flex",alignItems:"center",gap:"10px"}}><IconBadge Icone={ThreadIcon} cor={t.text} size={15} box={28} /> Selecionar material</h3>
               <button onClick={()=>setModalMaterial(null)} style={{background:"none",border:"none",cursor:"pointer",color:t.text,display:"flex"}}><CloseIcon size={20} strokeWidth={1.8} /></button>
             </div>
             <div style={{padding:"16px",display:"flex",flexDirection:"column",gap:"8px"}}>
@@ -1139,7 +1212,7 @@ export default function Personalizado(){
                   <button key={mat.id} onClick={()=>{updateComb(modalMaterial,"material",mat.id);setModalMaterial(null);}}
                     className="transition-all duration-300 hover:shadow-sm"
                     style={{display:"flex",flexDirection:"column",alignItems:"flex-start",padding:"14px 16px",borderRadius:"10px",cursor:"pointer",textAlign:"left",fontFamily:"system-ui",border:"2px solid "+(sel?t.text:t.border),backgroundColor:sel?t.bgSecundario:t.bgCard}}>
-                    <span style={{fontSize:"13px",fontWeight:"600",color:t.text,display:"flex",alignItems:"center",gap:"6px"}}>{mat.label} {sel && <CheckIcon size={13} strokeWidth={2.2} style={{color:"#16a34a"}} />}</span>
+                    <span style={{fontSize:"13px",fontWeight:"600",color:t.text,display:"flex",alignItems:"center",gap:"6px"}}>{mat.label} {sel && <CheckIcon size={13} strokeWidth={2.2} style={{color:"#16A34A"}} />}</span>
                     <span style={{fontSize:"11px",color:t.textSecundario,marginTop:"2px"}}>{mat.descricao}</span>
                   </button>
                 );
@@ -1156,7 +1229,7 @@ export default function Personalizado(){
           onClick={e => { if (e.target === e.currentTarget) setTabelaAberta(false); }}>
           <div style={{ backgroundColor: t.bgCard, width: "100%", maxWidth: "520px", maxHeight: "90vh", overflowY: "auto", borderRadius: "20px 20px 0 0" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 20px 16px", borderBottom: "1px solid " + t.border }}>
-              <h3 style={{ fontSize: "16px", fontWeight: "600", color: t.text, fontFamily: "Georgia, serif", display:"flex", alignItems:"center", gap:"10px" }}><IconBadge Icone={RulerIcon} cor={t.text} size={15} box={28} /> Tabela de Medidas</h3>
+              <h3 style={{ fontSize: "16px", fontWeight: "600", color: t.text, fontFamily: "Newsreader, serif", fontStyle: "italic", display:"flex", alignItems:"center", gap:"10px" }}><IconBadge Icone={RulerIcon} cor={t.text} size={15} box={28} /> Tabela de Medidas</h3>
               <button onClick={() => setTabelaAberta(false)} style={{ background: "none", border: "none", cursor: "pointer", color: t.text, display:"flex" }}><CloseIcon size={20} strokeWidth={1.8} /></button>
             </div>
             <div style={{ padding: "20px" }}>

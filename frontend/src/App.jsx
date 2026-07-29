@@ -11,8 +11,17 @@ function ScrollToTop() {
 
 function FooterGate() {
   const { pathname } = useLocation();
-  // Rodapé completo só na Home; nas demais páginas, versão compacta (só créditos)
-  return <Footer compacto={pathname !== "/"} />;
+  // Rodapé institucional aparece em toda página pública; painel admin tem layout próprio
+  if (pathname.startsWith("/admin")) return null;
+  // Bloco completo (contato/localização) só na Home; demais páginas mostram só a barra de créditos
+  return <Footer completo={pathname === "/"} />;
+}
+
+function NavbarGate() {
+  const { pathname } = useLocation();
+  // Navbar pública some no painel admin (sidebar própria) e na tela de login do admin
+  if (pathname.startsWith("/admin")) return null;
+  return <Navbar />;
 }
 
 import Personalizado from "./pages/Personalizado";
@@ -37,7 +46,7 @@ function App() {
           <BrowserRouter basename="/">
             <div style={{ overflowX: "hidden", maxWidth: "100vw", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
             <ScrollToTop />
-            <Navbar />
+            <NavbarGate />
             <div style={{ flex: 1 }}>
             <Routes>
               <Route path="/" element={<Home />} />

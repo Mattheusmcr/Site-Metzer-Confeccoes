@@ -29,7 +29,7 @@ export function UserIcon({ size = 20, strokeWidth = 1.6, ...props }) {
 }
 
 export function WhatsAppIcon({ size = 20, strokeWidth = 1.6, ...props }) {
-  // Balão de fala com fone — glifo limpo e reconhecível, no mesmo traço do site
+  // Balão de fala com fone glifo limpo e reconhecível, no mesmo traço do site
   return (
     <svg {...base(props, size, strokeWidth)}>
       <path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.8L3.5 20.5l4.4-1.2A8.5 8.5 0 1 0 12 3.5Z" />

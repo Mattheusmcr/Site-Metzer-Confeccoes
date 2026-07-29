@@ -1,25 +1,24 @@
 import { useState, useContext } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
-import { CartIcon, UserIcon, CloseIcon, AdminIcon, ShirtIcon } from "./Icons";
+import { CartIcon, CloseIcon, ShirtIcon } from "./Icons";
 
 const t = {
-  bg: "#FFFFFF", bgSecundario: "#F2F2F2", bgCard: "#FFFFFF",
-  text: "#1a1a1a", textSecundario: "#6b6b6b",
-  border: "#E0E0E0", borderForte: "#B0B0B0",
-  btnPrimarioBg: "#1a1a1a", btnPrimarioText: "#FFFFFF",
+  bg: "rgba(255,255,255,0.75)", bgSolido: "#FFFFFF", bgSecundario: "#F4F2EE", bgCard: "#FFFFFF",
+  text: "#161513", textSecundario: "#8A877F",
+  border: "rgba(0,0,0,0.08)", borderForte: "rgba(0,0,0,0.12)",
+  accent: "#C2660A",
+  btnPrimarioBg: "#161513", btnPrimarioText: "#FFFFFF",
 };
 
 const links = [
-  { to: "/",             label: "INÍCIO" },
-  { to: "/catalogo",     label: "PORTFÓLIO" },
-  { to: "/pedidos",      label: "PEDIDOS" },
-  { to: "/personalizado", label: "✦ PERSONALIZADO", cor: "#b45309" },
+  { to: "/",             label: "Início" },
+  { to: "/catalogo",     label: "Portfólio" },
+  { to: "/pedidos",      label: "Pedidos" },
+  { to: "/personalizado", label: "✦ Personalizado", cor: t.accent },
 ];
 
 function Navbar() {
-  const { isAdmin, logout } = useAuth();
   const { cart, removeFromCart, increase, decrease } = useContext(CartContext);
   const location = useLocation();
   const [carrinhoAberto, setCarrinhoAberto] = useState(false);
@@ -36,46 +35,38 @@ function Navbar() {
   return (
     <>
       <header className="w-full sticky top-0 z-50"
-        style={{ backgroundColor: t.bg, borderBottom: "2px solid " + t.borderForte }}>
-        <div className="flex items-center justify-between px-5 md:px-12 py-4">
+        style={{ backgroundColor: t.bg, backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", borderBottom: "1px solid " + t.border, fontFamily: "Manrope, sans-serif" }}>
+        <div className="flex items-center justify-between px-5 md:px-12 py-3.5 md:py-4">
 
-          {/* LOGO + NAV — esquerda */}
+          {/* LOGO + NAV esquerda */}
           <div className="flex items-center gap-10">
             <Link to="/" onClick={fecharTudo}>
               <img src="/LogoEmpresaMetzker.jpg" alt="Logo Metzker"
-                className="h-10 md:h-12 object-contain"
+                className="h-9 md:h-11 object-contain rounded-lg"
                 onError={e => { e.target.style.display = "none"; e.target.nextSibling.style.display = "block"; }} />
-              <span style={{ display: "none", color: t.text, fontWeight: "700", fontSize: "18px", letterSpacing: "3px" }}>METZKER</span>
+              <span style={{ display: "none", fontFamily: "Newsreader, serif", fontStyle: "italic", color: t.text, fontWeight: "500", fontSize: "20px", letterSpacing: "0.5px" }}>Metzker</span>
             </Link>
 
             {/* NAV DESKTOP */}
-            <nav className="hidden md:flex gap-8 text-xs font-semibold tracking-widest">
+            <nav className="hidden md:flex gap-8 text-xs uppercase">
               {links.map(l => (
                 <Link key={l.to} to={l.to}
-                  style={{ color: l.cor || t.text, fontWeight: location.pathname === l.to ? "700" : "600" }}
-                  className="hover:opacity-50 transition">
+                  style={{ color: l.cor || t.text, fontWeight: location.pathname === l.to ? "700" : "600", letterSpacing: "0.16em" }}
+                  className="hover:opacity-60 transition">
                   {l.label}
                 </Link>
               ))}
-              {isAdmin && (
-                <Link to="/admin" style={{ color: "#dc2626" }} className="hover:opacity-70 transition inline-flex items-center gap-1.5">
-                  <AdminIcon size={14} strokeWidth={1.8} /> ADMIN
-                </Link>
-              )}
             </nav>
           </div>
 
           {/* DIREITA */}
-          <div className="flex items-center gap-4">
-            {/* Login — só desktop */}
-            <div className="hidden md:flex items-center gap-4">
-              {isAdmin
-                ? <button onClick={logout} className="cursor-pointer text-sm hover:opacity-70 transition" style={{ color: "#dc2626" }}>Sair</button>
-                : <Link to="/admin-login" className="hover:opacity-50 transition flex items-center" style={{ color: t.text }} aria-label="Área admin">
-                    <UserIcon size={19} strokeWidth={1.5} />
-                  </Link>
-              }
-            </div>
+          <div className="flex items-center gap-3 md:gap-4">
+            {/* Pill CTA desktop */}
+            <Link to="/personalizado" onClick={fecharTudo}
+              className="hidden md:inline-flex items-center transition hover:opacity-85"
+              style={{ backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText, borderRadius: "999px", padding: "10px 22px", fontSize: "12.5px", fontWeight: 700 }}>
+              Fazer cotação
+            </Link>
 
             {/* Carrinho */}
             <button onClick={() => { setCarrinhoAberto(true); setMenuAberto(false); }}
@@ -84,59 +75,48 @@ function Navbar() {
               <CartIcon size={21} strokeWidth={1.5} />
               {totalItens > 0 && (
                 <span className="absolute -top-2 -right-2 text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold"
-                  style={{ backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText }}>
+                  style={{ backgroundColor: t.accent, color: "#FFFFFF" }}>
                   {totalItens}
                 </span>
               )}
             </button>
 
-            {/* Hamburguer — só mobile */}
+            {/* Hamburguer só mobile */}
             <button
               className="cursor-pointer md:hidden flex flex-col justify-center items-center gap-1.5 w-8 h-8"
               onClick={() => { setMenuAberto(v => !v); setCarrinhoAberto(false); }}
               aria-label="Menu">
-              <span style={{ display: "block", width: "22px", height: "2px", backgroundColor: t.text, transition: "all 0.3s",
+              <span style={{ display: "block", width: "22px", height: "2px", borderRadius: "2px", backgroundColor: t.text, transition: "all 0.3s",
                 transform: menuAberto ? "rotate(45deg) translateY(7px)" : "none" }} />
-              <span style={{ display: "block", width: "22px", height: "2px", backgroundColor: t.text, transition: "all 0.3s",
+              <span style={{ display: "block", width: "22px", height: "2px", borderRadius: "2px", backgroundColor: t.text, transition: "all 0.3s",
                 opacity: menuAberto ? 0 : 1 }} />
-              <span style={{ display: "block", width: "22px", height: "2px", backgroundColor: t.text, transition: "all 0.3s",
+              <span style={{ display: "block", width: "22px", height: "2px", borderRadius: "2px", backgroundColor: t.text, transition: "all 0.3s",
                 transform: menuAberto ? "rotate(-45deg) translateY(-7px)" : "none" }} />
             </button>
           </div>
         </div>
 
-        {/* MENU MOBILE — dropdown */}
+        {/* MENU MOBILE dropdown */}
         <div style={{
           overflow: "hidden", transition: "max-height 0.35s ease",
-          maxHeight: menuAberto ? "400px" : "0",
+          maxHeight: menuAberto ? "460px" : "0",
           borderTop: menuAberto ? "1px solid " + t.border : "none",
-          backgroundColor: t.bg,
+          backgroundColor: t.bgSolido,
         }}>
           <nav className="flex flex-col px-5 py-4 gap-1">
             {links.map(l => (
               <Link key={l.to} to={l.to}
                 onClick={fecharTudo}
-                className="py-3 text-sm font-semibold tracking-widest border-b hover:opacity-50 transition"
-                style={{ color: l.cor || t.text, borderColor: t.border }}>
+                className="py-3.5 text-sm font-semibold uppercase border-b hover:opacity-60 transition"
+                style={{ color: l.cor || t.text, borderColor: t.border, letterSpacing: "0.14em" }}>
                 {l.label}
               </Link>
             ))}
-            {isAdmin && (
-              <Link to="/admin" onClick={fecharTudo}
-                className="py-3 text-sm font-semibold tracking-widest border-b hover:opacity-70 transition inline-flex items-center gap-2"
-                style={{ color: "#dc2626", borderColor: t.border }}>
-                <AdminIcon size={15} strokeWidth={1.8} /> ADMIN
-              </Link>
-            )}
-            {/* Login mobile */}
-            <div className="pt-3">
-              {isAdmin
-                ? <button onClick={() => { logout(); fecharTudo(); }} className="cursor-pointer text-sm" style={{ color: "#dc2626" }}>Sair da conta</button>
-                : <Link to="/admin-login" onClick={fecharTudo} className="text-sm inline-flex items-center gap-2" style={{ color: t.textSecundario }}>
-                    <UserIcon size={16} strokeWidth={1.5} /> Área admin
-                  </Link>
-              }
-            </div>
+            <Link to="/personalizado" onClick={fecharTudo}
+              className="mt-3 text-center transition hover:opacity-85"
+              style={{ backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText, borderRadius: "999px", padding: "12px 22px", fontSize: "13px", fontWeight: 700 }}>
+              Fazer cotação
+            </Link>
           </nav>
         </div>
       </header>
@@ -148,12 +128,12 @@ function Navbar() {
 
       {/* MINI CARRINHO */}
       <div className={`fixed top-0 right-0 h-full z-50 shadow-2xl flex flex-col transition-transform duration-300 ${carrinhoAberto ? "translate-x-0" : "translate-x-full"}`}
-        style={{ width: "min(384px, 100vw)", backgroundColor: t.bgCard, borderLeft: "2px solid " + t.borderForte }}>
+        style={{ width: "min(400px, 100vw)", backgroundColor: t.bgCard, borderLeft: "1px solid " + t.border, fontFamily: "Manrope, sans-serif" }}>
 
         <div className="flex justify-between items-center p-5 md:p-6"
-          style={{ borderBottom: "2px solid " + t.borderForte }}>
-          <h2 className="text-base font-semibold" style={{ color: t.text }}>
-            Carrinho <span style={{ color: t.textSecundario, fontWeight: 400 }}>({totalItens})</span>
+          style={{ borderBottom: "1px solid " + t.border }}>
+          <h2 style={{ fontFamily: "Newsreader, serif", fontStyle: "italic", fontSize: "22px", fontWeight: 500, color: t.text }}>
+            Carrinho <span style={{ color: t.textSecundario, fontStyle: "normal", fontFamily: "Manrope, sans-serif", fontSize: "14px" }}>({totalItens})</span>
           </h2>
           <button onClick={() => setCarrinhoAberto(false)} className="cursor-pointer hover:opacity-50 transition" style={{ color: t.text }} aria-label="Fechar carrinho">
             <CloseIcon size={20} strokeWidth={1.6} />
@@ -166,14 +146,14 @@ function Navbar() {
               <p style={{ color: t.textSecundario }} className="mb-4 flex justify-center"><CartIcon size={40} strokeWidth={1.2} /></p>
               <p className="text-sm" style={{ color: t.textSecundario }}>Seu carrinho está vazio.</p>
               <Link to="/catalogo" onClick={() => setCarrinhoAberto(false)}
-                className="inline-block mt-6 text-sm underline" style={{ color: t.textSecundario }}>
+                className="inline-block mt-6 text-sm underline" style={{ color: t.accent }}>
                 Ver catálogo →
               </Link>
             </div>
           )}
           {cart.map((item, index) => (
             <div key={index} className="flex gap-4 pb-5" style={{ borderBottom: "1px solid " + t.border }}>
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded overflow-hidden shrink-0" style={{ backgroundColor: t.bgSecundario }}>
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden shrink-0" style={{ backgroundColor: t.bgSecundario }}>
                 {item.produto.imagens?.[0]?.imagem
                   ? <img src={item.produto.imagens[0].imagem} alt={item.produto.nome} className="w-full h-full object-cover" />
                   : item.produto.imagem
@@ -181,21 +161,21 @@ function Navbar() {
                   : <div className="w-full h-full flex items-center justify-center" style={{ color: t.textSecundario }}><ShirtIcon size={24} strokeWidth={1.4} /></div>}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate" style={{ color: t.text }}>{item.produto.nome}</p>
+                <p className="font-semibold text-sm truncate" style={{ color: t.text }}>{item.produto.nome}</p>
                 <p className="text-xs mt-0.5" style={{ color: t.textSecundario }}>Tamanho: {item.tamanho}</p>
                 <p className="text-sm font-semibold mt-1" style={{ color: t.text }}>
                   R$ {(parseFloat(item.produto?.preco || 0) * item.quantidade).toFixed(2)}
                 </p>
                 <div className="flex items-center gap-2 mt-2">
                   <button onClick={() => decrease(item.produto.id, item.tamanho)}
-                    className="cursor-pointer w-7 h-7 rounded flex items-center justify-center text-sm font-bold"
+                    className="cursor-pointer w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold"
                     style={{ backgroundColor: t.bgSecundario, color: t.text, border: "1px solid " + t.border }}>−</button>
                   <span className="w-5 text-center text-sm" style={{ color: t.text }}>{item.quantidade}</span>
                   <button onClick={() => increase(item.produto.id, item.tamanho)}
-                    className="cursor-pointer w-7 h-7 rounded flex items-center justify-center text-sm font-bold"
+                    className="cursor-pointer w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold"
                     style={{ backgroundColor: t.bgSecundario, color: t.text, border: "1px solid " + t.border }}>+</button>
                   <button onClick={() => removeFromCart(item.produto.id, item.tamanho)}
-                    className="cursor-pointer ml-auto text-xs" style={{ color: "#dc2626" }}>Remover</button>
+                    className="cursor-pointer ml-auto text-xs" style={{ color: "#DC2626" }}>Remover</button>
                 </div>
               </div>
             </div>
@@ -203,14 +183,14 @@ function Navbar() {
         </div>
 
         {cart.length > 0 && (
-          <div className="p-5 md:p-6 space-y-4" style={{ borderTop: "2px solid " + t.borderForte }}>
+          <div className="p-5 md:p-6 space-y-4" style={{ borderTop: "1px solid " + t.border }}>
             <div className="flex justify-between items-center">
               <span className="text-sm" style={{ color: t.textSecundario }}>Total</span>
-              <span className="text-xl font-bold" style={{ color: t.text }}>R$ {total.toFixed(2)}</span>
+              <span style={{ fontFamily: "Newsreader, serif", fontStyle: "italic", fontSize: "24px", fontWeight: 500, color: t.text }}>R$ {total.toFixed(2)}</span>
             </div>
             <Link to="/pedidos" onClick={() => setCarrinhoAberto(false)}
-              className="block w-full text-center py-3 font-semibold hover:opacity-80 transition"
-              style={{ backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText }}>
+              className="block w-full text-center font-semibold hover:opacity-85 transition"
+              style={{ backgroundColor: t.btnPrimarioBg, color: t.btnPrimarioText, borderRadius: "999px", padding: "14px" }}>
               Finalizar Pedido
             </Link>
           </div>

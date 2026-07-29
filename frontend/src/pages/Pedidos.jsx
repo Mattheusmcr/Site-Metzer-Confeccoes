@@ -4,12 +4,12 @@ import api from "../services/api";
 import { WhatsAppIcon, PrinterIcon, CartIcon, CardIcon, StoreIcon, TruckIcon, MailIcon,
   UserIcon, PinIcon, DocIcon, TagIcon, CopyIcon, WarningIcon, ClockIcon, CheckIcon, PartyIcon, CloseIcon } from "../components/Icons";
 
-// ── CÁLCULO DE FRETE ─────────────────────────────────────────────────────────
+// CÁLCULO DE FRETE
 const REGIAO_METRO_ES = ["vitoria","vila velha","cariacica","serra","viana","guarapari","fundao"];
 
 function estimarMotoboy(cidade, estado) {
   if ((estado||"").toUpperCase() !== "ES") return null;
-  const c = (cidade||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  const c = (cidade||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
   if (!REGIAO_METRO_ES.some(r => c.includes(r))) return null;
   if (c.includes("vila velha")) return { min:8, max:25 };
   if (c.includes("vitoria")||c.includes("vitória")) return { min:15, max:35 };
@@ -56,10 +56,11 @@ function estimarCorreios(estado) {
 }
 
 const t = {
-  bg: "#FFFFFF", bgSecundario: "#F2F2F2", bgCard: "#FFFFFF",
-  text: "#1a1a1a", textSecundario: "#6b6b6b", border: "#E0E0E0",
-  inputBg: "#FFFFFF", inputBorder: "#D0D0D0",
-  btnPrimarioBg: "#1a1a1a", btnPrimarioText: "#FFFFFF",
+  bg: "#FFFFFF", bgSecundario: "#F4F2EE", bgCard: "#FFFFFF",
+  text: "#161513", textSecundario: "#8A877F", border: "rgba(0,0,0,0.08)",
+  inputBg: "#FFFFFF", inputBorder: "rgba(0,0,0,0.12)",
+  accent: "#C2660A",
+  btnPrimarioBg: "#161513", btnPrimarioText: "#FFFFFF",
 };
 
 function formatTelefone(v) {
@@ -146,7 +147,7 @@ export default function Pedidos() {
   const totalComFrete = total + freteValor;
   const itensComProblema = cart.filter(item => {
     // Se estoques não foi carregado (produto adicionado pelo card do catálogo),
-    // não bloqueia o pedido — validação ocorre no servidor
+    // não bloqueia o pedido - validação ocorre no servidor
     if (!item.produto.estoques || item.produto.estoques.length === 0) return false;
     const est = item.produto.estoques.find(e => e.tamanho === item.tamanho);
     if (!est) return false; // tamanho não tem registro de estoque = aceita
@@ -231,7 +232,7 @@ export default function Pedidos() {
         <div class="info-block">
           <h3>Endereço de entrega</h3>
           <p>${c.rua}, ${c.numero}${c.complemento?" - "+c.complemento:""}</p>
-          <p>${c.bairro} — ${c.cidade}/${c.estado}</p>
+          <p>${c.bairro} - ${c.cidade}/${c.estado}</p>
           <p>CEP: ${c.cep}</p>
         </div>
         <div class="info-block">
@@ -337,7 +338,7 @@ export default function Pedidos() {
         : res.data.sandbox_init_point;
       if (!url) throw new Error("URL de pagamento não retornada pelo servidor.");
 
-      // Salva um snapshot do pedido — o redirecionamento para o MP recarrega a
+      // Salva um snapshot do pedido - o redirecionamento para o MP recarrega a
       // página e perde carrinho/dados em memória; recuperamos ao voltar.
       const snapshot = {
         cartRestore: cart,
@@ -360,35 +361,35 @@ export default function Pedidos() {
   }
 
   const inputStyle = (campo) => ({
-    width:"100%", padding:"10px 12px", borderRadius:"6px", boxSizing:"border-box",
-    border:"1px solid "+(erros[campo]?"#ef4444":t.inputBorder),
-    backgroundColor: erros[campo]?"#fff5f5":t.inputBg,
-    color:t.text, fontSize:"14px", outline:"none", fontFamily:"system-ui",
+    width:"100%", padding:"11px 14px", borderRadius:"12px", boxSizing:"border-box",
+    border:"1px solid "+(erros[campo]?"#DC2626":t.inputBorder),
+    backgroundColor: erros[campo]?"#FEF2F2":t.inputBg,
+    color:t.text, fontSize:"14px", outline:"none",
   });
   const labelStyle = (campo) => ({
-    display:"block", fontSize:"11px", fontWeight:"600", marginBottom:"4px",
-    textTransform:"uppercase", letterSpacing:"0.05em", fontFamily:"system-ui",
-    color: erros[campo]?"#ef4444":t.textSecundario,
+    display:"block", fontSize:"11px", fontWeight:"700", marginBottom:"6px",
+    textTransform:"uppercase", letterSpacing:"0.1em",
+    color: erros[campo]?"#DC2626":t.textSecundario,
   });
-  const cardStyle = {backgroundColor:t.bgCard, border:"1px solid "+t.border, borderRadius:"12px", padding:"24px"};
+  const cardStyle = {backgroundColor:t.bgCard, border:"1px solid "+t.border, borderRadius:"18px", padding:"24px"};
   const qtdErros = Object.keys(erros).filter(k=>erros[k]).length;
 
-  // ── TELA DE SUCESSO ── (renderizada quando o Mercado Pago confirma o pagamento)
+  // TELA DE SUCESSO (renderizada quando o Mercado Pago confirma o pagamento)
   if (mpStatus === 'aprovado' && pedidoSalvo) return (
-    <div style={{backgroundColor:t.bg}}>
+    <div style={{backgroundColor:t.bg, fontFamily:"Manrope, sans-serif"}}>
       <div className="max-w-2xl mx-auto px-4 py-16 text-center">
         <div className="flex justify-center mb-5">
           <span className="flex items-center justify-center rounded-full" style={{width:"72px", height:"72px", backgroundColor:t.bgSecundario, color:t.text}}>
             <PartyIcon size={36} strokeWidth={1.4} />
           </span>
         </div>
-        <h1 className="text-3xl font-bold mb-4" style={{color:t.text}}>Pedido confirmado!</h1>
+        <h1 style={{fontFamily:"Newsreader, serif", fontStyle:"italic", fontSize:"2.1rem", fontWeight:500, color:t.text, marginBottom:"16px"}}>Pedido confirmado!</h1>
         <p className="mb-6" style={{color:t.textSecundario, lineHeight:1.8}}>
           Nossa equipe entrará em contato pelo WhatsApp <strong style={{color:t.text}}>{pedidoSalvo.c.telefone}</strong> para confirmar os detalhes.
         </p>
 
         {/* PROTOCOLO */}
-        <div className="mb-8 rounded-xl p-5" style={{backgroundColor:t.bgSecundario, border:"1px solid "+t.border}}>
+        <div className="mb-8 p-5" style={{backgroundColor:t.bgSecundario, border:"1px solid "+t.border, borderRadius:"18px"}}>
           <p className="text-xs uppercase font-bold mb-2 flex items-center justify-center gap-1.5" style={{color:t.textSecundario, letterSpacing:"0.1em"}}>
             <TagIcon size={13} strokeWidth={1.8} /> Número do Protocolo
           </p>
@@ -399,23 +400,23 @@ export default function Pedidos() {
             <button
               onClick={() => { navigator.clipboard.writeText(protocolo).then(() => { setCopiado(true); setTimeout(()=>setCopiado(false),2500); }); }}
               className="inline-flex items-center gap-1.5 transition-all duration-300 hover:shadow-md"
-              style={{padding:"6px 16px", backgroundColor:copiado?"#16a34a":t.btnPrimarioBg, color:"#FFFFFF",
-                border:"none", cursor:"pointer", fontFamily:"system-ui", fontSize:"12px", fontWeight:"600",
-                borderRadius:"6px"}}>
+              style={{padding:"7px 18px", backgroundColor:copiado?"#16A34A":t.btnPrimarioBg, color:"#FFFFFF",
+                border:"none", cursor:"pointer", fontSize:"12px", fontWeight:"700",
+                borderRadius:"999px"}}>
               {copiado ? <><CheckIcon size={14} strokeWidth={2.2} /> Copiado!</> : <><CopyIcon size={14} strokeWidth={1.8} /> Copiar</>}
             </button>
           </div>
-          <p className="text-xs mt-3" style={{color:t.textSecundario, fontFamily:"system-ui"}}>
+          <p className="text-xs mt-3" style={{color:t.textSecundario}}>
             Guarde este número para acompanhar ou questionar seu pedido.
           </p>
         </div>
 
         {/* Resumo do pedido */}
-        <div className="text-left mb-8 rounded-xl p-5" style={{backgroundColor:t.bgCard, border:"1px solid "+t.border}}>
+        <div className="text-left mb-8 p-5" style={{backgroundColor:t.bgCard, border:"1px solid "+t.border, borderRadius:"18px"}}>
           <p className="text-xs uppercase font-bold mb-3" style={{color:t.textSecundario, letterSpacing:"0.1em"}}>Resumo do pedido</p>
           {pedidoSalvo.itens.map((item,i) => (
             <div key={i} className="flex justify-between py-2" style={{borderBottom:"1px solid "+t.border}}>
-              <span className="text-sm" style={{color:t.text}}>{item.nome} — {item.tamanho} × {item.qtd}</span>
+              <span className="text-sm" style={{color:t.text}}>{item.nome} - {item.tamanho} × {item.qtd}</span>
               <span className="text-sm font-semibold" style={{color:t.text}}>R$ {(item.preco*item.qtd).toFixed(2)}</span>
             </div>
           ))}
@@ -427,20 +428,20 @@ export default function Pedidos() {
 
         <div className="flex gap-3 justify-center flex-wrap">
           <button onClick={() => gerarPDF(pedidoSalvo)}
-            className="px-6 py-3 font-semibold rounded-lg inline-flex items-center gap-2"
-            style={{backgroundColor:t.btnPrimarioBg, color:t.btnPrimarioText, fontFamily:"system-ui", cursor:"pointer"}}>
+            className="px-6 py-3 font-bold inline-flex items-center gap-2"
+            style={{backgroundColor:t.btnPrimarioBg, color:t.btnPrimarioText, cursor:"pointer", borderRadius:"999px"}}>
             <PrinterIcon size={17} strokeWidth={1.6} />
             Salvar / Imprimir PDF
           </button>
           <a href={montarMsgWA({...pedidoSalvo, frete_tipo: pedidoSalvo.frete?.tipo})} target="_blank" rel="noreferrer"
-            className="px-6 py-3 font-semibold text-white rounded-lg inline-flex items-center gap-2"
-            style={{backgroundColor:"#22c55e", fontFamily:"system-ui", cursor:"pointer"}}>
+            className="px-6 py-3 font-bold text-white inline-flex items-center gap-2"
+            style={{backgroundColor:"#25D366", cursor:"pointer", borderRadius:"999px"}}>
             <WhatsAppIcon size={17} strokeWidth={1.6} />
             Enviar pelo WhatsApp
           </a>
           <button onClick={() => { window.location.href = "/pedidos"; }}
-            className="px-6 py-3 font-semibold rounded-lg"
-            style={{backgroundColor:t.bgSecundario, color:t.text, fontFamily:"system-ui", cursor:"pointer", border:"1px solid "+t.border}}>
+            className="px-6 py-3 font-bold"
+            style={{backgroundColor:t.bgSecundario, color:t.text, cursor:"pointer", border:"1px solid "+t.border, borderRadius:"999px"}}>
             Novo pedido
           </button>
         </div>
@@ -449,57 +450,57 @@ export default function Pedidos() {
   );
 
   return (
-    <div style={{backgroundColor:t.bg, color:t.text}}>
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8" style={{color:t.text}}>Finalizar Pedido</h1>
+    <div style={{backgroundColor:t.bg, color:t.text, fontFamily:"Manrope, sans-serif"}}>
+      <div className="max-w-4xl mx-auto px-4 py-8 md:py-12">
+        <h1 style={{fontFamily:"Newsreader, serif", fontStyle:"italic", fontSize:"2.3rem", fontWeight:500, color:t.text, marginBottom:"32px"}}>Finalizar Pedido</h1>
 
         {mpStatus === 'aprovado' && (
-          <div className="rounded-xl p-6 mb-6 text-center" style={{backgroundColor:"#f0fdf4", border:"1px solid #86efac"}}>
-            <div className="flex justify-center mb-3" style={{color:"#16a34a"}}><PartyIcon size={40} strokeWidth={1.4} /></div>
-            <h2 className="text-xl font-bold mb-2" style={{color:"#16a34a"}}>Pagamento aprovado!</h2>
-            <p style={{color:t.textSecundario, fontFamily:"system-ui"}}>Seu pedido foi confirmado pelo Mercado Pago. Nossa equipe entrará em contato em breve.</p>
+          <div className="p-6 mb-6 text-center" style={{backgroundColor:"#F0FDF4", border:"1px solid #86EFAC", borderRadius:"18px"}}>
+            <div className="flex justify-center mb-3" style={{color:"#16A34A"}}><PartyIcon size={40} strokeWidth={1.4} /></div>
+            <h2 className="text-xl font-bold mb-2" style={{color:"#16A34A"}}>Pagamento aprovado!</h2>
+            <p style={{color:t.textSecundario}}>Seu pedido foi confirmado pelo Mercado Pago. Nossa equipe entrará em contato em breve.</p>
           </div>
         )}
         {mpStatus === 'pendente' && (
-          <div className="rounded-xl p-6 mb-6 text-center" style={{backgroundColor:"#fef9f0", border:"1px solid #fde68a"}}>
-            <div className="flex justify-center mb-3" style={{color:"#92400e"}}><ClockIcon size={40} strokeWidth={1.4} /></div>
-            <h2 className="text-xl font-bold mb-2" style={{color:"#92400e"}}>Pagamento pendente</h2>
-            <p style={{color:t.textSecundario, fontFamily:"system-ui"}}>Aguardando confirmação do pagamento. Você receberá um email quando for aprovado.</p>
+          <div className="p-6 mb-6 text-center" style={{backgroundColor:"#FEF9F0", border:"1px solid #FDE68A", borderRadius:"18px"}}>
+            <div className="flex justify-center mb-3" style={{color:"#92400E"}}><ClockIcon size={40} strokeWidth={1.4} /></div>
+            <h2 className="text-xl font-bold mb-2" style={{color:"#92400E"}}>Pagamento pendente</h2>
+            <p style={{color:t.textSecundario}}>Aguardando confirmação do pagamento. Você receberá um email quando for aprovado.</p>
           </div>
         )}
         {mpStatus === 'falhou' && (
-          <div className="rounded-xl p-6 mb-6 text-center" style={{backgroundColor:"#fef2f2", border:"1px solid #fecaca"}}>
-            <div className="flex justify-center mb-3" style={{color:"#dc2626"}}><CloseIcon size={36} strokeWidth={1.8} /></div>
-            <h2 className="text-xl font-bold mb-2" style={{color:"#dc2626"}}>Pagamento não realizado</h2>
-            <p style={{color:t.textSecundario, fontFamily:"system-ui"}}>O pagamento não foi concluído. Tente novamente ou escolha outra forma de pagamento.</p>
+          <div className="p-6 mb-6 text-center" style={{backgroundColor:"#FEF2F2", border:"1px solid #FECACA", borderRadius:"18px"}}>
+            <div className="flex justify-center mb-3" style={{color:"#DC2626"}}><CloseIcon size={36} strokeWidth={1.8} /></div>
+            <h2 className="text-xl font-bold mb-2" style={{color:"#DC2626"}}>Pagamento não realizado</h2>
+            <p style={{color:t.textSecundario}}>O pagamento não foi concluído. Tente novamente ou escolha outra forma de pagamento.</p>
           </div>
         )}
         {cart.length===0 && !mpStatus && <p style={{color:t.textSecundario}}>Carrinho vazio.</p>}
 
         {/* ALERTAS */}
         {mensagemEstoque && (
-          <div className="rounded-xl p-4 mb-6 flex gap-3" style={{backgroundColor:"#fef2f2",border:"1px solid #fecaca"}}>
-            <span style={{color:"#dc2626"}}><WarningIcon size={20} strokeWidth={1.6} /></span>
+          <div className="p-4 mb-6 flex gap-3" style={{backgroundColor:"#FEF2F2",border:"1px solid #FECACA", borderRadius:"16px"}}>
+            <span style={{color:"#DC2626"}}><WarningIcon size={20} strokeWidth={1.6} /></span>
             <div>
-              <p className="font-semibold" style={{color:"#dc2626"}}>Estoque insuficiente</p>
-              <p className="text-sm mt-1" style={{color:"#7f1d1d"}}>{mensagemEstoque}</p>
+              <p className="font-semibold" style={{color:"#DC2626"}}>Estoque insuficiente</p>
+              <p className="text-sm mt-1" style={{color:"#7F1D1D"}}>{mensagemEstoque}</p>
             </div>
           </div>
         )}
         {erroPedido && (
-          <div className="rounded-xl p-4 mb-6 flex gap-3" style={{backgroundColor:"#fef2f2",border:"1px solid #fecaca"}}>
-            <span style={{color:"#dc2626"}}><WarningIcon size={20} strokeWidth={1.6} /></span>
+          <div className="p-4 mb-6 flex gap-3" style={{backgroundColor:"#FEF2F2",border:"1px solid #FECACA", borderRadius:"16px"}}>
+            <span style={{color:"#DC2626"}}><WarningIcon size={20} strokeWidth={1.6} /></span>
             <div>
-              <p className="font-semibold" style={{color:"#dc2626"}}>Erro ao registrar pedido</p>
-              <p className="text-sm mt-1" style={{color:"#7f1d1d"}}>{erroPedido}</p>
+              <p className="font-semibold" style={{color:"#DC2626"}}>Erro ao registrar pedido</p>
+              <p className="text-sm mt-1" style={{color:"#7F1D1D"}}>{erroPedido}</p>
             </div>
           </div>
         )}
         {tentouEnviar && qtdErros>0 && !mensagemEstoque && (
-          <div className="rounded-xl p-4 mb-6 flex gap-3" style={{backgroundColor:"#fff5f5",border:"1px solid #fecaca"}}>
-            <span style={{color:"#dc2626"}}><WarningIcon size={16} strokeWidth={1.8} /></span>
+          <div className="p-4 mb-6 flex gap-3" style={{backgroundColor:"#FEF2F2",border:"1px solid #FECACA", borderRadius:"16px"}}>
+            <span style={{color:"#DC2626"}}><WarningIcon size={16} strokeWidth={1.8} /></span>
             <div>
-              <p className="font-semibold" style={{color:"#dc2626"}}>Campos obrigatórios</p>
+              <p className="font-semibold" style={{color:"#DC2626"}}>Campos obrigatórios</p>
               <p className="text-sm" style={{color:t.textSecundario}}>{qtdErros} campo{qtdErros>1?"s":""} precisam ser preenchidos.</p>
             </div>
           </div>
@@ -508,40 +509,40 @@ export default function Pedidos() {
         {/* ITENS */}
         {cart.length>0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2" style={{color:t.text}}>
-              <CartIcon size={20} strokeWidth={1.6} /> Seus Itens
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{color:t.text}}>
+              <CartIcon size={19} strokeWidth={1.6} /> Seus Itens
             </h2>
             <div className="space-y-3">
               {cart.map((item,i) => {
                 const est = item.produto?.estoques?.find(e=>e.tamanho===item.tamanho);
                 const semEst = est && item.quantidade > est.quantidade;
                 return (
-                  <div key={i} className="rounded-xl p-4 flex justify-between items-center transition-shadow duration-300 hover:shadow-md"
-                    style={{backgroundColor:t.bgCard,border:"1px solid "+(semEst?"#fecaca":t.border)}}>
+                  <div key={i} className="p-4 flex justify-between items-center transition-shadow duration-300 hover:shadow-md"
+                    style={{backgroundColor:t.bgCard,border:"1px solid "+(semEst?"#FECACA":t.border), borderRadius:"16px"}}>
                     <div>
                       <p className="font-semibold" style={{color:t.text}}>{item.produto.nome}</p>
                       <p className="text-sm" style={{color:t.textSecundario}}>Tamanho: {item.tamanho}</p>
                       <p className="text-sm font-medium" style={{color:t.text}}>
                         R$ {(parseFloat(item.produto?.preco||0)*item.quantidade).toFixed(2)}
                       </p>
-                      {semEst && <p className="text-sm font-semibold mt-1 flex items-center gap-1.5" style={{color:"#dc2626"}}><WarningIcon size={14} strokeWidth={1.8} /> Estoque insuficiente</p>}
+                      {semEst && <p className="text-sm font-semibold mt-1 flex items-center gap-1.5" style={{color:"#DC2626"}}><WarningIcon size={14} strokeWidth={1.8} /> Estoque insuficiente</p>}
                     </div>
                     <div className="flex items-center gap-2">
                       <button onClick={() => decrease(item.produto.id, item.tamanho)}
-                        className="w-8 h-8 rounded-lg flex items-center justify-center font-bold"
+                        className="w-8 h-8 rounded-full flex items-center justify-center font-bold"
                         style={{backgroundColor:t.bgSecundario, color:t.text, cursor:"pointer"}}>-</button>
                       <span className="w-6 text-center font-medium" style={{color:t.text}}>{item.quantidade}</span>
                       <button onClick={() => increase(item.produto.id, item.tamanho)}
-                        className="w-8 h-8 rounded-lg flex items-center justify-center font-bold"
+                        className="w-8 h-8 rounded-full flex items-center justify-center font-bold"
                         style={{backgroundColor:t.bgSecundario, color:t.text, cursor:"pointer"}}>+</button>
                       <button onClick={() => removeFromCart(item.produto.id, item.tamanho)}
-                        className="ml-3 text-sm" style={{color:"#dc2626", cursor:"pointer"}}>Remover</button>
+                        className="ml-3 text-sm" style={{color:"#DC2626", cursor:"pointer"}}>Remover</button>
                     </div>
                   </div>
                 );
               })}
             </div>
-            <div className="mt-4 text-xl font-bold text-right" style={{color:t.text}}>
+            <div className="mt-4 text-right" style={{fontFamily:"Newsreader, serif", fontStyle:"italic", fontSize:"1.6rem", fontWeight:500, color:t.text}}>
               Total: R$ {total.toFixed(2)}
             </div>
           </div>
@@ -551,53 +552,53 @@ export default function Pedidos() {
           <div className="space-y-6">
             {/* DADOS PESSOAIS */}
             <div style={cardStyle}>
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{color:t.text}}><UserIcon size={19} strokeWidth={1.6} /> Dados Pessoais</h2>
+              <h2 className="text-base font-bold mb-4 flex items-center gap-2" style={{color:t.text}}><UserIcon size={18} strokeWidth={1.6} /> Dados Pessoais</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label style={labelStyle("nome")}>Nome completo *</label>
                   <input name="nome" value={cliente.nome} onChange={handleChange}
                     placeholder="Seu nome completo" style={inputStyle("nome")} />
-                  {erros.nome && <p className="text-xs mt-1" style={{color:"#dc2626"}}>Obrigatório</p>}
+                  {erros.nome && <p className="text-xs mt-1" style={{color:"#DC2626"}}>Obrigatório</p>}
                 </div>
                 <div>
                   <label style={labelStyle("telefone")}>Telefone / WhatsApp *</label>
                   <input name="telefone" value={cliente.telefone} onChange={handleTelefone}
                     placeholder="(27) 99999-9999" inputMode="tel" maxLength={15} style={inputStyle("telefone")} />
-                  {erros.telefone && <p className="text-xs mt-1" style={{color:"#dc2626"}}>Obrigatório</p>}
+                  {erros.telefone && <p className="text-xs mt-1" style={{color:"#DC2626"}}>Obrigatório</p>}
                 </div>
                 <div className="md:col-span-2">
                   <label style={labelStyle("email")}>E-mail *</label>
                   <input name="email" value={cliente.email} onChange={handleEmail}
                     type="email" placeholder="seu@email.com" style={inputStyle("email")} />
-                  {erros.email && <p className="text-xs mt-1" style={{color:"#dc2626"}}>E-mail inválido</p>}
-                  {cliente.email && emailValido(cliente.email) && <p className="text-xs mt-1 flex items-center gap-1" style={{color:"#16a34a"}}><CheckIcon size={12} strokeWidth={2.2} /> E-mail válido</p>}
+                  {erros.email && <p className="text-xs mt-1" style={{color:"#DC2626"}}>E-mail inválido</p>}
+                  {cliente.email && emailValido(cliente.email) && <p className="text-xs mt-1 flex items-center gap-1" style={{color:"#16A34A"}}><CheckIcon size={12} strokeWidth={2.2} /> E-mail válido</p>}
                 </div>
               </div>
             </div>
 
             {/* ENDEREÇO */}
             <div style={cardStyle}>
-              <h2 className="text-lg font-semibold mb-1 flex items-center gap-2" style={{color:t.text}}><PinIcon size={19} strokeWidth={1.6} /> Endereço de Entrega</h2>
+              <h2 className="text-base font-bold mb-1 flex items-center gap-2" style={{color:t.text}}><PinIcon size={18} strokeWidth={1.6} /> Endereço de Entrega</h2>
               <p className="text-sm mb-4" style={{color:t.textSecundario}}>CEP preenche o endereço automaticamente.</p>
               <div className="grid md:grid-cols-3 gap-4">
                 <div>
                   <label style={labelStyle("cep")}>CEP *</label>
                   <input name="cep" value={cliente.cep} onChange={handleCEP}
                     placeholder="29000-000" inputMode="numeric" maxLength={9} style={inputStyle("cep")} />
-                  {erros.cep && <p className="text-xs mt-1" style={{color:"#dc2626"}}>Obrigatório</p>}
+                  {erros.cep && <p className="text-xs mt-1" style={{color:"#DC2626"}}>Obrigatório</p>}
                   {cliente.cep.replace(/\D/g,"").length===8 && cliente.cidade && (
-                    <p className="text-xs mt-1 flex items-center gap-1" style={{color:"#16a34a"}}><CheckIcon size={12} strokeWidth={2.2} /> {cliente.cidade}/{cliente.estado}</p>
+                    <p className="text-xs mt-1 flex items-center gap-1" style={{color:"#16A34A"}}><CheckIcon size={12} strokeWidth={2.2} /> {cliente.cidade}/{cliente.estado}</p>
                   )}
                 </div>
                 <div className="md:col-span-2">
                   <label style={labelStyle("rua")}>Rua / Avenida *</label>
                   <input name="rua" value={cliente.rua} onChange={handleChange} placeholder="Rua das Flores" style={inputStyle("rua")} />
-                  {erros.rua && <p className="text-xs mt-1" style={{color:"#dc2626"}}>Obrigatório</p>}
+                  {erros.rua && <p className="text-xs mt-1" style={{color:"#DC2626"}}>Obrigatório</p>}
                 </div>
                 <div>
                   <label style={labelStyle("numero")}>Número *</label>
                   <input name="numero" value={cliente.numero} onChange={handleChange} placeholder="123" style={inputStyle("numero")} />
-                  {erros.numero && <p className="text-xs mt-1" style={{color:"#dc2626"}}>Obrigatório</p>}
+                  {erros.numero && <p className="text-xs mt-1" style={{color:"#DC2626"}}>Obrigatório</p>}
                 </div>
                 <div>
                   <label style={labelStyle("complemento")}>Complemento</label>
@@ -606,20 +607,20 @@ export default function Pedidos() {
                 <div>
                   <label style={labelStyle("bairro")}>Bairro *</label>
                   <input name="bairro" value={cliente.bairro} onChange={handleChange} placeholder="Centro" style={inputStyle("bairro")} />
-                  {erros.bairro && <p className="text-xs mt-1" style={{color:"#dc2626"}}>Obrigatório</p>}
+                  {erros.bairro && <p className="text-xs mt-1" style={{color:"#DC2626"}}>Obrigatório</p>}
                 </div>
                 <div>
                   <label style={labelStyle("cidade")}>Cidade *</label>
                   <input name="cidade" value={cliente.cidade} onChange={handleChange} placeholder="Vila Velha" style={inputStyle("cidade")} />
-                  {erros.cidade && <p className="text-xs mt-1" style={{color:"#dc2626"}}>Obrigatório</p>}
+                  {erros.cidade && <p className="text-xs mt-1" style={{color:"#DC2626"}}>Obrigatório</p>}
                 </div>
                 <div>
                   <label style={labelStyle("estado")}>Estado *</label>
                   <input name="estado" value={cliente.estado} onChange={handleChange}
                     placeholder="ES" maxLength={2}
-                    style={{...inputStyle("estado"), textTransform:"uppercase"}}
+                    style={{...inputStyle("estado"), textTransform:"uppercase", textAlign:"center"}}
                     onInput={e => e.target.value=e.target.value.toUpperCase()} />
-                  {erros.estado && <p className="text-xs mt-1" style={{color:"#dc2626"}}>Obrigatório</p>}
+                  {erros.estado && <p className="text-xs mt-1" style={{color:"#DC2626"}}>Obrigatório</p>}
                 </div>
               </div>
             </div>
@@ -630,38 +631,37 @@ export default function Pedidos() {
             {(() => {
               const motoInfo = estimarMotoboy(cliente.cidade, cliente.estado);
               const corInfo  = estimarCorreios(cliente.estado || "outros");
-              const cidadeLabel = cliente.cidade ? ` para ${cliente.cidade}` : "";
               return (
-                <div style={{...cardStyle, borderColor: !frete.tipo && calcFrete ? "#fecaca" : t.border}}>
-                  <h2 className="text-lg font-semibold mb-1 flex items-center gap-2" style={{color:t.text}}><TruckIcon size={19} strokeWidth={1.6} /> Como deseja receber? *</h2>
+                <div style={{...cardStyle, borderColor: !frete.tipo && calcFrete ? "#FECACA" : t.border}}>
+                  <h2 className="text-base font-bold mb-1 flex items-center gap-2" style={{color:t.text}}><TruckIcon size={18} strokeWidth={1.6} /> Como deseja receber? *</h2>
                   <p className="text-sm mb-4" style={{color:t.textSecundario}}>
-                    Escolha uma opção abaixo. Os valores de motoboy e Correios são estimativas — a loja confirmará o valor exato pelo WhatsApp antes de enviar.
+                    Escolha uma opção abaixo. Os valores de motoboy e Correios são estimativas - a loja confirmará o valor exato pelo WhatsApp antes de enviar.
                   </p>
                   <div className="flex flex-col gap-3">
 
-                    {/* ── Retirada ── */}
+                    {/* Retirada */}
                     <button onClick={() => setFrete({tipo:"retirada", valor:0})}
                       className="transition-all duration-300 hover:shadow-md"
-                      style={{ padding:"14px 16px", borderRadius:"10px", textAlign:"left", cursor:"pointer",
+                      style={{ padding:"14px 16px", borderRadius:"14px", textAlign:"left", cursor:"pointer",
                         border:"2px solid "+(frete.tipo==="retirada" ? t.text : t.border),
                         backgroundColor: frete.tipo==="retirada" ? t.bgSecundario : t.bgCard }}>
                       <div style={{display:"flex", justifyContent:"space-between", alignItems:"center"}}>
                         <div>
                           <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0, display:"flex", alignItems:"center", gap:"7px"}}><StoreIcon size={16} strokeWidth={1.6} />Retirada no local</p>
-                          <p style={{fontSize:"12px", color:t.textSecundario, marginTop:"3px"}}>Polo Têxtil Santa Inês — Vila Velha, ES</p>
+                          <p style={{fontSize:"12px", color:t.textSecundario, marginTop:"3px"}}>Polo Têxtil Santa Inês - Vila Velha, ES</p>
                           <p style={{fontSize:"11px", color:t.textSecundario, marginTop:"2px"}}>Combinamos o dia e horário pelo WhatsApp</p>
                         </div>
-                        <span style={{fontWeight:"700", fontSize:"15px", color:"#16a34a", whiteSpace:"nowrap", marginLeft:"12px"}}>
+                        <span style={{fontWeight:"700", fontSize:"15px", color:"#16A34A", whiteSpace:"nowrap", marginLeft:"12px"}}>
                           Grátis
                         </span>
                       </div>
                       {frete.tipo==="retirada" && <p className="flex items-center gap-1" style={{fontSize:"11px", color:t.text, marginTop:"8px", fontWeight:"600"}}><CheckIcon size={12} strokeWidth={2.2} /> Selecionado</p>}
                     </button>
 
-                    {/* ── Motoboy ── sempre aparece, preço muda conforme cidade */}
+                    {/*  Motoboy - sempre aparece, preço muda conforme cidade */}
                     <button onClick={() => { if (motoInfo) setFrete({tipo:"motoboy", valor: motoInfo.min}); }}
                       className="transition-all duration-300 hover:shadow-md"
-                      style={{ padding:"14px 16px", borderRadius:"10px", textAlign:"left", cursor: motoInfo ? "pointer" : "default",
+                      style={{ padding:"14px 16px", borderRadius:"14px", textAlign:"left", cursor: motoInfo ? "pointer" : "default",
                         border:"2px solid "+(frete.tipo==="motoboy" ? t.text : t.border),
                         backgroundColor: frete.tipo==="motoboy" ? t.bgSecundario : t.bgCard,
                         opacity: motoInfo ? 1 : 0.5 }}>
@@ -670,7 +670,7 @@ export default function Pedidos() {
                           <p style={{fontWeight:"600", fontSize:"14px", color:t.text, margin:0, display:"flex", alignItems:"center", gap:"7px"}}><TruckIcon size={16} strokeWidth={1.6} />Entrega por motoboy</p>
                           <p style={{fontSize:"12px", color:t.textSecundario, marginTop:"3px"}}>
                             {motoInfo
-                              ? `Entrega própria pela Grande Vitória — estimativa de R$ ${motoInfo.min} a R$ ${motoInfo.max}`
+                              ? `Entrega própria pela Grande Vitória - estimativa de R$ ${motoInfo.min} a R$ ${motoInfo.max}`
                               : "Disponível apenas para a região da Grande Vitória / ES"}
                           </p>
                           {motoInfo && <p style={{fontSize:"11px", color:t.textSecundario, marginTop:"2px"}}>Valor final confirmado pela loja pelo WhatsApp</p>}
@@ -682,10 +682,10 @@ export default function Pedidos() {
                       {frete.tipo==="motoboy" && <p className="flex items-center gap-1" style={{fontSize:"11px", color:t.text, marginTop:"8px", fontWeight:"600"}}><CheckIcon size={12} strokeWidth={2.2} /> Selecionado</p>}
                     </button>
 
-                    {/* ── Correios ── sempre aparece */}
+                    {/* Correios - sempre aparece */}
                     <button onClick={() => setFrete({tipo:"correios", valor: parseValorMinimo(corInfo.pac)})}
                       className="transition-all duration-300 hover:shadow-md"
-                      style={{ padding:"14px 16px", borderRadius:"10px", textAlign:"left", cursor:"pointer",
+                      style={{ padding:"14px 16px", borderRadius:"14px", textAlign:"left", cursor:"pointer",
                         border:"2px solid "+(frete.tipo==="correios" ? t.text : t.border),
                         backgroundColor: frete.tipo==="correios" ? t.bgSecundario : t.bgCard }}>
                       <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start"}}>
@@ -704,7 +704,7 @@ export default function Pedidos() {
 
                   </div>
                   {!frete.tipo && calcFrete && (
-                    <p className="flex items-center gap-1.5" style={{fontSize:"12px", color:"#dc2626", marginTop:"12px"}}><WarningIcon size={13} strokeWidth={1.8} /> Selecione uma opção de entrega para continuar.</p>
+                    <p className="flex items-center gap-1.5" style={{fontSize:"12px", color:"#DC2626", marginTop:"12px"}}><WarningIcon size={13} strokeWidth={1.8} /> Selecione uma opção de entrega para continuar.</p>
                   )}
                 </div>
               );
@@ -712,23 +712,23 @@ export default function Pedidos() {
 
             {/* OBS */}
             <div style={cardStyle}>
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2" style={{color:t.text}}>
-                <DocIcon size={18} strokeWidth={1.6} /> Observações <span style={{color:t.textSecundario, fontWeight:400, fontSize:"14px"}}>(opcional)</span>
+              <h2 className="text-base font-bold mb-4 flex items-center gap-2" style={{color:t.text}}>
+                <DocIcon size={17} strokeWidth={1.6} /> Observações <span style={{color:t.textSecundario, fontWeight:400, fontSize:"14px"}}>(opcional)</span>
               </h2>
               <textarea name="observacao" value={cliente.observacao} onChange={handleChange}
                 placeholder="Alguma informação adicional?" rows={3}
                 style={{...inputStyle("observacao"), resize:"none"}} />
             </div>
 
-            {/* ── PAGAMENTO ── */}
-            <div style={{backgroundColor:t.bgCard, border:"1px solid "+t.border, borderRadius:"12px", padding:"24px"}}>
-              <h2 className="text-lg font-semibold mb-1 flex items-center gap-2" style={{color:t.text}}><CardIcon size={19} strokeWidth={1.6} /> Pagamento</h2>
+            {/* PAGAMENTO */}
+            <div style={cardStyle}>
+              <h2 className="text-base font-bold mb-1 flex items-center gap-2" style={{color:t.text}}><CardIcon size={18} strokeWidth={1.6} /> Pagamento</h2>
               <p className="text-sm mb-4" style={{color:t.textSecundario}}>
-                O pagamento é feito com segurança pelo Mercado Pago — Pix, cartão ou boleto.
+                O pagamento é feito com segurança pelo Mercado Pago - Pix, cartão ou boleto.
               </p>
 
               {/* Resumo do valor */}
-              <div className="rounded-lg p-4 mb-4" style={{backgroundColor:t.bgSecundario, border:"1px solid "+t.border}}>
+              <div className="p-4 mb-4" style={{backgroundColor:t.bgSecundario, border:"1px solid "+t.border, borderRadius:"14px"}}>
                 <div className="flex justify-between mb-1">
                   <span style={{fontSize:"13px", color:t.textSecundario}}>Subtotal produtos:</span>
                   <span style={{fontSize:"13px", color:t.text}}>R$ {total.toFixed(2)}</span>
@@ -744,26 +744,26 @@ export default function Pedidos() {
                 {frete.tipo === "retirada" && (
                   <div className="flex justify-between mb-1">
                     <span style={{fontSize:"13px", color:t.textSecundario}}>Frete:</span>
-                    <span style={{fontSize:"13px", color:"#16a34a", fontWeight:"600"}}>Grátis</span>
+                    <span style={{fontSize:"13px", color:"#16A34A", fontWeight:"600"}}>Grátis</span>
                   </div>
                 )}
-                <div className="flex justify-between pt-2 mt-1" style={{borderTop:"2px solid "+t.border}}>
+                <div className="flex justify-between pt-2 mt-1" style={{borderTop:"1px solid "+t.border}}>
                   <span style={{fontSize:"15px", fontWeight:"700", color:t.text}}>Total:</span>
-                  <span style={{fontSize:"15px", fontWeight:"700", color:t.text}}>R$ {totalComFrete.toFixed(2)}</span>
+                  <span style={{fontFamily:"Newsreader, serif", fontStyle:"italic", fontSize:"20px", fontWeight:"500", color:t.text}}>R$ {totalComFrete.toFixed(2)}</span>
                 </div>
               </div>
 
               {!frete.tipo && tentouEnviar && (
-                <p style={{fontSize:"12px", color:"#dc2626"}}>Selecione uma opção de entrega antes de pagar.</p>
+                <p style={{fontSize:"12px", color:"#DC2626"}}>Selecione uma opção de entrega antes de pagar.</p>
               )}
             </div>
 
-            {/* BOTÃO CONFIRMAR — cria a preferência e redireciona para o Mercado Pago */}
+            {/* BOTÃO CONFIRMAR - cria a preferência e redireciona para o Mercado Pago */}
             <button onClick={pagarComMP} disabled={salvando}
-              className="cursor-pointer w-full py-5 font-bold text-lg transition-all duration-300 hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 inline-flex items-center justify-center gap-2"
-              style={{backgroundColor: !salvando ? t.btnPrimarioBg : "#9ca3af",
+              className="cursor-pointer w-full py-5 font-bold text-base transition-all duration-300 hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 inline-flex items-center justify-center gap-2"
+              style={{backgroundColor: !salvando ? t.btnPrimarioBg : "#9CA3AF",
                 color:t.btnPrimarioText, cursor: !salvando ? "pointer" : "not-allowed",
-                fontFamily:"system-ui", borderRadius:"12px", fontSize:"16px"}}>
+                borderRadius:"999px", fontSize:"16px"}}>
               <CardIcon size={18} strokeWidth={1.6} />
               {salvando ? "Redirecionando para o Mercado Pago..." : "Pagar com Mercado Pago"}
             </button>

@@ -13,7 +13,7 @@ venv/
 env/
 .venv/
 
-# Variáveis de ambiente — NUNCA subir
+# Variáveis de ambiente
 .env
 .env.*
 !.env.example
@@ -24,7 +24,7 @@ backend/staticfiles/
 db.sqlite3
 *.log
 
-# Segurança — nunca subir
+# Segurança
 backend/create_admin.py
 
 # Node

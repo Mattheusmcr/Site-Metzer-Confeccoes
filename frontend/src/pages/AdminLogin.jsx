@@ -5,9 +5,9 @@ import api from "../services/api";
 
 const t = {
   bg: "#FFFFFF", bgCard: "#FFFFFF",
-  text: "#1a1a1a", textSecundario: "#6b6b6b",
-  border: "#E0E0E0", inputBorder: "#D0D0D0",
-  btnBg: "#1a1a1a", btnText: "#FFFFFF",
+  text: "#161513", textSecundario: "#8A877F",
+  border: "rgba(0,0,0,0.08)", inputBorder: "rgba(0,0,0,0.12)",
+  btnBg: "#161513", btnText: "#FFFFFF",
 };
 
 function AdminLogin() {
@@ -30,30 +30,29 @@ function AdminLogin() {
 
   return (
     <div className="min-h-screen flex items-center justify-center"
-      style={{ backgroundColor: t.bg }}>
-      <div className="w-full max-w-sm p-10 rounded-2xl shadow-sm"
-        style={{ backgroundColor: t.bgCard, border: "1px solid " + t.border }}>
+      style={{ backgroundColor: t.bg, fontFamily: "Manrope, sans-serif" }}>
+      <div className="w-full max-w-sm p-10"
+        style={{ backgroundColor: t.bgCard, border: "1px solid " + t.border, borderRadius: "20px" }}>
 
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold tracking-wide" style={{ color: t.text }}>
-            METZKER
-          </h1>
-          <p className="text-sm mt-1" style={{ color: t.textSecundario }}>
+          <img src="/LogoEmpresaMetzker.jpg" alt="Metzker" className="h-14 mx-auto mb-5 rounded-lg object-contain"
+            onError={e => { e.target.style.display = "none"; }} />
+          <p className="text-sm" style={{ color: t.textSecundario }}>
             Acesso Administrativo
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider mb-1"
-              style={{ color: t.textSecundario }}>Usuário</label>
+            <label className="block text-xs font-bold uppercase mb-1.5"
+              style={{ color: t.textSecundario, letterSpacing: "0.1em" }}>Usuário</label>
             <input
               type="text"
               placeholder="seu_usuario"
               value={form.username}
               onChange={e => setForm({ ...form, username: e.target.value })}
               style={{
-                width: "100%", padding: "10px 12px", borderRadius: "8px",
+                width: "100%", padding: "11px 14px", borderRadius: "12px",
                 border: "1px solid " + t.inputBorder, backgroundColor: "#FFFFFF",
                 color: t.text, fontSize: "14px", outline: "none", boxSizing: "border-box",
               }}
@@ -61,15 +60,15 @@ function AdminLogin() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider mb-1"
-              style={{ color: t.textSecundario }}>Senha</label>
+            <label className="block text-xs font-bold uppercase mb-1.5"
+              style={{ color: t.textSecundario, letterSpacing: "0.1em" }}>Senha</label>
             <input
               type="password"
               placeholder="••••••••"
               value={form.password}
               onChange={e => setForm({ ...form, password: e.target.value })}
               style={{
-                width: "100%", padding: "10px 12px", borderRadius: "8px",
+                width: "100%", padding: "11px 14px", borderRadius: "12px",
                 border: "1px solid " + t.inputBorder, backgroundColor: "#FFFFFF",
                 color: t.text, fontSize: "14px", outline: "none", boxSizing: "border-box",
               }}
@@ -77,12 +76,12 @@ function AdminLogin() {
           </div>
 
           {erro && (
-            <p className="text-sm text-center" style={{ color: "#dc2626" }}>{erro}</p>
+            <p className="text-sm text-center" style={{ color: "#DC2626" }}>{erro}</p>
           )}
 
           <button type="submit"
-            className="w-full py-3 rounded-lg font-semibold mt-2 transition-all duration-300 hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5"
-            style={{ backgroundColor: t.btnBg, color: t.btnText }}>
+            className="w-full py-3.5 font-bold mt-2 transition-all duration-300 hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5"
+            style={{ backgroundColor: t.btnBg, color: t.btnText, borderRadius: "999px" }}>
             Entrar
           </button>
         </form>
