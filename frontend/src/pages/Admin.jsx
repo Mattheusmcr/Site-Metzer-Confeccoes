@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { cabecalhoComprovante, abrirComprovante, classeBadgeStatus, labelStatus } from "../utils/comprovantePDF";
 import {
   DashboardIcon, PlusIcon, PackageIcon, ReceiptIcon, ChartIcon, EditIcon,
   FolderIcon, CameraIcon, SaveIcon, CoinIcon, BagIcon, PaletteIcon,
@@ -609,63 +610,50 @@ function VerPedidos({ mostrarToast, dark, estilos }) {
   function gerarPDFPedido(p) {
     const isCat = !p.ramo;
     const prot = p.protocolo || (isCat ? "MTZ-" + String(p.id).padStart(4,"0") : "MTZ-PERS-" + String(p.id).padStart(4,"0"));
-    const freteLabel = p.frete_tipo === "retirada" ? "Retirada no local (Gratis)"
-      : p.frete_tipo === "motoboy" ? "Motoboy - estimativa R$ " + parseFloat(p.frete_valor||0).toFixed(2) + " (Grande Vitoria/ES)"
+    const freteLabel = p.frete_tipo === "retirada" ? "Retirada no local (grátis)"
+      : p.frete_tipo === "motoboy" ? "Motoboy - estimativa R$ " + parseFloat(p.frete_valor||0).toFixed(2) + " (Grande Vitória/ES)"
       : p.frete_tipo === "correios" ? "Correios - valor a confirmar"
-      : "Nao informado";
-    const statusTxt = p.status === "concluido" ? "Concluido"
-      : p.status === "cancelado" ? "Cancelado"
-      : p.status === "em_andamento" ? "Em andamento" : "Novo";
+      : "Não informado";
+    const status = p.status || "novo";
     const itensHTML = isCat
       ? (p.itens||[]).map(i =>
-          "<tr><td style='padding:8px 4px'>" + (i.produto_nome||"Produto") + "</td>"
-          + "<td style='padding:8px 4px;text-align:center'>" + i.tamanho + "</td>"
-          + "<td style='padding:8px 4px;text-align:center'>" + i.quantidade + "</td>"
-          + "<td style='padding:8px 4px;text-align:right'>R$ " + (parseFloat(i.produto_preco||0)*i.quantidade).toFixed(2) + "</td></tr>"
+          "<tr><td>" + (i.produto_nome||"Produto") + "</td>"
+          + "<td style='text-align:center'>" + i.tamanho + "</td>"
+          + "<td style='text-align:center'>" + i.quantidade + "</td>"
+          + "<td style='text-align:right'>R$ " + (parseFloat(i.produto_preco||0)*i.quantidade).toFixed(2) + "</td></tr>"
         ).join("")
-      : "<tr><td colspan='4' style='padding:8px 4px'>" + (p.ramo||"Pedido personalizado") + " - " + (p.quantidade||"-") + " unidades</td></tr>";
+      : "<tr><td colspan='4'>" + (p.ramo||"Pedido personalizado") + " - " + (p.quantidade||"-") + " unidades</td></tr>";
 
     const endHTML = p.rua
       ? "<p>" + p.rua + ", " + (p.numero||"s/n") + (p.complemento?" - "+p.complemento:"") + "</p><p>" + (p.bairro||"") + " - " + (p.cidade||"") + "/" + (p.estado||"") + "</p>"
       : "<p>Retirada no local</p>";
 
-    const html = "<!DOCTYPE html><html lang='pt-BR'><head><meta charset='UTF-8'><title>Pedido " + prot + "</title>"
-      + "<style>*{box-sizing:border-box}body{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 24px;color:#161513}"
-      + ".prot{font-family:monospace;font-size:16px;font-weight:700;padding:10px 16px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;display:inline-block;margin-bottom:16px}"
-      + ".grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}"
-      + ".block{padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px}"
-      + ".block h3{font-size:10px;text-transform:uppercase;color:#6b7280;margin:0 0 6px;font-weight:700}"
-      + ".block p{font-size:13px;margin:2px 0;line-height:1.5}"
-      + "table{width:100%;border-collapse:collapse;margin:12px 0}"
-      + "th{background:#f3f4f6;padding:8px 4px;text-align:left;font-size:11px;text-transform:uppercase;font-weight:700}"
-      + "td{font-size:13px;color:#161513}"
-      + ".frete{margin:12px 0;padding:12px 16px;background:#fef9f0;border:1px solid #fde68a;border-radius:6px;font-size:13px}"
-      + ".footer{margin-top:28px;padding-top:14px;border-top:1px solid #e5e7eb;font-size:11px;color:#9ca3af;text-align:center}"
-      + "@media print{button{display:none}}</style></head><body>"
-      + "<p style='font-size:22px;font-weight:300;letter-spacing:2px;margin-bottom:4px'><span style='color:#c41e3a;font-weight:700'>m</span>etzker solucoes</p>"
-      + "<p style='color:#6b7280;font-size:12px;margin:0 0 16px'>Vila Velha, ES - (27) 99787-8391</p>"
-      + "<h2 style='font-size:18px;font-weight:600;margin:20px 0 6px'>Pedido " + (isCat ? "Catalogo" : "Personalizado") + "</h2>"
-      + "<div class='prot'>Protocolo: " + prot + "</div><br>"
-      + "<span style='display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;margin-bottom:16px;background:#f9fafb;color:#374151'>" + statusTxt + "</span>"
-      + "<div class='grid'>"
-      + "<div class='block'><h3>Cliente</h3><p><strong>" + (p.nome_cliente||"-") + "</strong></p><p>" + (p.telefone||"-") + "</p><p>" + (p.email||"-") + "</p></div>"
-      + "<div class='block'><h3>Endereco</h3>" + endHTML + "</div>"
-      + (isCat ? "<div class='block'><h3>Pagamento</h3><p>" + (p.forma_pagamento||"-") + "</p></div>" : "")
-      + "<div class='block'><h3>Data</h3><p>" + new Date(p.data_pedido).toLocaleDateString("pt-BR") + "</p></div>"
-      + (!isCat ? "<div class='block'><h3>Produto</h3><p>" + (p.ramo||"-") + "</p><p><strong>" + (p.quantidade||"-") + " unidades</strong></p></div>" : "")
-      + "</div>"
-      + "<div class='frete'><strong>Entrega:</strong> " + freteLabel + "</div>"
-      + "<table><thead><tr><th>Produto</th>"
-      + (isCat ? "<th style='text-align:center'>Tamanho</th><th style='text-align:center'>Qtd</th><th style='text-align:right'>Subtotal</th>" : "")
-      + "</tr></thead><tbody>" + itensHTML + "</tbody></table>"
-      + (p.observacao||p.observacoes ? "<div style='margin-top:16px;padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px'><p style='font-size:13px'>" + (p.observacao||p.observacoes) + "</p></div>" : "")
-      + "<div class='footer'>Metzker Solucoes - Polo Textil Santa Ines - Vila Velha, ES<br>Gerado em " + new Date().toLocaleDateString("pt-BR") + "</div>"
-      + "<div style='text-align:center;margin-top:16px'><button onclick='window.print()' style='padding:10px 24px;background:#161513;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px'>Imprimir/Salvar PDF</button></div>"
-      + "</body></html>";
+    const corpo = `
+      ${cabecalhoComprovante()}
+      <h2>Pedido ${isCat ? "Catálogo" : "Personalizado"}</h2>
+      <span class="badge ${classeBadgeStatus(status)}">${labelStatus(status)}</span>
+      <div class="protocolo">${prot}</div>
+      <div class="grid">
+        <div class="bloco"><h3>Cliente</h3><p><strong>${p.nome_cliente||"-"}</strong></p><p>${p.telefone||"-"}</p><p>${p.email||"-"}</p></div>
+        <div class="bloco"><h3>Endereço</h3>${endHTML}</div>
+        ${isCat ? `<div class="bloco"><h3>Pagamento</h3><p>${p.forma_pagamento||"-"}</p></div>` : ""}
+        <div class="bloco"><h3>Data</h3><p>${new Date(p.data_pedido).toLocaleDateString("pt-BR")}</p></div>
+        ${!isCat ? `<div class="bloco"><h3>Produto</h3><p>${p.ramo||"-"}</p><p><strong>${p.quantidade||"-"} unidades</strong></p></div>` : ""}
+      </div>
+      <div class="caixa"><strong>Entrega:</strong> ${freteLabel}</div>
+      <table>
+        <thead><tr><th>Produto</th>
+          ${isCat ? "<th style='text-align:center'>Tamanho</th><th style='text-align:center'>Qtd</th><th style='text-align:right'>Subtotal</th>" : ""}
+        </tr></thead>
+        <tbody>${itensHTML}</tbody>
+      </table>
+      ${p.observacao||p.observacoes ? `<div class="caixa"><strong>Observações:</strong> ${p.observacao||p.observacoes}</div>` : ""}
+      <div class="rodape">
+        Metzker Soluções - Polo Têxtil Santa Inês - Vila Velha, ES<br/>
+        Gerado em ${new Date().toLocaleDateString("pt-BR")}
+      </div>`;
 
-    const win = window.open("", "_blank");
-    win.document.write(html);
-    win.document.close();
+    abrirComprovante(corpo, `Pedido ${prot}`);
   }
 
 

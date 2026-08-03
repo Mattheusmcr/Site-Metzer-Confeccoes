@@ -6,6 +6,7 @@ import {
   PartyIcon, TagIcon, CopyIcon, PrinterIcon, CloseIcon,
   UserIcon, PinIcon,
 } from "../components/Icons";
+import { cabecalhoComprovante, abrirComprovante } from "../utils/comprovantePDF";
 
 // CÁLCULO DE FRETE
 const REGIAO_METRO_ES_P = ["vitoria","vila velha","cariacica","serra","viana","guarapari","fundao"];
@@ -238,94 +239,70 @@ export default function Personalizado(){
             : GRUPOS_TAMANHO.flatMap(g => Object.entries(c.quantidades[g.id] || {}).map(([t,v]) => [t,v,g.label]))
           ).filter(([,v]) => v > 0)
            .map(([tam, qtd, grupo]) => `${grupo ? grupo+": " : ""}${tam}: ${qtd} pç${qtd > 1 ? "s" : ""}`)
-           .join(" &nbsp;|&nbsp; ");
-          return `<div style="padding:12px;background:#f9fafb;border:1px solid #e5e7eb;margin-bottom:8px;border-radius:6px">
+           .join(" &middot; ");
+          return `<div class="caixa" style="margin-bottom:8px">
             <strong style="font-size:14px">#${i+1} ${tipo?.label}</strong><br/>
-            <span style="font-size:12px;color:#6b7280">Cor: ${cor} &nbsp;|&nbsp; Material: ${mat}</span><br/>
+            <span style="font-size:12px;color:#8A877F">Cor: ${cor} &middot; Material: ${mat}</span><br/>
             <span style="font-size:12px">${tamanhos}</span>
-            <div style="font-size:12px;font-weight:600;margin-top:4px">Total: ${totalComb(c)} unidades</div>
+            <div style="font-size:12px;font-weight:700;margin-top:4px">Total: ${totalComb(c)} unidades</div>
           </div>`;
         }).join("")
-      : `<div style="padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px">
+      : `<div class="caixa">
           <strong>${TIPOS_COMUNICACAO.find(t => t.id === form.tipoComunicacao)?.label || ""}</strong><br/>
-          <span style="font-size:12px;color:#6b7280">Dimensões: ${form.dimensoes}</span>
+          <span style="font-size:12px;color:#8A877F">Dimensões: ${form.dimensoes}</span>
         </div>`;
 
-    const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
-    <title>Pedido Personalizado Metzker</title>
-    <style>
-      body{font-family:system-ui,sans-serif;max-width:600px;margin:40px auto;padding:0 20px;color:#1a1a1a}
-      .logo{font-size:28px;font-weight:300;letter-spacing:2px;margin-bottom:4px}
-      .logo span{color:#c41e3a;font-weight:700}
-      h2{font-size:20px;font-weight:600;margin:24px 0 4px}
-      .badge{display:inline-block;padding:4px 14px;background:#FEF9F0;color:#92400E;border:1px solid #FDE68A;border-radius:999px;font-size:12px;font-weight:600;margin-bottom:20px}
-      .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
-      .info-block{padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px}
-      .info-block h3{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;margin:0 0 6px}
-      .info-block p{font-size:13px;margin:2px 0}
-      .aviso{background:#FEF9F0;border:1px solid #FDE68A;padding:14px;border-radius:6px;font-size:12px;color:#92400E;margin-top:20px}
-      .footer{margin-top:32px;padding-top:16px;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280;text-align:center}
-    </style></head><body>
-      <div class="logo"><span>m</span>etzker soluções</div>
-      <p style="color:#6b7280;font-size:12px;margin:0 0 20px">Vila Velha, ES · (27) 99787-8391 · andremetzkrr@gmail.com</p>
+    const corpo = `
+      ${cabecalhoComprovante()}
       <h2>Comprovante de Pedido Personalizado</h2>
-      <span class="badge">Pedido personalizado registrado</span>
-      <div style="margin:12px 0;padding:12px 16px;background:#FEF9F0;border:1px solid #FDE68A;border-radius:8px;font-family:monospace;font-size:18px;font-weight:700;letter-spacing:0.05em">
-        ${protocolo}
-      </div>
+      <span class="badge badge-novo">Pedido registrado</span>
+      <div class="protocolo">${protocolo}</div>
 
-      <div class="info-grid">
-        <div class="info-block">
+      <div class="grid">
+        <div class="bloco">
           <h3>Cliente</h3>
           <p><strong>${form.nomeCliente}</strong></p>
           <p>${form.telefone}</p>
           <p>${form.email}</p>
         </div>
-        <div class="info-block">
+        <div class="bloco">
           <h3>Endereço</h3>
           <p>${form.rua||"-"}, ${form.numero||"-"}${form.complemento ? " - " + form.complemento : ""}</p>
           <p>${form.bairro||"-"} - ${form.cidade||"-"}/${form.estado||"-"}</p>
           <p>CEP: ${form.cep||"-"}</p>
         </div>
-        <div class="info-block">
+        <div class="bloco">
           <h3>Categoria</h3>
           <p>${form.categoria === "roupas" ? "Item de Roupa" : "Comunicação Visual"}</p>
           ${form.categoria === "roupas" ? `<p>Total: <strong>${totalGeral} unidades</strong></p>` : `<p>Dimensões: ${form.dimensoes}</p>`}
         </div>
-        <div class="info-block">
+        <div class="bloco">
           <h3>Entrega</h3>
           <p><strong>${form.frete_tipo === "retirada" ? "Retirada no local" : form.frete_tipo === "motoboy" ? "Motoboy" : form.frete_tipo === "correios" ? "Correios (PAC/SEDEX)" : "A confirmar"}</strong></p>
           ${form.frete_tipo === "motoboy" ? `<p style="color:#D97706;font-size:12px">Apenas Grande Vitória / ES</p>` : ""}
-          ${form.frete_tipo === "correios" ? `<p style="color:#6b7280;font-size:12px">Valor confirmado pela loja</p>` : ""}
-          ${form.frete_tipo === "retirada" ? `<p style="color:#16A34A;font-weight:600">Grátis</p>` : ""}
-        </div>
-        <div class="info-block">
-          <h3>Data</h3>
-          <p>${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR", {hour:"2-digit",minute:"2-digit"})}</p>
+          ${form.frete_tipo === "correios" ? `<p style="color:#8A877F;font-size:12px">Valor confirmado pela loja</p>` : ""}
+          ${form.frete_tipo === "retirada" ? `<p style="color:#16A34A;font-weight:700">Grátis</p>` : ""}
         </div>
       </div>
+      <p style="font-size:12px;color:#8A877F;margin-top:-6px">
+        ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR", {hour:"2-digit",minute:"2-digit"})}
+      </p>
 
-      <h3 style="font-size:15px;margin:20px 0 10px">Combinações / Detalhes</h3>
+      <h3 class="secao">Combinações / Detalhes</h3>
       ${combinacoesHTML}
 
-      ${form.descricao ? `<div style="margin-top:14px;padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;font-size:13px"><strong>Descrição:</strong> ${form.descricao}</div>` : ""}
-      ${form.observacoes ? `<div style="margin-top:8px;padding:12px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;font-size:13px"><strong>Observações:</strong> ${form.observacoes}</div>` : ""}
+      ${form.descricao ? `<div class="caixa" style="margin-top:14px"><strong>Descrição:</strong> ${form.descricao}</div>` : ""}
+      ${form.observacoes ? `<div class="caixa" style="margin-top:8px"><strong>Observações:</strong> ${form.observacoes}</div>` : ""}
 
       <div class="aviso">
         <strong>Atenção:</strong> o valor não está incluído neste comprovante. O orçamento será confirmado pela equipe Metzker pelo WhatsApp após análise do pedido.
       </div>
-      <div class="footer">
+      <div class="rodape">
         Guarde este comprovante. Nossa equipe entrará em contato para confirmar detalhes e orçamento.<br/>
-        metzkersolucoes.com.br · Desenvolvido por Matheus Costa Rodrigues
-      </div>
-    </body></html>`;
+        metzkersolucoes.com.br &middot; Desenvolvido por Matheus Costa Rodrigues
+      </div>`;
 
-    const win = window.open("", "_blank");
-    if (win) {
-      win.document.write(html);
-      win.document.close();
-      setTimeout(() => win.print(), 500);
-    }
+    abrirComprovante(corpo, "Pedido Personalizado Metzker");
   }
 
   async function salvarNoBanco(){
